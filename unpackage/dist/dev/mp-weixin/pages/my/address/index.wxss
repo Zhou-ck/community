@@ -1,0 +1,385 @@
+@charset "UTF-8";
+/**
+ * uni-app内置的常用样式变量
+ */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.address-container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  box-sizing: border-box;
+}
+.address-list {
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+/* 空状态 */
+.empty-address {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+}
+.empty-address .empty-icon-box {
+  width: 160rpx;
+  height: 160rpx;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+}
+.empty-address .empty-text {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+.empty-address .empty-sub {
+  font-size: 26rpx;
+  color: #999;
+}
+/* 地址卡片 */
+.address-item {
+  background: #fff;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2rpx solid transparent;
+}
+.address-item.selected {
+  border-color: #3ec6c6;
+  background: #f0fcfc;
+}
+.address-item.selected .tags-row .selected {
+  background: #3ec6c6;
+  color: #fff;
+}
+.address-item .address-content {
+  padding: 30rpx;
+}
+.address-item .header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24rpx;
+}
+.address-item .header-row .info-left {
+  display: flex;
+  align-items: baseline;
+}
+.address-item .header-row .info-left .name {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 20rpx;
+}
+.address-item .header-row .info-left .phone {
+  font-size: 28rpx;
+  color: #999;
+  font-family: 'Roboto', sans-serif;
+}
+.address-item .header-row .tags-row {
+  display: flex;
+  gap: 12rpx;
+}
+.address-item .header-row .tags-row .tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-weight: 500;
+}
+.address-item .header-row .tags-row .tag.default {
+  background: rgba(62, 198, 198, 0.1);
+  color: #3ec6c6;
+}
+.address-item .header-row .tags-row .tag.selected {
+  background: #3ec6c6;
+  color: #fff;
+}
+.address-item .address-row {
+  display: flex;
+  align-items: flex-start;
+}
+.address-item .address-row .icon-box {
+  margin-right: 12rpx;
+  margin-top: 4rpx;
+}
+.address-item .address-row .address-text-box {
+  flex: 1;
+}
+.address-item .address-row .address-text-box .area {
+  font-size: 28rpx;
+  color: #666;
+  margin-right: 10rpx;
+}
+.address-item .address-row .address-text-box .detail {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.address-item .divider {
+  height: 2rpx;
+  background: #f5f7fa;
+  margin: 0 30rpx;
+  /* 虚线效果 */
+  background-image: linear-gradient(to right, #f5f7fa 50%, transparent 50%);
+  background-size: 16rpx 2rpx;
+  background-repeat: repeat-x;
+}
+.address-item .address-actions {
+  padding: 20rpx 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.address-item .address-actions .action-btn {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  transition: all 0.2s;
+}
+.address-item .address-actions .action-btn uni-icons {
+  margin-right: 6rpx;
+}
+.address-item .address-actions .action-btn:active {
+  opacity: 0.8;
+}
+.address-item .address-actions .delete {
+  background: rgba(255, 85, 85, 0.05);
+  color: #ff5555;
+}
+.address-item .address-actions .action-right {
+  display: flex;
+  gap: 20rpx;
+}
+.address-item .address-actions .action-right .copy {
+  background: #f5f7fa;
+  color: #666;
+}
+.address-item .address-actions .action-right .edit {
+  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+}
+/* 底部添加按钮栏 */
+.add-address-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 24rpx 40rpx;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  z-index: 99;
+  /* 适配全面屏 */
+  padding-bottom: calc(24rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
+.add-address-bar .add-btn {
+  height: 88rpx;
+  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+}
+.add-address-bar .add-btn text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #fff;
+}
+.add-address-bar .add-btn-hover {
+  -webkit-transform: scale(0.98);
+          transform: scale(0.98);
+  box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.3);
+}
+/* 弹窗样式优化 */
+.popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+.popup-mask.show {
+  opacity: 1;
+  visibility: visible;
+}
+.popup-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  -webkit-transform: translateY(100%);
+          transform: translateY(100%);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  /* 限制最大高度 */
+}
+.popup-container.show {
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+}
+.popup-container .popup-header {
+  padding: 32rpx 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2rpx solid #f5f7fa;
+  flex-shrink: 0;
+  /* 防止头部被压缩 */
+}
+.popup-container .popup-header .title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+.popup-container .popup-header .close-btn {
+  padding: 10rpx;
+  margin-right: -10rpx;
+}
+.popup-container .form-content {
+  flex: 1;
+  /* 占据剩余空间 */
+  overflow-y: auto;
+  padding: 0 40rpx;
+}
+.popup-container .form-group.mt-20 {
+  margin-top: 15rpx;
+}
+.popup-container .form-item {
+  padding: 32rpx 0;
+  border-bottom: 2rpx solid #f5f7fa;
+  display: flex;
+  align-items: center;
+}
+.popup-container .form-item.column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.popup-container .form-item.column .label {
+  margin-bottom: 20rpx;
+}
+.popup-container .form-item.column textarea {
+  width: 100%;
+  height: 120rpx;
+  background: #f9f9f9;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  box-sizing: border-box;
+  font-size: 28rpx;
+}
+.popup-container .form-item.switch-item {
+  justify-content: space-between;
+  border-bottom: none;
+  background: #f9f9f9;
+  padding: 24rpx 30rpx;
+  border-radius: 16rpx;
+}
+.popup-container .form-item.switch-item .switch-label {
+  display: flex;
+  flex-direction: column;
+}
+.popup-container .form-item.switch-item .switch-label .main-text {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+.popup-container .form-item.switch-item .switch-label .sub-text {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+.popup-container .form-item .label {
+  width: 160rpx;
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+.popup-container .form-item .label.required::after {
+  content: '*';
+  color: #ff5555;
+  margin-left: 4rpx;
+}
+.popup-container .form-item input {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  text-align: right;
+}
+.popup-container .form-item .input-placeholder {
+  color: #ccc;
+}
+.popup-container .form-item .picker-view {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.popup-container .form-item .picker-view .placeholder {
+  color: #ccc;
+  font-size: 30rpx;
+  margin-right: 10rpx;
+}
+.popup-container .form-item .picker-view .value {
+  color: #333;
+  font-size: 30rpx;
+  margin-right: 10rpx;
+}
+.popup-container .popup-footer {
+  padding: 24rpx 40rpx;
+  /* 基础内边距，底部会被行内样式覆盖 */
+  background: #fff;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  /* 防止底部被压缩 */
+}
+.popup-container .popup-footer .save-btn {
+  height: 88rpx;
+  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+}
+.popup-container .popup-footer .save-btn text {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+.popup-container .popup-footer .save-btn-hover {
+  opacity: 0.9;
+  -webkit-transform: scale(0.98);
+          transform: scale(0.98);
+}
+

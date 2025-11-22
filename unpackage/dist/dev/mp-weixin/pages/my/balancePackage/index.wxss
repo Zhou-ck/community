@@ -1,0 +1,573 @@
+
+.package-container.data-v-398f1332 {
+	min-height: 100vh;
+	background-color: #f5f5f5;
+}
+
+
+
+/* 标签页 */
+.tabs.data-v-398f1332 {
+	display: flex;
+	background-color: #fff;
+	padding: 12px 0;
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.tab-item.data-v-398f1332 {
+	flex: 1;
+	text-align: center;
+	font-size: 15px;
+	color: #909399;
+	padding: 4px 0;
+	position: relative;
+	transition: all 0.3s;
+}
+.tab-item.active.data-v-398f1332 {
+	color: #303133;
+	font-weight: 600;
+	font-size: 16px;
+}
+.tab-item.active.data-v-398f1332::after {
+	content: '';
+	position: absolute;
+	bottom: -6px;
+	left: 50%;
+	-webkit-transform: translateX(-50%);
+	        transform: translateX(-50%);
+	width: 20px;
+	height: 4px;
+	background: linear-gradient(90deg, #5DD5C0, #4EC9B0);
+	border-radius: 2px;
+}
+
+
+
+/* 套餐列表 */
+.package-list.data-v-398f1332 {
+	padding: 15px;
+}
+.package-card.data-v-398f1332 {
+	position: relative;
+	background-color: #fff;
+	border-radius: 16px;
+	margin-bottom: 15px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+	overflow: hidden;
+	border: 1px solid rgba(0,0,0,0.02);
+}
+
+
+
+/* 主要内容区 */
+.package-main.data-v-398f1332 {
+	display: flex;
+	justify-content: space-between;
+	padding: 20px;
+}
+
+
+
+/* 左侧信息 */
+.package-info.data-v-398f1332 {
+	flex: 1;
+	margin-right: 15px;
+}
+.info-header.data-v-398f1332 {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	margin-bottom: 16px;
+}
+.pkg-name.data-v-398f1332 {
+	font-size: 18px;
+	font-weight: 600;
+	color: #303133;
+	margin-right: 10px;
+}
+.pkg-tag.data-v-398f1332 {
+	font-size: 11px;
+	color: #FF6B00;
+	background: linear-gradient(90deg, #FFF0E0 0%, #FFE4CC 100%);
+	padding: 2px 8px;
+	border-radius: 12px 12px 12px 0;
+	font-weight: 500;
+}
+.info-features.data-v-398f1332 {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.feature-item.data-v-398f1332 {
+	display: flex;
+	align-items: center;
+	font-size: 14px;
+}
+.feature-label.data-v-398f1332 {
+	color: #909399;
+	margin-right: 6px;
+}
+.feature-val.data-v-398f1332 {
+	color: #303133;
+	font-weight: 600;
+}
+
+
+
+/* 右侧价格与操作 */
+.package-action.data-v-398f1332 {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	justify-content: space-between;
+	min-width: 100px;
+	padding-left: 10px;
+}
+.price-group.data-v-398f1332 {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	margin-bottom: 8px;
+}
+.price-wrapper.data-v-398f1332 {
+	display: flex;
+	align-items: baseline;
+	color: #F56C6C;
+	line-height: 1;
+	margin-bottom: 2px;
+}
+.price-symbol.data-v-398f1332 {
+	font-size: 16px;
+	font-weight: 600;
+	margin-right: 2px;
+}
+.price-amount.data-v-398f1332 {
+	font-size: 26px;
+	font-weight: 600;
+	font-family: DINAlternate-Bold, sans-serif;
+}
+.original-price.data-v-398f1332 {
+	font-size: 12px;
+	color: #C0C4CC;
+	text-decoration: line-through;
+}
+.buy-btn.data-v-398f1332 {
+	background: linear-gradient(135deg, #5DD5C0 0%, #4EC9B0 100%);
+	color: #fff;
+	font-size: 13px;
+	font-weight: 600;
+	padding: 6px 14px;
+	border-radius: 18px;
+	white-space: nowrap;
+	box-shadow: 0 4px 10px rgba(78, 201, 176, 0.3);
+}
+.buy-btn.data-v-398f1332:active {
+	-webkit-transform: scale(0.96);
+	        transform: scale(0.96);
+	opacity: 0.9;
+}
+
+
+
+/* 底部描述 */
+.package-footer.data-v-398f1332 {
+	background-color: #F9FAFC;
+	padding: 10px 20px;
+	font-size: 12px;
+	color: #909399;
+	line-height: 1.5;
+	border-top: 1px dashed #EBEEF5;
+}
+
+
+
+/* 空状态 */
+.empty-state.data-v-398f1332 {
+	text-align: center;
+	padding: 80px 0;
+	color: #999;
+	font-size: 14px;
+}
+
+
+
+/* 购买记录容器 */
+.record-container.data-v-398f1332 {
+	padding: 15px;
+}
+
+
+
+/* 套餐总余量 */
+.balance-summary.data-v-398f1332 {
+	background-color: #fff;
+	border-radius: 16px;
+	padding: 20px;
+	margin-bottom: 15px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+.summary-title.data-v-398f1332 {
+	font-size: 18px;
+	font-weight: 600;
+	color: #303133;
+	text-align: center;
+	margin-bottom: 20px;
+}
+.summary-content.data-v-398f1332 {
+	display: flex;
+	justify-content: space-around;
+}
+.balance-item.data-v-398f1332 {
+	text-align: center;
+}
+.balance-value.data-v-398f1332 {
+	font-size: 24px;
+	font-weight: 600;
+	color: #303133;
+	margin-bottom: 8px;
+}
+.balance-label.data-v-398f1332 {
+	font-size: 13px;
+	color: #909399;
+}
+
+
+
+/* 购买记录标题 */
+.record-header.data-v-398f1332 {
+	padding: 10px 0;
+	margin-bottom: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.history-btn.data-v-398f1332 {
+	display: flex;
+	align-items: center;
+	padding: 6px 12px;
+	background-color: rgba(93, 213, 192, 0.1);
+	border-radius: 20px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+.history-btn.data-v-398f1332:active {
+	background-color: rgba(93, 213, 192, 0.2);
+	-webkit-transform: scale(0.95);
+	        transform: scale(0.95);
+}
+.history-text.data-v-398f1332 {
+	font-size: 13px;
+	color: #5DD5C0;
+	margin-right: 4px;
+	font-weight: 500;
+}
+.record-title.data-v-398f1332 {
+	font-size: 16px;
+	font-weight: 600;
+	color: #303133;
+	padding-left: 10px;
+	border-left: 4px solid #5DD5C0;
+}
+
+
+
+/* 购买记录列表 */
+.record-list.data-v-398f1332 {
+	padding-bottom: 20px;
+}
+.record-card.data-v-398f1332 {
+	background-color: #fff;
+	border-radius: 16px;
+	margin-bottom: 15px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+	overflow: hidden;
+	border: 1px solid rgba(0,0,0,0.02);
+}
+.card-header.data-v-398f1332 {
+	padding: 15px 20px;
+	border-bottom: 1px solid #f8f9fa;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.header-left.data-v-398f1332 {
+	display: flex;
+	align-items: center;
+}
+.record-icon.data-v-398f1332 {
+	font-size: 20px;
+	margin-right: 8px;
+}
+.record-name.data-v-398f1332 {
+	font-size: 16px;
+	font-weight: 600;
+	color: #303133;
+}
+.record-status.data-v-398f1332 {
+	font-size: 12px;
+	color: #5DD5C0;
+	background: rgba(93, 213, 192, 0.1);
+	padding: 2px 8px;
+	border-radius: 4px;
+}
+.card-body.data-v-398f1332 {
+	padding: 20px;
+}
+.stat-grid.data-v-398f1332 {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.stat-item.data-v-398f1332 {
+	flex: 1;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.stat-value.data-v-398f1332 {
+	font-size: 20px;
+	font-weight: 600;
+	color: #303133;
+	margin-bottom: 4px;
+	font-family: DINAlternate-Bold, sans-serif;
+}
+.stat-unit.data-v-398f1332 {
+	font-size: 12px;
+	font-weight: normal;
+	color: #909399;
+	margin-left: 2px;
+}
+.stat-label.data-v-398f1332 {
+	font-size: 12px;
+	color: #909399;
+}
+.stat-divider.data-v-398f1332 {
+	width: 1px;
+	height: 20px;
+	background-color: #EBEEF5;
+}
+.card-footer.data-v-398f1332 {
+	padding: 10px 20px;
+	background-color: #F9FAFC;
+	font-size: 12px;
+	color: #909399;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+.time-label.data-v-398f1332 {
+	margin-right: 4px;
+}
+.time-value.data-v-398f1332 {
+	font-family: monospace;
+}
+
+
+
+/* 自定义确认弹窗 */
+.custom-modal.data-v-398f1332 {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+.modal-content.data-v-398f1332 {
+	width: 80%;
+	max-width: 400px;
+	background-color: #fff;
+	border-radius: 12px;
+	overflow: hidden;
+}
+.modal-title.data-v-398f1332 {
+	font-size: 18px;
+	font-weight: 600;
+	color: #303133;
+	text-align: center;
+	padding: 20px;
+	border-bottom: 1px solid #EBEEF5;
+}
+.modal-body.data-v-398f1332 {
+	padding: 20px;
+	line-height: 1.8;
+}
+.modal-text.data-v-398f1332 {
+	font-size: 15px;
+	color: #606266;
+	margin-bottom: 8px;
+}
+.modal-text .bold.data-v-398f1332 {
+	font-weight: 600;
+	color: #303133;
+}
+.modal-text .highlight.data-v-398f1332 {
+	color: #409EFF;
+	font-weight: 600;
+}
+.modal-note.data-v-398f1332 {
+	margin-top: 15px;
+	padding: 10px;
+	background-color: #FFF4E6;
+	border-radius: 6px;
+	font-size: 13px;
+	color: #E6A23C;
+	line-height: 1.6;
+}
+.modal-note .note-formula.data-v-398f1332 {
+	color: #F56C6C;
+	font-weight: 500;
+}
+.modal-footer.data-v-398f1332 {
+	display: flex;
+	border-top: 1px solid #EBEEF5;
+}
+.modal-btn.data-v-398f1332 {
+	flex: 1;
+	text-align: center;
+	padding: 15px;
+	font-size: 16px;
+	font-weight: 500;
+}
+.cancel-btn.data-v-398f1332 {
+	color: #909399;
+	border-right: 1px solid #EBEEF5;
+}
+.confirm-btn.data-v-398f1332 {
+	color: #409EFF;
+	font-weight: 600;
+}
+.modal-btn.data-v-398f1332:active {
+	background-color: #F5F7FA;
+}
+
+
+
+/* 订单详情弹窗 */
+.order-detail-modal.data-v-398f1332 {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+.order-modal-content.data-v-398f1332 {
+	width: 90%;
+	max-width: 500px;
+	max-height: 80vh;
+	background-color: #fff;
+	border-radius: 16px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+.order-modal-header.data-v-398f1332 {
+	padding: 20px;
+	border-bottom: 1px solid #EBEEF5;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #F9FAFC;
+}
+.order-modal-title.data-v-398f1332 {
+	font-size: 18px;
+	font-weight: 600;
+	color: #303133;
+}
+.order-close-btn.data-v-398f1332 {
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background-color: #F0F0F0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	color: #909399;
+	cursor: pointer;
+}
+.order-close-btn.data-v-398f1332:active {
+	background-color: #E0E0E0;
+}
+.order-modal-body.data-v-398f1332 {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0 20px 20px;
+}
+.order-section.data-v-398f1332 {
+	margin-top: 20px;
+}
+.section-title.data-v-398f1332 {
+	font-size: 16px;
+	font-weight: 600;
+	color: #303133;
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 2px solid #5DD5C0;
+	display: inline-block;
+}
+.order-info-item.data-v-398f1332 {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	padding: 8px 0;
+	border-bottom: 1px solid #F5F7FA;
+	line-height: 1.5;
+}
+.order-info-item.data-v-398f1332:last-child {
+	border-bottom: none;
+}
+.info-label.data-v-398f1332 {
+	font-size: 14px;
+	color: #909399;
+	min-width: 80px;
+	flex-shrink: 0;
+}
+.info-value.data-v-398f1332 {
+	font-size: 14px;
+	color: #303133;
+	text-align: right;
+	flex: 1;
+	word-break: break-all;
+}
+.order-no.data-v-398f1332 {
+	font-family: monospace;
+	font-size: 12px;
+	color: #606266;
+}
+.price-text.data-v-398f1332 {
+	color: #F56C6C;
+	font-weight: 600;
+	font-size: 15px;
+}
+.status-text.data-v-398f1332 {
+	color: #5DD5C0;
+	font-weight: 500;
+}
+
+
+
+/* 购买记录卡片添加点击效果 */
+.record-card.data-v-398f1332 {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+.record-card.data-v-398f1332:active {
+	-webkit-transform: scale(0.98);
+	        transform: scale(0.98);
+	opacity: 0.9;
+}
+

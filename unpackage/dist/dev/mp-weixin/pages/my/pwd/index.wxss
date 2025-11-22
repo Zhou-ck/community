@@ -1,0 +1,123 @@
+@charset "UTF-8";
+/**
+ * uni-app内置的常用样式变量
+ */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+page.data-v-38ceed54 {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+}
+.page-container.data-v-38ceed54 {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+}
+/* 内容区域 */
+.content-section.data-v-38ceed54 {
+  padding: 0 30rpx 30rpx;
+}
+/* 表单卡片 */
+.form-card.data-v-38ceed54 {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  margin-top: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+.form-item.data-v-38ceed54 {
+  margin-bottom: 45rpx;
+  position: relative;
+}
+.form-item.data-v-38ceed54:last-child {
+  margin-bottom: 10rpx;
+}
+.form-label.data-v-38ceed54 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+.label-text.data-v-38ceed54 {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-left: 12rpx;
+}
+.custom-input.data-v-38ceed54 {
+  border-radius: 12rpx !important;
+}
+/* 提交按钮区域 */
+.submit-section.data-v-38ceed54 {
+  margin-bottom: 30rpx;
+}
+.submit-btn.data-v-38ceed54 {
+  background: #88d8a3;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  text-align: center;
+  box-shadow: 0 6rpx 20rpx rgba(168, 230, 207, 0.4);
+  transition: all 0.3s ease;
+}
+.submit-btn.data-v-38ceed54:active {
+  -webkit-transform: scale(0.98);
+          transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(168, 230, 207, 0.6);
+}
+.submit-text.data-v-38ceed54 {
+  font-size: 32rpx;
+  color: #fff;
+  font-weight: 600;
+}
+/* 安全提示卡片 */
+.tips-card.data-v-38ceed54 {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+.tips-header.data-v-38ceed54 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.tips-title.data-v-38ceed54 {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-left: 12rpx;
+}
+.tips-content.data-v-38ceed54 {
+  padding-left: 30rpx;
+}
+.tip-item.data-v-38ceed54 {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  line-height: 2;
+  margin-bottom: 8rpx;
+}
+.tip-item.data-v-38ceed54:last-child {
+  margin-bottom: 0;
+}
+/* 错误信息样式 */
+.error-message.data-v-38ceed54 {
+  padding-left: 20rpx;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  margin-top: 3rpx;
+}
+.error-text.data-v-38ceed54 {
+  font-size: 24rpx;
+  color: #ff4757;
+}
+

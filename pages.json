@@ -1,0 +1,253 @@
+{
+	"easycom": {
+    "autoscan": true,
+    "custom": {
+      "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+    }
+  },
+	"pages": [{
+			"path": "pages/login",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "pages/register",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/forget",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/index",
+			"style": {
+				"navigationBarTitleText": "智慧养老",
+				"navigationBarBackgroundColor": "#a8e6cf",
+				"navigationBarTextStyle": "white"
+			}
+		}, {
+			"path": "pages/work/index",
+			"style": {
+				"navigationBarTitleText": "服务分类"
+			}
+		}, 
+		{
+			"path": "pages/order/index",
+			"style": {
+				"navigationBarTitleText": "我的订单"
+			}
+		},
+		{
+			"path": "pages/order/detail",
+			"style": {
+				"navigationBarTitleText": "订单详情"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		}, {
+			"path": "pages/common/webview/index",
+			"style": {
+				"navigationBarTitleText": "浏览网页"
+			}
+		}, {
+			"path": "pages/common/textview/index",
+			"style": {
+				"navigationBarTitleText": "浏览文本"
+			}
+		}
+	],
+	"subPackages": [{
+		"root": "pages/my",
+		"pages": [{
+				"path": "avatar/index",
+				"style": {
+					"navigationBarTitleText": "修改头像"
+				}
+			}, {
+				"path": "info/index",
+				"style": {
+					"navigationBarTitleText": "个人信息"
+				}
+			}, {
+				"path": "pwd/index",
+				"style": {
+					"navigationBarTitleText": "修改密码"
+				}
+			}, {
+				"path": "setting/index",
+				"style": {
+					"navigationBarTitleText": "应用设置"
+				}
+			}, {
+				"path": "help/index",
+				"style": {
+					"navigationBarTitleText": "常见问题"
+				}
+			}, {
+				"path": "about/index",
+				"style": {
+					"navigationBarTitleText": "关于我们"
+				}
+			},
+			{
+				"path": "joincommunity/index",
+				"style": {
+					"navigationBarTitleText": "加入社区",
+					"enablePullDownRefresh": true,
+					"backgroundTextStyle": "dark"
+				}
+			},
+			{
+				"path": "address/index",
+				"style": {
+					"navigationBarTitleText": "服务地址"
+				}
+			},
+			{
+				"path" : "family/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "家庭成员"
+				}
+			},
+			{
+				"path" : "health/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "健康档案"
+				}
+			},
+			{
+				"path" : "device/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "设备管理"
+				}
+			},
+			{
+				"path" : "device/detail",
+				"style" : 
+				{
+					"navigationBarTitleText" : "设备详情"
+				}
+			},
+			{
+				"path" : "alarmreceiver/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "接警人"
+				}
+			},
+			{
+				"path" : "network/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "网络配置"
+				}
+			},
+			{
+				"path" : "balancePackage/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "套餐充值"
+				}
+			},
+			{
+				"path" : "balancePackage/order",
+				"style" : 
+				{
+					"navigationBarTitleText" : "历史订单"
+				}
+			},
+			{
+				"path" : "balanceRecord/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "余量消费"
+				}
+			}
+			
+		]
+
+	}, 
+	{
+		"root": "pages/server",
+		"pages": [
+			{
+				"path": "index",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			},
+			{
+				"path": "booking/index",
+				"style": {
+					"navigationBarTitleText": "预约服务"
+				}
+			},
+			{
+				"path": "serviceDetail/index",
+				"style": {
+					"navigationBarTitleText": "服务详情"
+				}
+			},
+			{
+				"path" : "notice/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "公告列表"
+				}
+			},
+			{
+				"path" : "notice/detail",
+				"style" : 
+				{
+					"navigationBarTitleText" : "公告详情"
+				}
+			}
+		]
+	}
+	],
+	"tabBar": {
+		"color": "#000000",
+		"selectedColor": "#3FA9E7",
+		"borderStyle": "white",
+		"backgroundColor": "#ffffff",
+		"list": [{
+			"pagePath": "pages/index",
+			"iconPath": "static/images/tabbar/home.png",
+			"selectedIconPath": "static/images/tabbar/home_.png",
+			"text": "首页"
+		}, {
+			"pagePath": "pages/work/index",
+			"iconPath": "static/images/tabbar/work.png",
+			"selectedIconPath": "static/images/tabbar/work_.png",
+			"text": "服务分类"
+		}, 
+		{
+			"pagePath": "pages/order/index",
+			"iconPath": "static/images/tabbar/order.png",
+			"selectedIconPath": "static/images/tabbar/order_.png",
+			"text": "我的订单"
+		},
+		{
+			"pagePath": "pages/mine/index",
+			"iconPath": "static/images/tabbar/mine.png",
+			"selectedIconPath": "static/images/tabbar/mine_.png",
+			"text": "我的"
+		}]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "安特社区六助",
+		"navigationBarBackgroundColor": "#FFFFFF"
+	}
+}

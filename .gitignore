@@ -26,3 +26,7 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+
+# uni-app 构建输出
+unpackage/dist/
+unpackage/res/

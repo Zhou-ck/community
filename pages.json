@@ -5,7 +5,16 @@
       "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
     }
   },
-	"pages": [{
+	"pages": [
+		{
+			"path": "pages/index",
+			"style": {
+				"navigationBarTitleText": "智慧养老",
+				"navigationBarBackgroundColor": "#a8e6cf",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
 			"path": "pages/login",
 			"style": {
 				"navigationStyle": "custom"
@@ -22,14 +31,7 @@
 				"navigationStyle": "custom"
 			}
 		},
-		{
-			"path": "pages/index",
-			"style": {
-				"navigationBarTitleText": "智慧养老",
-				"navigationBarBackgroundColor": "#a8e6cf",
-				"navigationBarTextStyle": "white"
-			}
-		}, {
+		 {
 			"path": "pages/work/index",
 			"style": {
 				"navigationBarTitleText": "服务分类"
@@ -211,6 +213,27 @@
 				"style" : 
 				{
 					"navigationBarTitleText" : "公告详情"
+				}
+			},
+			{
+				"path" : "volunteer/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "志愿服务"
+				}
+			},
+			{
+				"path" : "volunteer/detail",
+				"style" : 
+				{
+					"navigationBarTitleText" : "服务详情"
+				}
+			},
+			{
+				"path" : "institution/index",
+				"style" : 
+				{
+					"navigationBarTitleText" : "养老机构"
 				}
 			}
 		]

@@ -367,6 +367,16 @@ export default {
             icon: 'none'
           });
         }
+      } else if (service.name === '志愿服务') {
+        // 跳转到志愿服务页面
+        uni.navigateTo({
+          url: '/pages/server/volunteer/index'
+        })
+      } else if (service.name === '养老机构') {
+        // 跳转到养老机构页面
+        uni.navigateTo({
+          url: '/pages/server/institution/index'
+        })
       } else {
         // 其他服务显示开发中提示
         uni.showToast({

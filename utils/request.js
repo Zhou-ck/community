@@ -96,7 +96,7 @@ const request = config => {
           }
           if (!isRelogin.show) {
             isRelogin.show = true;
-            showConfirm('登录状态已过期，您可以继续留在该页面，或者重新登录?').then(res => {
+            showConfirm('登录状态已过期，您可以继续留在该页面，或者重新登录?', '登录过期提示').then(res => {
               if (res.confirm) {
                 store.dispatch('LogOut').then(() => {
                   uni.reLaunch({ url: '/pages/login' })

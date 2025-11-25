@@ -11,12 +11,13 @@ export function toast(content) {
 
 /**
 * 显示模态弹窗
-* @param content 提示的标题
+* @param content 提示的内容
+* @param title 提示的标题，默认为"提示"
 */
-export function showConfirm(content) {
+export function showConfirm(content, title = '提示') {
   return new Promise((resolve, reject) => {
     uni.showModal({
-      title: '提示',
+      title: title,
       content: content,
       cancelText: '取消',
       confirmText: '确定',

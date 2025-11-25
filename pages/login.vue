@@ -325,7 +325,15 @@
         
         // 设置用户信息
         this.$store.dispatch('GetInfo').then(res => {
-          this.$tab.switchTab('/pages/index')
+          // 获取用户信息成功后，立即获取已加入的社区信息
+          this.$store.dispatch('CheckTokenAndRefreshCommunity').then(() => {
+            console.log('已加载社区信息')
+            this.$tab.switchTab('/pages/index')
+          }).catch(err => {
+            console.error('获取社区信息失败:', err)
+            // 即使获取社区信息失败，也跳转到首页
+            this.$tab.switchTab('/pages/index')
+          })
         })
       }
     }

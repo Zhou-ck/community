@@ -974,10 +974,11 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 		.popup-header {
 			padding: 32rpx 40rpx;
 			display: flex;
-			justify-content: space-between;
+			justify-content: center;
 			align-items: center;
 			border-bottom: 2rpx solid #f5f7fa;
 			flex-shrink: 0; /* 防止头部被压缩 */
+			position: relative;
 
 			.title {
 				font-size: 34rpx;
@@ -986,8 +987,9 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 			}
 
 			.close-btn {
+				position: absolute;
+				right: 30rpx;
 				padding: 10rpx;
-				margin-right: -10rpx;
 			}
 		}
 

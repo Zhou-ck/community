@@ -60,15 +60,20 @@
               <text class="subsidy" v-if="item.subsidySupport === '1'">可补贴</text>
             </view>
             <view class="service-footer">
-              <view class="service-price">￥{{ item.price }}</view>
-              <view class="book-btn" @click.stop="bookService(item)">立即预约</view>
+              <view class="service-price">
+                 <text class="symbol">¥</text>
+                 <text class="amount">{{ item.price }}</text>
+              </view>
+              <view class="book-btn" @click.stop="bookService(item)">预约</view>
             </view>
           </view>
         </view>
       </view>
       
       <view v-else class="empty-state">
-        <text class="iconfontB icon-yonghupingjia empty-icon"></text>
+        <view class="empty-icon-box">
+          <uni-icons type="calendar-filled" size="50" color="#d9d9d9"></uni-icons>
+        </view>
         <text class="empty-text">{{ searchKeyword ? '未找到相关服务' : '暂无服务项' }}</text>
       </view>
     </view>
@@ -252,7 +257,7 @@ export default {
 @import '@/static/fontB/iconfont.css';
 .service-list-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #f7f8fa;
 }
 
 /* 导航栏包装器 */
@@ -263,7 +268,6 @@ export default {
   right: 0;
   z-index: 999;
   background-color: #fff;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
 /* 状态栏 */
@@ -283,7 +287,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   height: 88rpx;
-  padding: 0 20rpx;
+  padding: 0 24rpx;
 }
 
 .navbar-left,
@@ -308,7 +312,7 @@ export default {
   align-items: center;
   
   text {
-    font-size: 32rpx;
+    font-size: 34rpx;
     font-weight: 600;
     color: #333;
     max-width: 400rpx;
@@ -325,25 +329,19 @@ export default {
   right: 0;
   z-index: 998;
   background-color: #fff;
-  padding: 20rpx 24rpx;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
 }
 
 .search-box {
   display: flex;
   align-items: center;
   height: 72rpx;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border: 2rpx solid #e8e8e8;
+  background: #f5f7fa;
   border-radius: 36rpx;
-  padding: 0 28rpx;
+  padding: 0 32rpx;
   gap: 16rpx;
   transition: all 0.3s ease;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
-  
-  &:active {
-    border-color: #1890ff;
-    box-shadow: 0 4rpx 16rpx rgba(24, 144, 255, 0.15);
-  }
 }
 
 .search-input {
@@ -361,9 +359,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48rpx;
-  height: 48rpx;
-  margin-right: -12rpx;
+  width: 40rpx;
+  height: 40rpx;
   transition: opacity 0.3s ease;
   
   &:active {
@@ -373,30 +370,32 @@ export default {
 
 /* 服务列表 */
 .service-list {
-  padding: 0 20rpx 20rpx;
+  padding: 24rpx;
 }
 
 .service-items {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
+  gap: 24rpx;
 }
 
 .service-card {
   background-color: #fff;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.03);
   transition: all 0.3s;
+  border: 2rpx solid transparent;
   
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
+    box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.02);
   }
 }
 
 .service-image {
   width: 100%;
-  height: 280rpx;
+  height: 240rpx;
   display: block;
   background-color: #f5f5f5;
 }
@@ -406,36 +405,43 @@ export default {
 }
 
 .service-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
+  line-height: 1.4;
+  min-height: 42rpx;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
 
 .service-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12rpx;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
+  height: 44rpx;
 }
 
 .duration {
-  font-size: 22rpx;
-  color: #999;
+  font-size: 20rpx;
+  color: #666;
   padding: 4rpx 12rpx;
-  background-color: #f5f5f5;
-  border-radius: 6rpx;
+  background-color: #f0f2f5;
+  border-radius: 8rpx;
 }
 
 .subsidy {
-  font-size: 22rpx;
-  color: #52c41a;
+  font-size: 20rpx;
+  color: #3ec6c6;
   padding: 4rpx 12rpx;
-  background-color: #f6ffed;
-  border-radius: 6rpx;
+  background-color: rgba(62, 198, 198, 0.1);
+  border-radius: 8rpx;
 }
 
 .service-footer {
@@ -445,17 +451,29 @@ export default {
 }
 
 .service-price {
-  font-size: 32rpx;
-  font-weight: 600;
   color: #ff4d4f;
+  font-weight: bold;
+  display: flex;
+  align-items: baseline;
+  
+  .symbol {
+    font-size: 24rpx;
+    margin-right: 2rpx;
+  }
+  
+  .amount {
+    font-size: 34rpx;
+  }
 }
 
 .book-btn {
-  font-size: 24rpx;
-  color: #1890ff;
-  padding: 8rpx 16rpx;
-  background-color: #e6f7ff;
-  border-radius: 20rpx;
+  font-size: 26rpx;
+  color: #fff;
+  padding: 10rpx 28rpx;
+  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  border-radius: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+  font-weight: 500;
 }
 
 /* 加载状态 */
@@ -478,18 +496,23 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100rpx 0;
-}
-
-.empty-icon {
-  font-size: 96rpx;
-  color: #ccc;
-  opacity: 0.6;
-}
-
-.empty-text {
-  font-size: 28rpx;
-  color: #999;
-  margin-top: 20rpx;
+  padding: 120rpx 0;
+  
+  .empty-icon-box {
+    width: 140rpx;
+    height: 140rpx;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24rpx;
+    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.03);
+  }
+  
+  .empty-text {
+    font-size: 28rpx;
+    color: #999;
+  }
 }
 </style>

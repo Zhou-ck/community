@@ -812,9 +812,10 @@
 	.order-tabs {
 		display: flex;
 		background-color: #fff;
-		padding: 10rpx 0;
-		flex-shrink: 0; /* 不允许收缩 */
+		padding: 10rpx 0 20rpx 0;
+		flex-shrink: 0;
 		z-index: 100;
+		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02);
 
 		.tab-item {
 			flex: 1;
@@ -822,11 +823,13 @@
 			font-size: 28rpx;
 			color: #666;
 			position: relative;
-			padding: 20rpx 0;
+			padding: 16rpx 0;
+			transition: all 0.3s;
 
 			&.active {
 				color: #3ec6c6;
-				font-weight: 500;
+				font-weight: 600;
+				font-size: 30rpx;
 
 				&::after {
 					content: '';
@@ -835,9 +838,10 @@
 					left: 50%;
 					transform: translateX(-50%);
 					width: 40rpx;
-					height: 4rpx;
-					background-color: #3ec6c6;
-					border-radius: 2rpx;
+					height: 6rpx;
+					background: linear-gradient(90deg, #3ec6c6, #6be0e0);
+					border-radius: 6rpx;
+					box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.3);
 				}
 			}
 		}
@@ -846,17 +850,22 @@
 	// 搜索框样式
 	.search-container {
 		background: #fff;
-		padding: 20rpx 30rpx;
-		border-bottom: 1rpx solid #f0f0f0;
-		flex-shrink: 0; /* 不允许收缩 */
+		padding: 20rpx 32rpx;
+		flex-shrink: 0;
 		z-index: 99;
+		
 		.search-box {
 			display: flex;
 			align-items: center;
-			background: #f8f9fa;
-			border-radius: 24rpx;
-			padding: 16rpx 20rpx;
+			background: #f7f8fa;
+			border-radius: 100rpx;
+			padding: 16rpx 24rpx;
 			position: relative;
+			transition: background 0.3s;
+
+			&:active {
+				background: #f0f2f5;
+			}
 
 			.search-input {
 				flex: 1;
@@ -866,6 +875,8 @@
 				background: transparent;
 				border: none;
 				outline: none;
+				height: 40rpx;
+				line-height: 40rpx;
 
 				&::placeholder {
 					color: #999;
@@ -878,25 +889,27 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
+				opacity: 0.6;
+				&:active {
+					opacity: 1;
+				}
 			}
 		}
-
-
 	}
 
 	// 我的评价模块样式
 	.my-review-section {
 		background: #fff;
-		margin: 0 20rpx 20rpx;
-		border-radius: 16rpx;
-		box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
-		flex-shrink: 0; /* 不允许收缩 */
+		margin: 20rpx 24rpx;
+		border-radius: 24rpx;
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+		flex-shrink: 0;
 
 		.review-header {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			padding: 32rpx 24rpx;
+			padding: 32rpx;
 		}
 
 		.review-info {
@@ -909,7 +922,7 @@
 			width: 100rpx;
 			height: 100rpx;
 			border-radius: 50rpx;
-			border: 2rpx solid #f0f0f0;
+			border: 4rpx solid #f7f8fa;
 		}
 
 		.user-detail {
@@ -920,31 +933,35 @@
 
 		.username {
 			font-size: 32rpx;
-			font-weight: bold;
+			font-weight: 600;
 			color: #333;
 		}
 
 		.review-stats {
 			font-size: 24rpx;
 			color: #999;
+			background: #f7f8fa;
+			padding: 4rpx 16rpx;
+			border-radius: 100rpx;
+			display: inline-block;
 		}
 
 		.review-action {
 			display: flex;
 			align-items: center;
-			gap: 8rpx;
+			gap: 4rpx;
 		}
 
 		.action-text {
-			font-size: 28rpx;
-			color: #666;
+			font-size: 26rpx;
+			color: #999;
 		}
 	}
 
 	.order-list {
 		flex: 1;
-		padding: 20rpx;
-		height: 0; /* 关键：配合flex布局，让scroll-view正确计算高度 */
+		padding: 0 24rpx 24rpx;
+		height: 0;
 	}
 
 	.empty-order {
@@ -952,13 +969,12 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		padding: 180rpx 0;
+		padding: 160rpx 0;
 
 		.empty-image {
-			font-size: 160rpx;
+			font-size: 120rpx;
 			margin-bottom: 32rpx;
-			color: #ff9db5;
-			opacity: 0.8;
+			color: #e0e0e0;
 		}
 
 		.empty-text {
@@ -970,48 +986,57 @@
 
 	.order-item {
 		background-color: #fff;
-		border-radius: 16rpx;
-		margin-bottom: 20rpx;
-		padding: 20rpx;
-		box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+		border-radius: 24rpx;
+		margin-bottom: 24rpx;
+		padding: 24rpx;
+		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+		transition: transform 0.2s;
+
+		&:active {
+			transform: scale(0.995);
+		}
 
 		.order-header {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			padding-bottom: 20rpx;
-			border-bottom: 2rpx solid #f5f5f5;
+			padding-bottom: 24rpx;
+			margin-bottom: 0; 
+			border-bottom: none; /* 去掉分割线，用间距代替 */
 
 			.order-time {
 				font-size: 24rpx;
 				color: #999;
+				background: #f8f9fa;
+				padding: 6rpx 16rpx;
+				border-radius: 8rpx;
 			}
 
 			.order-status {
 				font-size: 24rpx;
-				padding: 6rpx 16rpx;
-				border-radius: 8rpx;
+				padding: 8rpx 20rpx;
+				border-radius: 100rpx;
 				font-weight: 500;
 				
 				&.status-pending {
 					color: #ff9900;
-					background: rgba(255, 153, 0, 0.1);
+					background: rgba(255, 153, 0, 0.08);
 				}
 				&.status-accepted {
 					color: #2979ff;
-					background: rgba(41, 121, 255, 0.1);
+					background: rgba(41, 121, 255, 0.08);
 				}
 				&.status-serving {
 					color: #0ac160;
-					background: rgba(10, 193, 96, 0.1);
+					background: rgba(10, 193, 96, 0.08);
 				}
 				&.status-shipping {
 					color: #0ac160;
-					background: rgba(10, 193, 96, 0.1);
+					background: rgba(10, 193, 96, 0.08);
 				}
 				&.status-received {
 					color: #9c27b0;
-					background: rgba(156, 39, 176, 0.1);
+					background: rgba(156, 39, 176, 0.08);
 				}
 				&.status-completed {
 					color: #666666;
@@ -1023,11 +1048,11 @@
 				}
 				&.status-rejected {
 					color: #ff5722;
-					background: rgba(255, 87, 34, 0.1);
+					background: rgba(255, 87, 34, 0.08);
 				}
 				&.status-refunded {
 					color: #ff5722;
-					background: rgba(255, 87, 34, 0.1);
+					background: rgba(255, 87, 34, 0.08);
 				}
 			}
 		}
@@ -1035,20 +1060,21 @@
 		// 服务订单内容
 		.service-order-content {
 			padding: 20rpx;
-			background: #f8f9fa;
-			border-radius: 8rpx;
-			margin: 16rpx 0;
+			background: #f9f9f9;
+			border-radius: 16rpx;
+			margin: 0 0 24rpx 0;
 			
 			.service-header {
 				display: flex;
-				gap: 20rpx;
+				gap: 24rpx;
 				
 				.service-icon {
-					width: 120rpx;
-					height: 120rpx;
+					width: 140rpx;
+					height: 140rpx;
 					border-radius: 12rpx;
 					flex-shrink: 0;
 					background: #fff;
+					border: 1rpx solid #f0f0f0;
 				}
 				
 				.service-info {
@@ -1056,20 +1082,21 @@
 					display: flex;
 					flex-direction: column;
 					justify-content: space-between;
+					padding: 4rpx 0;
 					
 					.service-name {
 						font-size: 30rpx;
 						font-weight: 600;
 						color: #333;
 						margin-bottom: 12rpx;
-						line-height: 1.3;
+						line-height: 1.4;
 					}
 					
 					.service-detail {
 						.detail-item {
 							display: flex;
-							align-items: center;
-							margin-bottom: 10rpx;
+							align-items: flex-start;
+							margin-bottom: 8rpx;
 							
 							&:last-child {
 								margin-bottom: 0;
@@ -1080,6 +1107,7 @@
 								color: #666;
 								margin-left: 8rpx;
 								line-height: 1.4;
+								flex: 1;
 							}
 						}
 					}
@@ -1092,40 +1120,46 @@
 			flex-direction: column;
 			align-items: flex-end;
 			justify-content: flex-end;
-			border-top: 2rpx solid #f5f5f5;
-			padding-top: 10rpx;
+			border-top: 2rpx solid #f7f8fa;
+			padding-top: 20rpx;
+			
 			.order-summary {
 				width: 100%;
 				display: flex;
 				justify-content: flex-end;
-				align-items: center;
+				align-items: baseline;
 				gap: 16rpx;
-				margin-bottom: 12rpx;
+				margin-bottom: 24rpx;
 				
 				.total-text {
 					font-size: 26rpx;
-					color: #666;
+					color: #999;
 				}
 				
 				.subsidy-text {
 					font-size: 24rpx;
 					color: #52c41a;
+					background: rgba(82, 196, 26, 0.1);
+					padding: 2rpx 8rpx;
+					border-radius: 4rpx;
 				}
 				
 				.amount-wrapper {
 					display: flex;
-					align-items: center;
+					align-items: baseline;
 					gap: 12rpx;
 				}
 				
 				.total-price {
-					font-size: 32rpx;
+					font-size: 34rpx;
 					color: #ff5555;
 					font-weight: bold;
+					font-family: DIN, -apple-system, Helvetica, sans-serif;
 					
 					&.refunded {
-						color: #999;
+						color: #ccc;
 						text-decoration: line-through;
+						font-size: 28rpx;
 					}
 				}
 				
@@ -1143,69 +1177,64 @@
 				display: flex;
 				justify-content: flex-end;
 				gap: 20rpx;
+				width: 100%;
+				
 				.action-btn {
-					padding: 0 38rpx;
-					height: 64rpx;
-					line-height: 64rpx;
-					font-size: 28rpx;
-					border-radius: 36rpx;
-					font-weight: 600;
-					box-shadow: 0 2rpx 8rpx rgba(62,198,198,0.08);
-					transition: box-shadow 0.2s, background 0.2s, color 0.2s;
-					margin-right: 0;
-					margin-left: 0;
-					margin-bottom: 0;
-					margin-top: 0;
-					min-width: 120rpx;
+					padding: 0 32rpx;
+					height: 60rpx;
+					line-height: 60rpx;
+					font-size: 26rpx;
+					border-radius: 100rpx;
+					font-weight: 500;
+					margin: 0;
+					min-width: 140rpx;
 					white-space: nowrap;
-					text-overflow: initial;
-					&:active {
-						box-shadow: 0 1rpx 4rpx rgba(62,198,198,0.12);
-						opacity: 0.92;
-					}
-					&.primary {
-						color: #fff;
-						background: #ff5555;
+					box-sizing: border-box;
+					
+					&::after {
 						border: none;
 					}
-					&.cancel, &.secondary, &.remind, &.review, &.test-ship, &.test-review {
+
+					&:active {
+						opacity: 0.8;
+						transform: scale(0.98);
+					}
+
+					&.primary {
+						color: #fff;
+						background: linear-gradient(135deg, #3ec6c6, #2bb3b3);
+						box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+					}
+					
+					&.secondary, &.remind, &.review, &.test-ship, &.test-review {
 						background: #fff;
-						border: 2rpx solid #e0e0e0;
+						border: 2rpx solid #3ec6c6;
 						color: #3ec6c6;
 					}
+					
 					&.cancel {
 						color: #999;
-						border-color: #e0e0e0;
+						background: #fff;
+						border: 2rpx solid #e0e0e0;
 					}
-					&.remind {
-						color: #ff9900;
-						border-color: #ffe0b2;
-					}
-					&.review {
-						color: #9c27b0;
-						border-color: #e1bee7;
-					}
+					
 					&.delete {
 						color: #ff5555;
-						border-color: #ffcdd2;
+						background: #fff;
+						border: 2rpx solid #ffcdd2;
 					}
+					
 					&.reviewed {
-						color: #666;
-						border-color: #ddd;
-						background: #f8f8f8;
+						color: #999;
+						border: 2rpx solid #eee;
+						background: #f9f9f9;
 					}
-					&.test-ship {
-						color: #3ec6c6;
-						border-color: #b2ebf2;
-					}
-					&.test-review {
-						color: #67c23a;
-						border-color: #d0f5e0;
-					}
+					
 					&[disabled] {
-						color: #bbb !important;
+						color: #ccc !important;
 						background: #f5f5f5 !important;
 						border-color: #eee !important;
+						box-shadow: none;
 					}
 				}
 			}
@@ -1259,92 +1288,15 @@
 
 	.loading-more, .no-more {
 		text-align: center;
-		padding: 30rpx;
+		padding: 40rpx;
 		font-size: 24rpx;
-		color: #999;
+		color: #bbb;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 
 		uni-icons {
 			margin-right: 10rpx;
-		}
-	}
-
-	.order-card {
-		background: #fff;
-		border-radius: 18rpx;
-		box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
-		margin: 24rpx 20rpx;
-		padding: 28rpx 24rpx 20rpx 24rpx;
-		font-size: 28rpx;
-		.order-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 18rpx;
-			.order-status {
-				color: #ff9800;
-				font-weight: bold;
-				font-size: 30rpx;
-			}
-			.order-number {
-				color: #bbb;
-				font-size: 24rpx;
-			}
-		}
-		.order-body {
-			.order-info {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				margin-bottom: 10rpx;
-				.order-total {
-					color: #333;
-					.price {
-						color: #ff5555;
-						font-weight: bold;
-						font-size: 32rpx;
-					}
-				}
-			}
-			.order-logistics {
-				color: #888;
-				font-size: 26rpx;
-				.logistics-number {
-					color: #3ec6c6;
-					font-weight: bold;
-				}
-			}
-		}
-		.order-actions {
-			display: flex;
-			justify-content: flex-end;
-			margin-top: 18rpx;
-			button {
-				margin-left: 16rpx;
-				border-radius: 32rpx;
-				font-size: 26rpx;
-				padding: 0 32rpx;
-				height: 56rpx;
-				line-height: 56rpx;
-				border: none;
-				&.btn-more {
-					background: #f5f5f5;
-					color: #666;
-				}
-				&.btn-normal {
-					background: #fff;
-					color: #3ec6c6;
-					border: 1rpx solid #3ec6c6;
-				}
-				&.btn-confirm {
-					background: linear-gradient(90deg, #3ec6c6, #36b3b3);
-					color: #fff;
-					font-weight: bold;
-					box-shadow: 0 2rpx 8rpx rgba(62,198,198,0.12);
-				}
-			}
 		}
 	}
 
@@ -1355,37 +1307,45 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(0, 0, 0, 0.6);
 		z-index: 999;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		backdrop-filter: blur(4px);
 		
 		.review-content {
 			width: 600rpx;
 			background: #fff;
-			border-radius: 16rpx;
+			border-radius: 32rpx;
 			overflow: hidden;
+			box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.15);
+			animation: modalShow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+			
+			@keyframes modalShow {
+				from { transform: scale(0.9); opacity: 0; }
+				to { transform: scale(1); opacity: 1; }
+			}
 			
 			.review-header {
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				padding: 32rpx;
-				border-bottom: 2rpx solid #f5f5f5;
+				padding: 32rpx 40rpx;
+				border-bottom: 2rpx solid #f7f8fa;
 				
 				.review-title {
-					font-size: 32rpx;
+					font-size: 34rpx;
 					font-weight: bold;
 					color: #333;
 				}
 			}
 			
 			.review-body {
-				padding: 32rpx;
+				padding: 40rpx;
 				
 				.review-item {
-					margin-bottom: 32rpx;
+					margin-bottom: 40rpx;
 					
 					&:last-child {
 						margin-bottom: 0;
@@ -1394,33 +1354,40 @@
 					.review-label {
 						display: block;
 						font-size: 28rpx;
-						color: #333;
-						margin-bottom: 16rpx;
+						color: #666;
+						margin-bottom: 20rpx;
 						font-weight: 500;
 					}
 					
 					.star-rating {
 						display: flex;
-						gap: 12rpx;
+						gap: 16rpx;
+						justify-content: center;
 					}
 					
 					.review-textarea {
 						width: 100%;
-						min-height: 180rpx;
-						padding: 16rpx;
-						border: 2rpx solid #e0e0e0;
-						border-radius: 8rpx;
+						min-height: 200rpx;
+						padding: 24rpx;
+						border: none;
+						background: #f7f8fa;
+						border-radius: 16rpx;
 						font-size: 28rpx;
 						line-height: 1.6;
 						box-sizing: border-box;
+						color: #333;
+						
+						&::placeholder {
+							color: #bbb;
+						}
 					}
 					
 					.char-count {
 						display: block;
 						font-size: 24rpx;
-						color: #999;
+						color: #ccc;
 						text-align: right;
-						margin-top: 8rpx;
+						margin-top: 12rpx;
 					}
 				}
 			}
@@ -1428,16 +1395,18 @@
 			.review-footer {
 				display: flex;
 				gap: 24rpx;
-				padding: 24rpx 32rpx 32rpx;
+				padding: 24rpx 40rpx 40rpx;
 				
 				button {
 					flex: 1;
-					height: 80rpx;
-					line-height: 80rpx;
-					border-radius: 40rpx;
-					font-size: 28rpx;
-					font-weight: 500;
+					height: 88rpx;
+					line-height: 88rpx;
+					border-radius: 100rpx;
+					font-size: 30rpx;
+					font-weight: 600;
 					border: none;
+					
+					&::after { border: none; }
 					
 					&.cancel-btn {
 						background: #f5f5f5;
@@ -1445,8 +1414,9 @@
 					}
 					
 					&.submit-btn {
-						background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+						background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
 						color: #fff;
+						box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.25);
 					}
 				}
 			}

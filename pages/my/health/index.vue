@@ -313,7 +313,7 @@
 					</view>
 				</scroll-view>
 
-				<view class="popup-footer" :style="{ paddingBottom: (24 + safeAreaBottom) + 'rpx' }">
+				<view class="popup-footer" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
 					<view class="save-btn" @click="submitForm" hover-class="btn-hover">
 						<text>{{ submitting ? '提交中...' : '保存' }}</text>
 					</view>

@@ -52,7 +52,7 @@
               <!-- 子分类标题（在模块外） -->
               <view class="service-header" @click="selectSubcategory(subItem)">
                 <text class="header-title">{{ subItem.name }}</text>
-                <uni-icons type="right" size="16" color="#999"></uni-icons>
+                <uni-icons type="right" size="14" color="#999"></uni-icons>
               </view>
 
               <!-- 服务卡片 -->
@@ -65,11 +65,10 @@
                     mode="aspectFill"
                     @error="handleImageError"
                   ></image>
-                </view>
-
-                <!-- 底部描述 -->
-                <view class="service-description">
-                  <text class="description-text">{{ subItem.description }}</text>
+                  <!-- 底部描述 -->
+                  <view class="service-description">
+                    <text class="description-text">{{ subItem.description }}</text>
+                  </view>
                 </view>
               </view>
             </view>
@@ -77,8 +76,10 @@
 
           <!-- 空状态 -->
           <view v-else class="empty-state">
-            <text class="iconfontB icon-yonghupingjia empty-icon"></text>
-            <text class="empty-text">暂无相关服务</text>
+             <view class="empty-icon-box">
+               <uni-icons type="calendar-filled" size="50" color="#d9d9d9"></uni-icons>
+             </view>
+             <text class="empty-text">暂无相关服务</text>
           </view>
         </view>
       </view>
@@ -439,22 +440,23 @@
 .search-container {
   background-color: #fff;
   padding: 20rpx 24rpx;
+  /* box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.03); */
 
   .search-box {
     display: flex;
     align-items: center;
     height: 72rpx;
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    border: 2rpx solid #e8e8e8;
+    background: #f5f7fa;
     border-radius: 36rpx;
-    padding: 0 28rpx;
+    padding: 0 32rpx;
     gap: 16rpx;
     transition: all 0.3s ease;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+    border: 2rpx solid transparent;
 
-    &:active {
+    &:active, &:focus-within {
+      background: #fff;
       border-color: #1890ff;
-      box-shadow: 0 4rpx 16rpx rgba(24, 144, 255, 0.15);
+      box-shadow: 0 4rpx 12rpx rgba(24, 144, 255, 0.15);
     }
 
     .search-input {
@@ -488,13 +490,13 @@
   flex: 1;
   display: flex;
   overflow: hidden;
+  background-color: #fff;
 }
 
 .sidebar {
   width: 200rpx;
-  background-color: #ffffff;
-  border-right: 1rpx solid #e5e5e5;
-
+  background-color: #f8f9fa;
+  
   .category-item {
     padding: 32rpx 20rpx;
     display: flex;
@@ -503,25 +505,37 @@
     position: relative;
     transition: all 0.3s ease;
 
-    &:hover {
-      background-color: #f8f9fa;
-    }
+    /* &:hover {
+      background-color: #f0f2f5;
+    } */
 
     &.active {
-      background-color: #e8f4fd;
-      // border-left: 4rpx solid #1890ff;
+      background-color: #fff;
+      
+      &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 6rpx;
+          height: 32rpx;
+          background-color: #1890ff;
+          border-radius: 0 4rpx 4rpx 0;
+      }
 
       .category-name {
         color: #1890ff;
         font-weight: 600;
+        font-size: 32rpx;
       }
     }
 
     .category-name {
       font-size: 30rpx;
-      color: #555;
+      color: #666;
       text-align: center;
-      transition: color 0.3s ease;
+      transition: all 0.3s ease;
     }
 
   }
@@ -530,7 +544,7 @@
 /* 右侧内容区域 */
 .content-area {
   flex: 1;
-  background-color: #f8f8f8;
+  background-color: #fff;
   padding: 20rpx 30rpx;
   overflow-y: auto;
 }
@@ -538,33 +552,24 @@
 .service-grid {
   display: flex;
   flex-direction: column;
-  gap: 30rpx;
-  padding: 0 0 10rpx 0;
+  gap: 50rpx;
+  padding: 10rpx 0 40rpx;
 }
 
 .service-item {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 24rpx;
 }
 
 .service-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 24rpx;
+  padding: 0 10rpx;
   cursor: pointer;
   transition: all 0.3s ease;
-  border-radius: 12rpx;
-  margin-bottom: 8rpx;
-
-  &:hover {
-    background-color: rgba(24, 144, 255, 0.05);
-  }
-
-  &:active {
-    transform: translateY(1rpx);
-  }
+  margin-bottom: 0;
 
   .header-title {
     font-size: 32rpx;
@@ -574,29 +579,23 @@
 }
 
 .service-card {
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 16rpx;
+  background-color: #fff;
+  border-radius: 20rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
-  backdrop-filter: blur(10rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-
-  &:hover {
-    transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
-  }
+  position: relative;
 
   &:active {
-    transform: translateY(0);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+    transform: scale(0.98);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
   }
 }
 
 .service-image-container {
   position: relative;
   width: 100%;
-  height: 260rpx;
+  height: 240rpx;
   overflow: hidden;
 
   .service-image {
@@ -605,24 +604,24 @@
     background-color: #f5f5f5;
     display: block;
   }
-}
-
-.service-description {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16rpx 24rpx 20rpx;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.15));
-  backdrop-filter: blur(4rpx);
-
-  .description-text {
-    font-size: 26rpx;
-    color: #ffffff;
-    line-height: 1.4;
-    text-align: center;
-    display: block;
-    text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.5);
+  
+  .service-description {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40rpx 24rpx 20rpx;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    
+    .description-text {
+      font-size: 26rpx;
+      color: #ffffff;
+      line-height: 1.4;
+      text-align: center;
+      display: block;
+      text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
+      letter-spacing: 1rpx;
+    }
   }
 }
 
@@ -631,12 +630,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100rpx 0;
+  padding: 120rpx 0;
 
-  .empty-icon {
-    font-size: 96rpx;
-    color: #ccc;
-    opacity: 0.4;
+  .empty-icon-box {
+    width: 140rpx;
+    height: 140rpx;
+    background: #f5f7fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24rpx;
   }
 
   .empty-text {

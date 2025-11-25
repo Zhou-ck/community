@@ -1,185 +1,174 @@
 <template>
 	<view class="receiver-container">
-		<view class="tip-box">
-			<uni-icons type="info" size="16" color="#3ec6c6"></uni-icons>
-			<text class="tip-text">{{ deviceId ? '选择要绑定到设备的接警人' : '添加接警人后，可在设备上进行绑定' }}</text>
-		</view>
+		<!-- 列表区域 -->
+		<scroll-view class="receiver-list" scroll-y :style="{ height: 'calc(100vh - ' + (140 + safeAreaBottom) + 'rpx)' }">
+			<view class="tip-bar" v-if="deviceId">
+				<uni-icons type="info" size="14" color="#3ec6c6"></uni-icons>
+				<text>请选择要绑定到设备的接警人</text>
+			</view>
 
-		<view class="receiver-list" v-if="receiverList.length > 0">
-			<view class="receiver-card" v-for="(item, idx) in receiverList" :key="idx">
-				<view class="card-header">
-					<view class="receiver-info">
-						<view class="receiver-avatar"><text
-								class="avatar-text">{{ item.receiverName ? item.receiverName.charAt(0) : '?' }}</text>
-						</view>
-						<view class="receiver-meta">
-							<view class="receiver-name">{{ item.receiverName || '-' }}</view>
-						</view>
-					</view>
-					<view class="card-actions">
-						<view class="action-btn" @click="editReceiver(item)">
-							<uni-icons type="compose" size="18" color="#3ec6c6"></uni-icons>
-							<text class="action-text">编辑</text>
-						</view>
-						<view class="action-btn delete" @click="deleteReceiver(item)">
-							<uni-icons type="trash" size="18" color="#ff5555"></uni-icons>
-							<text class="action-text">删除</text>
-						</view>
-						<view class="bind-checkbox" v-if="deviceId"
-							:class="{ checked: isSelectedForBind(item.receiverId), bound: isReceiverBound(item.receiverId) }"
-							@click="toggleSelection(item)">
-							<view class="checkbox-icon">
-								<uni-icons
-									v-if="isSelectedForBind(item.receiverId) && !isReceiverBound(item.receiverId)"
-									type="checkmark" size="16" color="#ffffff"></uni-icons>
-							</view>
-							<text class="bind-status">{{ isReceiverBound(item.receiverId) ? '已绑定' : '选择绑定' }}</text>
-						</view>
-					</view>
+			<view class="empty-state" v-if="receiverList.length === 0">
+				<view class="empty-icon-box">
+					<uni-icons type="personadd-filled" size="60" color="#e0e0e0"></uni-icons>
 				</view>
-				<view class="card-body">
-					<view class="info-item">
-						<uni-icons type="phone" size="14" color="#999"></uni-icons>
-						<text class="info-label">手机号：</text>
-						<text class="info-value">{{ item.receiverPhone || '-' }}</text>
-					</view>
-					<view class="info-item" v-if="item.receiverEmail">
-						<uni-icons type="email" size="14" color="#999"></uni-icons>
-						<text class="info-label">邮箱：</text>
-						<text class="info-value">{{ item.receiverEmail }}</text>
-					</view>
-					<view class="info-item" v-if="item.remark">
-						<uni-icons type="info" size="14" color="#999"></uni-icons>
-						<text class="info-label">备注：</text>
-						<text class="info-value">{{ item.remark }}</text>
-					</view>
-					<view class="notify-inline-row">
-						<view class="notify-inline-item">
-							<text class="notify-inline-label">电话通知</text>
-							<view class="notify-inline-actions">
-								<button class="notify-switch-btn" :class="{ active: item.phoneNotifySwitch === '1' }"
-									@click.stop="changeNotifySwitch(item, 'phoneNotifySwitch')">
-									{{ item.phoneNotifySwitch === '1' ? '开' : '关' }}
-								</button>
+				<text class="empty-text">暂无接警人</text>
+				<text class="empty-sub">添加接警人后，设备报警时将通知他们</text>
+			</view>
+
+			<view class="receiver-card" v-for="(item, idx) in receiverList" :key="idx" 
+				:class="{ 'selected': isSelectedForBind(item.receiverId) }"
+				@click="deviceId ? toggleSelection(item) : null">
+				<view class="card-content">
+					<view class="card-header">
+						<view class="info-left">
+							<view class="avatar-icon">
+								<text>{{ item.receiverName ? item.receiverName.charAt(0) : '警' }}</text>
+							</view>
+							<view class="info-box">
+								<view class="name-row">
+									<text class="name">{{ item.receiverName || '-' }}</text>
+									<view class="status-badge bound" v-if="isReceiverBound(item.receiverId)">
+										<text>已绑定</text>
+									</view>
+								</view>
+								<text class="phone">{{ item.receiverPhone || '-' }}</text>
 							</view>
 						</view>
-						<view class="notify-inline-item">
-							<text class="notify-inline-label">短信通知</text>
-							<view class="notify-inline-actions">
-								<button class="notify-switch-btn" :class="{ active: item.smsNotifySwitch === '1' }"
-									@click.stop="changeNotifySwitch(item, 'smsNotifySwitch')">
-									{{ item.smsNotifySwitch === '1' ? '开' : '关' }}
-								</button>
+						
+						<!-- 绑定模式下的选择框 -->
+						<view class="check-box" v-if="deviceId">
+							<view class="check-circle" :class="{ checked: isSelectedForBind(item.receiverId) || isReceiverBound(item.receiverId) }">
+								<uni-icons type="checkmarkempty" size="16" color="#fff" v-if="isSelectedForBind(item.receiverId) || isReceiverBound(item.receiverId)"></uni-icons>
 							</view>
 						</view>
-						<view class="notify-inline-item">
-							<text class="notify-inline-label">微信通知</text>
-							<view class="notify-inline-actions">
-								<button class="notify-switch-btn" :class="{ active: item.wechatNotifySwitch === '1' }"
-									@click.stop="changeNotifySwitch(item, 'wechatNotifySwitch')">
-									{{ item.wechatNotifySwitch === '1' ? '开' : '关' }}
-								</button>
+						
+						<!-- 普通模式下的操作按钮 -->
+						<view class="action-right" v-else>
+							<view class="icon-btn" @click.stop="editReceiver(item)">
+								<uni-icons type="compose" size="20" color="#3ec6c6"></uni-icons>
+							</view>
+							<view class="icon-btn delete" @click.stop="deleteReceiver(item)">
+								<uni-icons type="trash" size="20" color="#ff5555"></uni-icons>
 							</view>
 						</view>
+					</view>
+
+					<view class="divider"></view>
+					
+					<view class="notify-settings" @click.stop>
+						<view class="notify-tags">
+							<view class="notify-tag" 
+								:class="{ active: item.phoneNotifySwitch === '1' }"
+								@click="changeNotifySwitch(item, 'phoneNotifySwitch')">
+								<uni-icons :type="item.phoneNotifySwitch === '1' ? 'phone-filled' : 'phone'" 
+									size="16" :color="item.phoneNotifySwitch === '1' ? '#3ec6c6' : '#999'"></uni-icons>
+								<text>电话</text>
+							</view>
+							<view class="notify-tag" 
+								:class="{ active: item.smsNotifySwitch === '1' }"
+								@click="changeNotifySwitch(item, 'smsNotifySwitch')">
+								<uni-icons :type="item.smsNotifySwitch === '1' ? 'chat-filled' : 'chat'" 
+									size="16" :color="item.smsNotifySwitch === '1' ? '#3ec6c6' : '#999'"></uni-icons>
+								<text>短信</text>
+							</view>
+							<view class="notify-tag" 
+								:class="{ active: item.wechatNotifySwitch === '1' }"
+								@click="changeNotifySwitch(item, 'wechatNotifySwitch')">
+								<uni-icons :type="item.wechatNotifySwitch === '1' ? 'weixin' : 'weixin'" 
+									size="16" :color="item.wechatNotifySwitch === '1' ? '#3ec6c6' : '#999'"></uni-icons>
+								<text>微信</text>
+							</view>
+						</view>
+					</view>
+					
+					<view class="remark-row" v-if="item.remark">
+						<text class="label">备注：</text>
+						<text class="value">{{ item.remark }}</text>
 					</view>
 				</view>
 			</view>
-		</view>
+			
+			<!-- 底部占位 -->
+			<view style="height: 40rpx;"></view>
+		</scroll-view>
 
-		<view class="empty-box" v-else>
-			<uni-icons type="personadd" size="80" color="#C0C0C0"></uni-icons>
-			<text class="empty-text">还没有添加接警人</text>
-			<text class="empty-tip">点击下方按钮添加</text>
-		</view>
-
-		<view class="add-btn-box" v-if="!deviceId">
-			<view class="add-btn-card">
-				<button class="add-btn" @click="addReceiver">
-					<uni-icons type="plusempty" size="20" color="#fff"></uni-icons>
-					<text class="add-btn-text">添加接警人</text>
-				</button>
-			</view>
-		</view>
-
-		<view class="batch-bind-box" v-if="deviceId">
-			<view class="bind-info">
-				<text class="selected-count">已选择 {{ selectedReceivers.length }} 人</text>
-				<text class="bind-count">已绑定 {{ boundReceivers.length }} 人</text>
-			</view>
-			<view class="bind-actions">
-				<button class="batch-btn cancel" @click="clearSelection"
-					v-if="selectedReceivers.length > 0">取消选择</button>
-				<button class="batch-btn confirm" @click="batchBindReceivers"
-					:disabled="selectedReceivers.length === 0">
-					{{ selectedReceivers.length > 0 ? `绑定选中的 ${selectedReceivers.length} 人` : '请选择接警人' }}
-				</button>
-			</view>
-		</view>
-
-		<view class="modal" v-if="showModal" @click="closeModal">
-			<view class="modal-content" @click.stop>
-				<view class="modal-header">
-					<text class="modal-title">{{ isEdit ? '编辑接警人' : '添加接警人' }}</text>
-					<uni-icons class="modal-close-icon" type="closeempty" size="24" color="#999"
-						@click="closeModal"></uni-icons>
+		<!-- 底部按钮栏 -->
+		<view class="bottom-bar" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+			<template v-if="deviceId">
+				<view class="batch-info">
+					<text>已选 {{ selectedReceivers.length }} 人</text>
+					<text class="sub">已绑定 {{ boundReceivers.length }} 人</text>
 				</view>
-				<view class="modal-body">
-					<view class="form-item">
-						<text class="form-label">姓名 <text class="required">*</text></text>
-						<input class="form-input" v-model="formData.receiverName" placeholder="请输入接警人姓名"
-							maxlength="20" />
-					</view>
-					<view class="form-item">
-						<text class="form-label">手机号 <text class="required">*</text></text>
-						<input class="form-input" type="number" v-model="formData.receiverPhone" placeholder="请输入接警人手机号"
-							maxlength="11" />
-					</view>
-					<view class="form-item">
-						<text class="form-label">邮箱</text>
-						<input class="form-input" v-model="formData.receiverEmail" placeholder="请输入接警人邮箱"
-							maxlength="50" />
-					</view>
+				<view class="btn-group">
+					<button class="action-btn plain" @click="addReceiver">新增</button>
+					<button class="action-btn primary" @click="batchBindReceivers" :disabled="selectedReceivers.length === 0">
+						确认绑定
+					</button>
+				</view>
+			</template>
+			<template v-else>
+				<view class="add-btn-full" @click="addReceiver" hover-class="btn-hover">
+					<uni-icons type="plusempty" size="20" color="#fff" style="margin-right: 10rpx;"></uni-icons>
+					<text>新增接警人</text>
+				</view>
+			</template>
+		</view>
 
-					<view class="notify-row">
-						<view class="notify-item">
-							<text class="notify-label">电话通知</text>
-							<view class="notify-actions">
-								<button class="notify-btn" :class="{on: formData.phoneNotifySwitch==='1'}"
-									@click="formData.phoneNotifySwitch='1'">开</button>
-								<button class="notify-btn" :class="{off: formData.phoneNotifySwitch==='2'}"
-									@click="formData.phoneNotifySwitch='2'">关</button>
-							</view>
-						</view>
-						<view class="notify-item">
-							<text class="notify-label">短信通知</text>
-							<view class="notify-actions">
-								<button class="notify-btn" :class="{on: formData.smsNotifySwitch==='1'}"
-									@click="formData.smsNotifySwitch='1'">开</button>
-								<button class="notify-btn" :class="{off: formData.smsNotifySwitch==='2'}"
-									@click="formData.smsNotifySwitch='2'">关</button>
-							</view>
-						</view>
-						<view class="notify-item">
-							<text class="notify-label">微信通知</text>
-							<view class="notify-actions">
-								<button class="notify-btn" :class="{on: formData.wechatNotifySwitch==='1'}"
-									@click="formData.wechatNotifySwitch='1'">开</button>
-								<button class="notify-btn" :class="{off: formData.wechatNotifySwitch==='2'}"
-									@click="formData.wechatNotifySwitch='2'">关</button>
-							</view>
-						</view>
-					</view>
-
-					<view class="form-item">
-						<text class="form-label">备注</text>
-						<textarea class="form-textarea" v-model="formData.remark" placeholder="请输入备注"
-							maxlength="200"></textarea>
-						<text class="char-count">{{ (formData.remark || '').length }}/200</text>
+		<!-- 编辑/新增弹窗 (底部弹出) -->
+		<view v-if="showModal" class="popup-mask" @click="closeModal" :class="{ 'show': showModal }">
+			<view class="popup-container" @click.stop :class="{ 'show': showModal }">
+				<view class="popup-header">
+					<text class="title">{{ isEdit ? '编辑接警人' : '新增接警人' }}</text>
+					<view class="close-btn" @click="closeModal">
+						<uni-icons type="closeempty" size="24" color="#999"></uni-icons>
 					</view>
 				</view>
-				<view class="modal-footer">
-					<button class="cancel-btn" @click="closeModal">取消</button>
-					<button class="confirm-btn" :loading="submitting" @click="submitReceiver">确定</button>
+
+				<scroll-view class="form-content" scroll-y>
+					<view class="form-group">
+						<view class="form-item">
+							<text class="label required">姓名</text>
+							<input class="input-right" v-model="formData.receiverName" placeholder="请输入姓名" maxlength="10" placeholder-class="placeholder"/>
+						</view>
+						<view class="form-item">
+							<text class="label required">手机号</text>
+							<input class="input-right" type="number" v-model="formData.receiverPhone" placeholder="请输入手机号" maxlength="11" placeholder-class="placeholder"/>
+						</view>
+						<view class="form-item">
+							<text class="label">邮箱</text>
+							<input class="input-right" v-model="formData.receiverEmail" placeholder="请输入邮箱(选填)" maxlength="50" placeholder-class="placeholder"/>
+						</view>
+					</view>
+
+					<view class="form-group">
+						<view class="section-title">通知设置</view>
+						<view class="form-item switch-item">
+							<text class="label">电话通知</text>
+							<switch :checked="formData.phoneNotifySwitch === '1'" @change="e => formData.phoneNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
+						</view>
+						<view class="form-item switch-item">
+							<text class="label">短信通知</text>
+							<switch :checked="formData.smsNotifySwitch === '1'" @change="e => formData.smsNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
+						</view>
+						<view class="form-item switch-item">
+							<text class="label">微信通知</text>
+							<switch :checked="formData.wechatNotifySwitch === '1'" @change="e => formData.wechatNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
+						</view>
+					</view>
+
+					<view class="form-group">
+						<view class="form-item column">
+							<text class="label">备注</text>
+							<textarea v-model="formData.remark" placeholder="请输入备注信息（选填）" placeholder-class="placeholder" maxlength="200" disable-default-padding/>
+							<text class="char-count">{{ (formData.remark || '').length }}/200</text>
+						</view>
+					</view>
+				</scroll-view>
+
+				<view class="popup-footer" :style="{ paddingBottom:safeAreaBottom + 'rpx' }">
+					<view class="save-btn" @click="submitReceiver" hover-class="btn-hover">
+						<text>{{ submitting ? '提交中...' : '保存' }}</text>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -209,6 +198,7 @@
 				showModal: false,
 				isEdit: false,
 				submitting: false,
+				safeAreaBottom: 0,
 				// 已绑定到当前设备的接警人
 				boundReceivers: [],
 				// 当前选中准备绑定的接警人
@@ -234,6 +224,8 @@
 			}
 		},
 		onLoad(options) {
+			this.getSystemInfo()
+			
 			if (options && options.deviceId) {
 				this.deviceId = options.deviceId
 			}
@@ -246,6 +238,15 @@
 			this.loadReceivers()
 		},
 		methods: {
+			getSystemInfo() {
+				const systemInfo = uni.getSystemInfoSync()
+				if (systemInfo.safeAreaInsets && systemInfo.safeAreaInsets.bottom) {
+					this.safeAreaBottom = systemInfo.safeAreaInsets.bottom * 2
+				} else {
+					this.safeAreaBottom = 0
+				}
+			},
+			
 			async loadReceivers() {
 				try {
 					const res = await listAlarmreceiver()
@@ -304,8 +305,25 @@
 				this.showModal = true
 			},
 			async changeNotifySwitch(item, field) {
+				// 如果是事件对象，说明是Switch组件触发的，不需要手动切换值，v-model会自动处理
+				// 但这里我们没用v-model在item上，而是手动处理
+				// 如果是通过点击view触发的
+				
+				// 如果传入的是事件对象，获取value
+				if (item.detail && item.detail.value !== undefined) {
+					// 这种情况通常不应该发生，因为我们传的是 item 对象
+					return
+				}
+				
+				// 这里的逻辑有点混杂，我们简化一下：
+				// 点击view时，手动切换
+				// 点击switch时，switch会自动触发change事件
+				
+				// 简单起见，我们只处理点击Switch的change事件，或者统一处理
+				
 				const original = item[field] || '2'
 				const target = original === '1' ? '2' : '1'
+				
 				const payload = {
 					...item,
 					[field]: target
@@ -316,7 +334,7 @@
 						item[field] = target
 						uni.showToast({
 							title: target === '1' ? '已开启' : '已关闭',
-							icon: 'success'
+							icon: 'none'
 						})
 					} else {
 						uni.showToast({
@@ -447,7 +465,7 @@
 				return this.selectedReceivers.some(r => r.receiverId === receiverId)
 			},
 			// 切换选中状态；已绑定的可以点击取消绑定
-			toggleSelection(item) {
+			async toggleSelection(item) {
 				if (!this.deviceId) return
 				if (this.isReceiverBound(item.receiverId)) {
 					return uni.showModal({
@@ -465,6 +483,34 @@
 				if (idx >= 0) {
 					this.selectedReceivers.splice(idx, 1)
 				} else {
+					// 选中时，检查是否所有通知开关都关闭
+					const allOff = item.phoneNotifySwitch === '2' && item.smsNotifySwitch === '2' && item.wechatNotifySwitch === '2'
+					
+					if (allOff) {
+						// 自动开启电话、短信和微信通知
+						try {
+							const payload = {
+								...item,
+								phoneNotifySwitch: '1',
+								smsNotifySwitch: '1',
+								wechatNotifySwitch: '1'
+							}
+							const res = await updateAlarmreceiver(payload)
+							if (res.code === 200) {
+								item.phoneNotifySwitch = '1'
+								item.smsNotifySwitch = '1'
+								item.wechatNotifySwitch = '1'
+								uni.showToast({
+									title: '已自动开启电话、短信和微信通知',
+									icon: 'none',
+									duration: 2000
+								})
+							}
+						} catch (e) {
+							console.error('自动开启通知失败:', e)
+						}
+					}
+					
 					this.selectedReceivers.push(item)
 				}
 			},
@@ -491,6 +537,24 @@
 					if (res.code === 200) {
 						const idx = this.boundReceivers.findIndex(r => r.receiverId === item.receiverId)
 						if (idx >= 0) this.boundReceivers.splice(idx, 1)
+						
+						// 取消绑定后，自动关闭所有通知开关
+						try {
+							const payload = {
+								...item,
+								phoneNotifySwitch: '2',
+								smsNotifySwitch: '2',
+								wechatNotifySwitch: '2'
+							}
+							await updateAlarmreceiver(payload)
+							// 更新本地数据
+							item.phoneNotifySwitch = '2'
+							item.smsNotifySwitch = '2'
+							item.wechatNotifySwitch = '2'
+						} catch (e) {
+							console.error('关闭通知开关失败:', e)
+						}
+						
 						uni.showToast({
 							title: `已取消绑定 ${item.receiverName || ''}`,
 							icon: 'success'
@@ -587,538 +651,513 @@
 <style lang="scss" scoped>
 	.receiver-container {
 		min-height: 100vh;
-		background: #f5f5f5;
-		padding-bottom: 120rpx;
+		background: #f5f7fa;
+		box-sizing: border-box;
 	}
 
-	.tip-box {
+	/* 列表样式 */
+	.receiver-list {
+		padding: 24rpx;
+		box-sizing: border-box;
+	}
+	
+	.tip-bar {
+		background: #e6f7ff;
+		padding: 16rpx 24rpx;
+		border-radius: 12rpx;
+		margin-bottom: 24rpx;
 		display: flex;
 		align-items: center;
-		gap: 8rpx;
-		background: #e6f7ff;
-		border: 1rpx solid #91d5ff;
-		padding: 16rpx 20rpx;
-		margin: 20rpx;
-		border-radius: 8rpx;
-	}
-
-	.tip-text {
-		color: #1890ff;
-		font-size: 26rpx;
-	}
-
-	.receiver-list {
-		padding: 0 24rpx 180rpx;
-		display: flex;
-		flex-direction: column;
-		gap: 24rpx;
+		gap: 12rpx;
+		
+		text {
+			font-size: 26rpx;
+			color: #1890ff;
+		}
 	}
 
 	.receiver-card {
 		background: #fff;
-		border-radius: 16rpx;
-		box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
-		padding: 24rpx;
-		border: 1rpx solid #f0f0f0;
-	}
-
-	.receiver-card:active {
-		transform: scale(0.998);
-	}
-
-	.card-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.receiver-info {
-		display: flex;
-		align-items: center;
-		gap: 16rpx;
-	}
-
-	.receiver-avatar {
-		width: 80rpx;
-		height: 80rpx;
-		border-radius: 50%;
-		background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #fff;
-		box-shadow: 0 6rpx 12rpx rgba(62, 198, 198, 0.25);
-	}
-
-	.avatar-text {
-		font-size: 32rpx;
-		font-weight: 700;
-	}
-
-	.receiver-meta {
-		display: flex;
-		flex-direction: column;
-		gap: 8rpx;
-	}
-
-	.receiver-name {
-		font-size: 32rpx;
-		font-weight: 700;
-		color: #333;
-	}
-
-	.receiver-type {
-		font-size: 22rpx;
-		color: #0f766e;
-		background: #e6fffb;
-		padding: 6rpx 14rpx;
-		border-radius: 999rpx;
-		align-self: flex-start;
-		border: 1rpx solid #87e8de;
-	}
-
-	.card-actions {
-		display: flex;
-		gap: 28rpx;
-		align-items: center;
-	}
-
-	.action-btn {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 4rpx;
-	}
-
-	.action-text {
-		font-size: 22rpx;
-		color: #3ec6c6;
-	}
-
-	.action-btn.delete .action-text {
-		color: #ff5555;
-	}
-
-	.bind-checkbox {
-		display: flex;
-		align-items: center;
-		gap: 8rpx;
-		padding: 8rpx 12rpx;
-		border-radius: 20rpx;
-		font-size: 24rpx;
-		background: #fff;
-		color: #13c2c2;
-		border: 1rpx solid #87e8de;
-		transition: all 0.3s ease;
-	}
-
-	.bind-checkbox .checkbox-icon {
-		width: 20rpx;
-		height: 20rpx;
-		border-radius: 50%;
-		background: rgba(19, 194, 194, 0.15);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.bind-checkbox .bind-status {
-		font-weight: 500;
-	}
-
-	.bind-checkbox.checked {
-		background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
-		color: #fff;
-		border-color: #3ec6c6;
-	}
-
-	.bind-checkbox.checked .checkbox-icon {
-		background: rgba(255, 255, 255, 0.35);
-	}
-
-	.bind-checkbox.bound {
-		background: #f5f5f5;
-		color: #999;
-		border-color: #e0e0e0;
-	}
-
-	.bind-checkbox.bound .checkbox-icon {
-		background: rgba(0, 0, 0, 0.06);
-	}
-
-	.card-body {
-		margin-top: 12rpx;
-		border-top: 1rpx dashed #f0f0f0;
-		padding-top: 12rpx;
-	}
-
-	.info-item {
-		display: flex;
-		align-items: center;
-		gap: 10rpx;
-		padding: 12rpx 0;
-	}
-
-	.info-label {
-		font-size: 24rpx;
-		color: #666;
-	}
-
-	.info-value {
-		font-size: 26rpx;
-		color: #333;
-	}
-
-	.notify-inline-row {
-		margin-top: 8rpx;
-		padding-top: 8rpx;
-		border-top: 1rpx dashed #f5f5f5;
-		display: flex;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		row-gap: 12rpx;
-	}
-
-	.notify-inline-item {
-		display: flex;
-		align-items: center;
-		gap: 12rpx;
-	}
-
-	.notify-inline-label {
-		font-size: 24rpx;
-		color: #666;
-	}
-
-	.notify-inline-actions {
-		display: flex;
-		align-items: center;
-	}
-
-	.notify-switch-btn {
-		min-width: 80rpx;
-		height: 54rpx;
-		line-height: 54rpx;
-		padding: 0 18rpx;
-		border-radius: 999rpx;
-		border: 1rpx solid #d9d9d9;
-		background: #fafafa;
-		font-size: 24rpx;
-		color: #999;
-		text-align: center;
-	}
-
-	.notify-switch-btn.active {
-		background: #e6f7ff;
-		border-color: #91d5ff;
-		color: #1890ff;
-	}
-
-	.empty-box {
-		margin-top: 120rpx;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 12rpx;
-		color: #999;
-	}
-
-	.empty-icon {
-		font-size: 120rpx;
-		color: #ddd;
-	}
-
-	.empty-text {
-		font-size: 28rpx;
-	}
-
-	.empty-tip {
-		font-size: 24rpx;
-	}
-
-	.add-btn-box {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		padding: 16rpx 0;
-		padding-bottom: calc(env(safe-area-inset-bottom, 0rpx) + 16rpx);
-		background: #fff;
-		box-shadow: 0 -6rpx 16rpx rgba(0, 0, 0, 0.06);
-		border-top: 1rpx solid #f0f0f0;
-	}
-
-	.add-btn-card {
-		border-radius: 0;
-		border: 0;
-		box-shadow: none;
-		padding: 0 24rpx;
-		background: transparent;
-	}
-
-	.add-btn {
-		width: 100%;
-		height: 92rpx;
-		line-height: 92rpx;
-		border: none;
-		border-radius: 14rpx;
-		background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
-		color: #fff;
-		font-size: 30rpx;
-		font-weight: 700;
-		box-shadow: 0 10rpx 20rpx rgba(62, 198, 198, 0.25);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.add-btn-text {
-		margin-left: 8rpx;
-	}
-
-	.modal {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.45);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-	}
-
-	.modal-content {
-		width: 86%;
-		background: #fff;
 		border-radius: 24rpx;
+		margin-bottom: 24rpx;
+		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+		border: 2rpx solid transparent;
+		transition: all 0.3s;
 		overflow: hidden;
-		box-shadow: 0 20rpx 40rpx rgba(0, 0, 0, 0.20);
+		
+		&.selected {
+			border-color: #3ec6c6;
+			background: #fcfcfc;
+		}
+		
+		.card-content {
+			padding: 0;
+		}
+		
+		.card-header {
+			padding: 24rpx 30rpx;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			
+			.info-left {
+				display: flex;
+				align-items: center;
+				gap: 20rpx;
+				
+				.avatar-icon {
+					width: 80rpx;
+					height: 80rpx;
+					background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+					border-radius: 50%;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.2);
+					
+					text {
+						color: #fff;
+						font-size: 32rpx;
+						font-weight: bold;
+					}
+				}
+				
+				.info-box {
+					display: flex;
+					flex-direction: column;
+					gap: 8rpx;
+					
+					.name-row {
+						display: flex;
+						align-items: center;
+						gap: 12rpx;
+						
+						.name {
+							font-size: 32rpx;
+							font-weight: bold;
+							color: #333;
+						}
+						
+						.status-badge {
+							font-size: 20rpx;
+							padding: 2rpx 10rpx;
+							border-radius: 6rpx;
+							
+							&.bound {
+								background: rgba(62, 198, 198, 0.1);
+								color: #3ec6c6;
+							}
+						}
+					}
+					
+					.phone {
+						font-size: 26rpx;
+						color: #666;
+						font-family: 'Roboto', sans-serif;
+					}
+				}
+			}
+			
+			.action-right {
+				display: flex;
+				gap: 20rpx;
+				
+				.icon-btn {
+					width: 64rpx;
+					height: 64rpx;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					background: #f5f7fa;
+					border-radius: 50%;
+					
+					&.delete {
+						background: #fff1f0;
+					}
+					
+					&:active {
+						opacity: 0.8;
+					}
+				}
+			}
+			
+			.check-box {
+				.check-circle {
+					width: 44rpx;
+					height: 44rpx;
+					border-radius: 50%;
+					border: 2rpx solid #e0e0e0;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					transition: all 0.2s;
+					
+					&.checked {
+						background: #3ec6c6;
+						border-color: #3ec6c6;
+					}
+				}
+			}
+		}
+		
+		.divider {
+			height: 2rpx;
+			background: #f9f9f9;
+			margin: 0 30rpx;
+		}
+		
+		.notify-settings {
+			padding: 24rpx 30rpx;
+			
+			.notify-tags {
+				display: flex;
+				gap: 20rpx;
+				
+				.notify-tag {
+					flex: 1;
+					height: 64rpx;
+					background: #f5f7fa;
+					border-radius: 12rpx;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					gap: 8rpx;
+					border: 2rpx solid transparent;
+					transition: all 0.3s;
+					
+					text {
+						font-size: 26rpx;
+						color: #666;
+						font-weight: 500;
+					}
+					
+					&.active {
+						background: #e6fffb;
+						border-color: #3ec6c6;
+						
+						text {
+							color: #3ec6c6;
+						}
+					}
+				}
+			}
+		}
+		
+		.remark-row {
+			padding: 0 30rpx 20rpx;
+			font-size: 24rpx;
+			
+			.label {
+				color: #999;
+			}
+			
+			.value {
+				color: #666;
+			}
+		}
 	}
 
-	.modal-header {
-		position: relative;
-		padding: 24rpx 60rpx 20rpx;
-		border-bottom: 1rpx solid #f5f5f5;
-		background: linear-gradient(135deg, #f5fffb, #f0f9ff);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.modal-title {
-		text-align: center;
-		font-size: 30rpx;
-		font-weight: 600;
-		color: #333;
-	}
-
-	.modal-close-icon {
-		position: absolute;
-		right: 24rpx;
-		top: 24rpx;
-	}
-
-	.modal-body {
-		padding: 20rpx 24rpx;
-	}
-
-	.notify-row {
+	/* 空状态 */
+	.empty-state {
 		display: flex;
 		flex-direction: column;
-		gap: 16rpx;
-		margin: 8rpx 0 12rpx;
-	}
-
-	.notify-item {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.notify-label {
-		font-size: 26rpx;
-		color: #333;
-	}
-
-	.notify-actions {
-		display: flex;
-		gap: 12rpx;
-	}
-
-	.notify-btn {
-		min-width: 100rpx;
-		height: 60rpx;
-		padding: 0 20rpx;
-		border-radius: 10rpx;
-		border: 1rpx solid #e0e0e0;
-		background: #fff;
-		color: #666;
-		font-size: 26rpx;
-	}
-
-	.notify-btn.on {
-		background: #e6fffb;
-		border-color: #87e8de;
-		color: #13c2c2;
-	}
-
-	.notify-btn.off {
-		background: #fff1f0;
-		border-color: #ffa39e;
-		color: #ff4d4f;
-	}
-
-	.form-item {
-		margin-bottom: 16rpx;
-	}
-
-	.form-label {
-		font-size: 26rpx;
-		color: #333;
-	}
-
-	.required {
-		color: #ff4d4f;
-	}
-
-	.form-input {
-		height: 72rpx;
-		border: 1rpx solid #e0e0e0;
-		border-radius: 10rpx;
-		padding: 0 16rpx;
-		font-size: 28rpx;
-		background: #fff;
-	}
-
-	.form-textarea {
-		min-height: 140rpx;
-		border: 1rpx solid #e0e0e0;
-		border-radius: 8rpx;
-		padding: 12rpx 16rpx;
-		font-size: 28rpx;
-	}
-
-	.char-count {
-		display: block;
-		text-align: right;
-		color: #999;
-		font-size: 22rpx;
-		margin-top: 6rpx;
-	}
-
-	.modal-footer {
-		display: flex;
-		gap: 16rpx;
-		padding: 20rpx 24rpx;
-		border-top: 1rpx solid #f0f0f0;
-	}
-
-	.cancel-btn,
-	.confirm-btn {
-		flex: 1;
-		height: 80rpx;
-		line-height: 80rpx;
-		border: none;
-		border-radius: 12rpx;
-		font-size: 30rpx;
-		font-weight: 500;
-		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0;
+		padding-top: 160rpx;
+		
+		.empty-icon-box {
+			width: 160rpx;
+			height: 160rpx;
+			background: #fff;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 40rpx;
+			box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+		}
+		
+		.empty-text {
+			font-size: 32rpx;
+			color: #333;
+			font-weight: 600;
+			margin-bottom: 16rpx;
+		}
+		
+		.empty-sub {
+			font-size: 26rpx;
+			color: #999;
+		}
 	}
 
-	.cancel-btn::after,
-	.confirm-btn::after {
-		border: none;
-	}
-
-	.cancel-btn {
-		background: #f5f5f5;
-		color: #666;
-	}
-
-	.confirm-btn {
-		background: linear-gradient(135deg, #3ec6c6, #36b3b3);
-		color: #fff;
-		box-shadow: 0 8rpx 16rpx rgba(62, 198, 198, 0.25);
-	}
-
-	/* 批量绑定操作栏 */
-	.batch-bind-box {
+	/* 底部按钮栏 */
+	.bottom-bar {
 		position: fixed;
 		bottom: 0;
 		left: 0;
 		right: 0;
 		background: #fff;
-		box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.1);
-		padding: 24rpx;
-		padding-bottom: calc(env(safe-area-inset-bottom, 0rpx) + 24rpx);
+		padding: 24rpx 40rpx;
+		box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+		z-index: 99;
+		
+		/* 适配全面屏 */
+		padding-bottom: calc(24rpx + constant(safe-area-inset-bottom));
+		padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+		
+		.add-btn-full {
+			height: 88rpx;
+			background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+			border-radius: 44rpx;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+			
+			text {
+				font-size: 32rpx;
+				font-weight: 600;
+				color: #fff;
+			}
+		}
+		
+		.batch-info {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 20rpx;
+			font-size: 28rpx;
+			color: #333;
+			
+			.sub {
+				color: #999;
+				font-size: 24rpx;
+			}
+		}
+		
+		.btn-group {
+			display: flex;
+			gap: 20rpx;
+			
+			.action-btn {
+				flex: 1;
+				height: 88rpx;
+				line-height: 88rpx;
+				border-radius: 44rpx;
+				font-size: 30rpx;
+				font-weight: 600;
+				border: none;
+				
+				&.plain {
+					background: #f5f7fa;
+					color: #666;
+				}
+				
+				&.primary {
+					background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+					color: #fff;
+					box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+					
+					&[disabled] {
+						background: #e0e0e0;
+						box-shadow: none;
+					}
+				}
+			}
+		}
+		
+		.btn-hover {
+			transform: scale(0.98);
+			opacity: 0.9;
+		}
 	}
 
-	.batch-bind-box .bind-info {
+	/* 底部弹出层样式 */
+	.popup-mask {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.6);
+		z-index: 999;
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.3s;
+		
+		&.show {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+
+	.popup-container {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		background: #fff;
+		border-radius: 32rpx 32rpx 0 0;
+		transform: translateY(100%);
+		transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 16rpx;
-		padding: 0 8rpx;
-	}
+		flex-direction: column;
+		max-height: 85vh;
+		
+		&.show {
+			transform: translateY(0);
+		}
 
-	.batch-bind-box .selected-count {
-		font-size: 26rpx;
-		color: #3ec6c6;
-		font-weight: 500;
-	}
+		.popup-header {
+			padding: 32rpx 40rpx;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border-bottom: 2rpx solid #f5f7fa;
+			flex-shrink: 0;
+			position: relative;
 
-	.batch-bind-box .bind-count {
-		font-size: 24rpx;
-		color: #999;
-	}
+			.title {
+				font-size: 34rpx;
+				font-weight: 600;
+				color: #333;
+			}
 
-	.batch-bind-box .bind-actions {
-		display: flex;
-		gap: 16rpx;
-	}
+			.close-btn {
+				position: absolute;
+				right: 30rpx;
+				padding: 10rpx;
+			}
+		}
 
-	.batch-bind-box .batch-btn {
-		flex: 1;
-		height: 80rpx;
-		line-height: 80rpx;
-		border: none;
-		border-radius: 12rpx;
-		font-size: 28rpx;
-		font-weight: 500;
-		transition: all 0.3s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-	}
+		.form-content {
+			flex: 1;
+			overflow-y: auto;
+			padding: 0 40rpx;
+		}
 
-	.batch-bind-box .batch-btn::after {
-		border: none;
-	}
+		.form-group {
+			padding: 20rpx 0;
+			border-bottom: 2rpx solid #f5f7fa;
+			
+			&:last-child {
+				border-bottom: none;
+			}
+			
+			.section-title {
+				font-size: 28rpx;
+				font-weight: bold;
+				color: #333;
+				margin-bottom: 24rpx;
+				margin-top: 10rpx;
+				padding-left: 16rpx;
+				border-left: 6rpx solid #3ec6c6;
+				line-height: 1;
+			}
+		}
 
-	.batch-bind-box .batch-btn.cancel {
-		background: #f5f5f5;
-		color: #666;
-		flex: 0 0 120rpx;
-	}
+		.form-item {
+			margin-bottom: 24rpx;
+			
+			&:last-child {
+				margin-bottom: 0;
+			}
+			
+			&.switch-item {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				background: #f9f9f9;
+				padding: 20rpx 24rpx;
+				border-radius: 12rpx;
+			}
+			
+			&.column {
+				flex-direction: column;
+				align-items: flex-start;
+				
+				.label {
+					margin-bottom: 16rpx;
+				}
+				
+				textarea {
+					width: 100%;
+					height: 160rpx;
+					background: #f9f9f9;
+					padding: 20rpx;
+					border-radius: 12rpx;
+					box-sizing: border-box;
+					font-size: 28rpx;
+				}
+				
+				.char-count {
+					align-self: flex-end;
+					font-size: 24rpx;
+					color: #ccc;
+					margin-top: 8rpx;
+				}
+			}
 
-	.batch-bind-box .batch-btn.cancel:active {
-		background: #e8e8e8;
-	}
+			.label {
+				display: block;
+				font-size: 28rpx;
+				color: #666;
+				margin-bottom: 12rpx;
+				
+				&.required::after {
+					content: '*';
+					color: #ff5555;
+					margin-left: 4rpx;
+				}
+			}
 
-	.batch-bind-box .batch-btn.confirm {
-		background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
-		color: #fff;
-	}
+			.input-right {
+				width: 100%;
+				height: 88rpx;
+				padding: 0 24rpx;
+				border: 2rpx solid #e0e0e0;
+				border-radius: 8rpx;
+				font-size: 30rpx;
+				color: #333;
+				box-sizing: border-box;
+				transition: all 0.2s;
+				
+				&:focus {
+					border-color: #3ec6c6;
+				}
+			}
+			
+			.placeholder {
+				color: #ccc;
+			}
+		}
 
-	.batch-bind-box .batch-btn.confirm:disabled {
-		background: #ccc;
-		color: #999;
-	}
-
-	.batch-bind-box .batch-btn.confirm:active:not(:disabled) {
-		opacity: 0.8;
+		.popup-footer {
+			padding: 24rpx 40rpx;
+			background: #fff;
+			box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+			flex-shrink: 0;
+			
+			.save-btn {
+				height: 88rpx;
+				background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+				border-radius: 44rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+				
+				text {
+					color: #fff;
+					font-size: 32rpx;
+					font-weight: 600;
+				}
+			}
+			
+			.btn-hover {
+				opacity: 0.9;
+				transform: scale(0.98);
+			}
+		}
 	}
 </style>

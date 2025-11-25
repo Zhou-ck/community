@@ -96,22 +96,24 @@ const request = config => {
           }
           if (!isRelogin.show) {
             isRelogin.show = true;
-            showConfirm('登录状态已过期，您可以继续留在该页面，或者重新登录?', '登录过期提示').then(res => {
-              if (res.confirm) {
-                store.dispatch('LogOut').then(() => {
-                  uni.reLaunch({ url: '/pages/login' })
-                }).catch(() => {
-                  // 即使LogOut失败（如网络错误），本地Token已被清除（在store中处理），直接跳转
-                  uni.reLaunch({ url: '/pages/login' })
-                }).finally(() => {
-                  isRelogin.show = false;
-                })
-              } else {
-                isRelogin.show = false;
+            uni.showModal({
+              title: '登录过期提示',
+              content: '当前登录状态已过期，请重新登录',
+              showCancel: false,
+              confirmText: '确定',
+              success: function(res) {
+                if (res.confirm) {
+                  store.dispatch('LogOut').then(() => {
+                    uni.reLaunch({ url: '/pages/login' })
+                  }).catch(() => {
+                    // 即使LogOut失败（如网络错误），本地Token已被清除（在store中处理），直接跳转
+                    uni.reLaunch({ url: '/pages/login' })
+                  }).finally(() => {
+                    isRelogin.show = false;
+                  })
+                }
               }
-            }).catch(() => {
-              isRelogin.show = false;
-            });
+            })
           }
           reject('无效的会话，或者会话已过期，请重新登录。')
         } else if (code === 500) {

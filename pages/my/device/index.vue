@@ -41,34 +41,41 @@
       >
         <!-- 设备头部信息 -->
         <view class="card-header">
-          <view class="device-avatar">
-            <text class="avatar-text">{{ (device.deviceAlias || device.deviceKey).charAt(0) }}</text>
-          </view>
-          <view class="header-right">
-            <!-- 设备名称 -->
-            <view class="device-name">{{ device.deviceAlias || device.deviceKey }}</view>
-            <!-- 设备类型 -->
-            <view class="device-type-header">
-              <text class="type-value">{{ getDictLabel('dev_device_type', device.deviceType) }}</text>
+          <!-- 第一行：设备名称 + 在线状态 -->
+          <view class="header-top-row">
+            <text class="device-name">{{ device.deviceAlias || device.deviceKey }}</text>
+            <view class="status-tag" :class="{ 'online': device.onlineStatus === '1', 'offline': device.onlineStatus !== '1' }">
+              <text class="status-dot"></text>
+              <text>{{ getDictLabel('dev_online_status', device.onlineStatus) }}</text>
             </view>
           </view>
-        </view>
-        
-        <!-- 布防状态 -->
-        <view class="defense-status-info" @click.stop>
-          <text class="status-label">布防状态</text>
-          <switch 
-            :checked="device.defenseStatus === '1'" 
-            @change="toggleDefenseStatus(device)"
-            color="#3ec6c6"
-            class="defense-switch"
-          />
-        </view>
-        
-        <!-- 设备Key -->
-        <view class="device-key-info">
-          <text class="key-label">设备Key:</text>
-          <text class="key-value">{{ device.deviceKey }}</text>
+          
+          <!-- 第二行：图标 + 信息 -->
+          <view class="header-main-content">
+            <view class="device-avatar" :class="{'has-icon': getDeviceIcon(device.deviceType)}">
+              <image 
+                v-if="getDeviceIcon(device.deviceType)" 
+                :src="getDeviceIcon(device.deviceType)" 
+                class="avatar-img"
+                mode="aspectFit"
+              ></image>
+              <text v-else class="avatar-text">{{ (device.deviceAlias || device.deviceKey).charAt(0) }}</text>
+            </view>
+            
+            <view class="header-info-col">
+              <view class="device-type-badge">
+                <text>{{ getDictLabel('dev_device_type', device.deviceType) }}</text>
+              </view>
+              <view class="mini-info-row">
+                <uni-icons type="location" size="12" color="#999"></uni-icons>
+                <text class="info-text text-ellipsis">{{ device.installAddress || '暂无位置' }}</text>
+              </view>
+              <view class="mini-info-row">
+                <uni-icons type="info" size="12" color="#999"></uni-icons>
+                <text class="info-text text-ellipsis">Key: {{ device.deviceKey }}</text>
+              </view>
+            </view>
+          </view>
         </view>
         
         <!-- 操作按钮 -->
@@ -135,6 +142,16 @@
               v-model="addForm.deviceAlias" 
               placeholder="请输入设备别名"
               maxlength="50"
+            />
+          </view>
+
+          <view class="form-item">
+            <text class="form-label">安装位置</text>
+            <input 
+              class="form-input" 
+              v-model="addForm.installAddress" 
+              placeholder="请输入安装位置（选填）"
+              maxlength="100"
             />
           </view>
           
@@ -227,6 +244,7 @@ export default {
       addForm: {
         deviceKey: '',
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       },
       editForm: {
@@ -235,20 +253,25 @@ export default {
         deviceAlias: '',
         remark: ''
       },
+      // 保存原始的编辑表单数据用于对比
+      originalEditForm: {
+        deviceAlias: '',
+        remark: ''
+      },
       // 字典数据
       dictData: {
         dev_device_type: [],
-        dev_defense_status: []
+        dev_online_status: []
       }
     }
   },
   
   computed: {
     onlineCount() {
-      return this.deviceList.filter(d => d.defenseStatus === '1').length
+      return this.deviceList.filter(d => d.onlineStatus === '1').length
     },
     offlineCount() {
-      return this.deviceList.filter(d => d.defenseStatus !== '1').length
+      return this.deviceList.filter(d => d.onlineStatus !== '1').length
     }
   },
   
@@ -265,17 +288,17 @@ export default {
     // 加载字典数据
     async loadDictData() {
       try {
-        const [deviceType, defenseStatus] = await Promise.all([
+        const [deviceType, onlineStatus] = await Promise.all([
           getDicts('dev_device_type'),
-          getDicts('dev_defense_status')
+          getDicts('dev_online_status')
         ])
         
         if (deviceType.code === 200 && deviceType.data) {
           this.dictData.dev_device_type = deviceType.data
         }
         
-        if (defenseStatus.code === 200 && defenseStatus.data) {
-          this.dictData.dev_defense_status = defenseStatus.data
+        if (onlineStatus.code === 200 && onlineStatus.data) {
+          this.dictData.dev_online_status = onlineStatus.data
         }
         
       } catch (error) {
@@ -308,6 +331,28 @@ export default {
         })
       } finally {
         this.loading = false
+      }
+    },
+    
+    // 获取设备图标
+    getDeviceIcon(deviceType) {
+      const type = String(deviceType)
+      try {
+        const iconMap = {
+          '1': require('@/pages/my/static/breath.png'),
+          '2': require('@/pages/my/static/tumble.png'),
+          '3': require('@/pages/my/static/yangan.png'),
+          '4': require('@/pages/my/static/keranqiti.png'),
+          '5': require('@/pages/my/static/shuijin.png'),
+          '6': require('@/pages/my/static/menci.png'),
+          '7': require('@/pages/my/static/hongwai.png'),
+          '8': require('@/pages/my/static/wenshidu.png'),
+          '9': require('@/pages/my/static/yiyanghuatan.png')
+        }
+        return iconMap[type] || ''
+      } catch (e) {
+        console.warn('Device icon not found:', e)
+        return ''
       }
     },
     
@@ -383,6 +428,7 @@ export default {
       this.addForm = {
         deviceKey: '',
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       }
     },
@@ -467,48 +513,6 @@ export default {
       })
     },
     
-    // 切换布防状态
-    async toggleDefenseStatus(device) {
-      const newDefenseStatus = device.defenseStatus === '1' ? '2' : '1'
-      
-      try {
-        uni.showLoading({ title: '切换中...' })
-        
-        const response = await updateDevice({
-          deviceId: device.deviceId,
-          deviceKey: device.deviceKey,
-          deviceAlias: device.deviceAlias,
-          remark: device.remark || '',
-          enableStatus: device.enableStatus,
-          defenseStatus: newDefenseStatus
-        })
-        
-        if (response.code === 200) {
-          // 更新本地数据
-          device.defenseStatus = newDefenseStatus
-          
-          const statusText = this.getDictLabel('dev_defense_status', newDefenseStatus)
-          uni.showToast({
-            title: `已切换为${statusText}`,
-            icon: 'success'
-          })
-        } else {
-          uni.showToast({
-            title: response.msg || '切换失败',
-            icon: 'none'
-          })
-        }
-      } catch (error) {
-        console.error('切换布防状态失败:', error)
-        uni.showToast({
-          title: '网络错误',
-          icon: 'none'
-        })
-      } finally {
-        uni.hideLoading()
-      }
-    },
-    
     // 确认添加设备
     async confirmAddDevice() {
       // 表单验证
@@ -550,6 +554,7 @@ export default {
           deviceKey: parseResult.deviceKey,
           deviceType: parseResult.deviceType,
           deviceAlias: this.addForm.deviceAlias.trim(),
+          installAddress: this.addForm.installAddress.trim() || null,
           remark: this.addForm.remark.trim() || null
         })
         
@@ -604,6 +609,11 @@ export default {
         deviceAlias: device.deviceAlias || '',
         remark: device.remark || ''
       }
+      // 保存原始数据用于对比
+      this.originalEditForm = {
+        deviceAlias: device.deviceAlias || '',
+        remark: device.remark || ''
+      }
       // 打开编辑弹窗
       this.$refs.editDevicePopup.open()
     },
@@ -634,14 +644,29 @@ export default {
         return
       }
       
+      // 对比数据是否发生变化
+      const currentAlias = this.editForm.deviceAlias.trim()
+      const currentRemark = this.editForm.remark.trim()
+      const originalAlias = this.originalEditForm.deviceAlias.trim()
+      const originalRemark = this.originalEditForm.remark.trim()
+      
+      if (currentAlias === originalAlias && currentRemark === originalRemark) {
+        uni.showToast({
+          title: '数据未发生变化,无需提交',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      
       this.submitting = true
       
       try {
         const response = await updateDevice({
           deviceId: this.editForm.deviceId,
           deviceKey: this.editForm.deviceKey,
-          deviceAlias: this.editForm.deviceAlias.trim(),
-          remark: this.editForm.remark.trim()
+          deviceAlias: currentAlias,
+          remark: currentRemark
         })
         
         if (response.code === 200) {
@@ -739,17 +764,19 @@ export default {
 /* 设备网格布局 */
 .device-grid {
   padding: 24rpx;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 20rpx;
 }
 
 .device-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
-  border-radius: 20rpx;
-  padding: 28rpx;
-  box-shadow: 0 8rpx 32rpx rgba(62, 198, 198, 0.08);
-  border: 1rpx solid rgba(62, 198, 198, 0.1);
+  width: calc(50% - 12rpx); /* 稍微调整宽度计算 */
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.03);
+  border: 1rpx solid rgba(0, 0, 0, 0.01);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -757,203 +784,157 @@ export default {
   
   &:hover {
     transform: translateY(-4rpx);
-    box-shadow: 0 12rpx 40rpx rgba(62, 198, 198, 0.15);
+    box-shadow: 0 16rpx 48rpx rgba(62, 198, 198, 0.08);
   }
 }
 
 .card-header {
+  margin-bottom: 24rpx;
+}
+
+.header-top-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16rpx;
-}
-
-.header-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  flex: 1;
-  margin-left: 16rpx;
-  gap: 8rpx;
-}
-
-.device-avatar {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2eb8b8 50%, #1fa5a5 100%);
-  display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.3);
-  border: 2rpx solid rgba(255, 255, 255, 0.8);
-  position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: -2rpx;
-    left: -2rpx;
-    right: -2rpx;
-    bottom: -2rpx;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(62, 198, 198, 0.2), rgba(62, 198, 198, 0.1));
-    z-index: -1;
-  }
-
-  .avatar-text {
-    font-size: 26rpx;
-    color: #fff;
-    font-weight: 600;
-    text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
-  }
+  margin-bottom: 24rpx;
+  gap: 16rpx;
 }
 
 .device-name {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #2c3e50;
-  line-height: 1.3;
-  text-align: left;
-  max-width: 200rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #1a1a1a;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: 0.5rpx;
 }
 
-.device-type-header {
-  .type-value {
-    font-size: 22rpx;
-    font-weight: 500;
-    color: #3ec6c6;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-    padding: 6rpx 14rpx;
-    border-radius: 14rpx;
-    border: 1rpx solid rgba(62, 198, 198, 0.2);
-    display: inline-block;
-    box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.1);
-    margin-top: 2rpx;
-  }
-}
-
-.defense-status-info {
+.status-tag {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12rpx;
-  padding: 8rpx 12rpx;
-  background: linear-gradient(135deg, #f8fffe 0%, #f0fffe 100%);
-  border-radius: 10rpx;
-  border: 1rpx solid rgba(62, 198, 198, 0.1);
+  gap: 8rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  background: #f5f7fa;
   
-  .status-label {
-    font-size: 24rpx;
-    color: #666;
-    font-weight: 500;
+  .status-dot {
+    width: 10rpx;
+    height: 10rpx;
+    border-radius: 50%;
   }
   
-  .defense-switch {
-    transform: scale(0.8);
-  }
-}
-
-.device-type-info {
-  margin-bottom: 16rpx;
-  
-  .type-value {
-    font-size: 22rpx;
-    font-weight: 500;
+  &.online {
     color: #3ec6c6;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-    padding: 6rpx 16rpx;
-    border-radius: 16rpx;
-    border: 1rpx solid rgba(62, 198, 198, 0.2);
-    display: inline-block;
-    box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.1);
-    position: relative;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(62, 198, 198, 0.05), transparent);
-      border-radius: 16rpx;
-      pointer-events: none;
-    }
+    background: rgba(62, 198, 198, 0.12);
+    .status-dot { background: #3ec6c6; }
+  }
+  
+  &.offline {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.12);
+    .status-dot { background: #ff6b6b; }
   }
 }
 
-.device-status {
-  margin-bottom: 12rpx;
+.header-main-content {
+  display: flex;
+  gap: 24rpx;
+  align-items: center;
+}
+
+.header-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  overflow: hidden;
+  justify-content: center;
+}
+
+.device-type-badge {
+  align-self: flex-start;
+  font-size: 20rpx;
+  color: #666;
+  background: #f0f2f5;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+  font-weight: 500;
+}
+
+.mini-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
   
-  .status-text {
-    font-size: 24rpx;
-    font-weight: 500;
-    
-    &.online {
-      color: #4CAF50;
-    }
-    
-    &.offline {
-      color: #f44336;
-    }
+  .info-text {
+    font-size: 22rpx;
+    color: #909399;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-.device-key-info {
-  margin-bottom: 25rpx;
-  padding: 12rpx 16rpx;
-  background: linear-gradient(135deg, #f8fffe 0%, #f0fffe 100%);
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(62, 198, 198, 0.08);
-  box-shadow: inset 0 1rpx 3rpx rgba(62, 198, 198, 0.05);
-  
-  .key-label {
-    font-size: 25rpx;
-    color: #888;
-    margin-right: 8rpx;
-    font-weight: 500;
+.device-avatar {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #3ec6c6 0%, #2eb8b8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.15);
+  overflow: hidden;
+
+  &.has-icon {
+    background: #f8fdfd; /* 给图片加一个极淡的背景 */
+    box-shadow: none;
+    border: 1rpx solid rgba(62, 198, 198, 0.05);
   }
-  
-  .key-value {
-    font-size: 25rpx;
-    color: #555;
-    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-    font-weight: 500;
-    letter-spacing: 0.5rpx;
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .avatar-text {
+    font-size: 44rpx;
+    color: #fff;
+    font-weight: 600;
   }
 }
 
 .card-actions {
-  margin-top: auto;
+  margin-top: 16rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f9f9f9;
 }
 
 .action-row {
   display: flex;
-  gap: 8rpx;
-  margin-bottom: 8rpx;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
+  gap: 16rpx;
 }
 
 .action-btn {
   flex: 1;
-  height: 64rpx;
+  height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5rpx;
-  border-radius: 12rpx;
-  font-size: 25rpx;
+  gap: 6rpx;
+  border-radius: 30rpx; /* 更圆润的按钮 */
+  font-size: 24rpx;
   border: none;
   transition: all 0.3s ease;
-  font-weight: 500;
+  font-weight: 600;
   position: relative;
   overflow: hidden;
   
@@ -964,7 +945,7 @@ export default {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s ease;
   }
   
@@ -972,47 +953,31 @@ export default {
     left: 100%;
   }
   
-  &.primary {
-    background: linear-gradient(135deg, #3ec6c6 0%, #2eb8b8 100%);
-    color: #fff;
-    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
-    
-    &:active {
-      transform: translateY(1rpx);
-      box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.4);
-    }
-  }
-  
   &.secondary {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+    background: #eefbfb; /* 纯色背景 */
     color: #3ec6c6;
-    border: 1rpx solid rgba(62, 198, 198, 0.2);
-    box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.1);
+    border: none;
+    box-shadow: none;
     
     &:active {
-      transform: translateY(1rpx);
-      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      background: #dcf5f5;
     }
   }
   
   &.danger {
-    background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%);
-    color: #f44336;
-    border: 1rpx solid rgba(244, 67, 54, 0.2);
-    box-shadow: 0 2rpx 8rpx rgba(244, 67, 54, 0.1);
+    background: #fff0f0; /* 纯色背景 */
+    color: #ff5555;
+    border: none;
+    box-shadow: none;
     
     &:active {
-      transform: translateY(1rpx);
-      background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+      background: #ffe0e0;
     }
   }
   
   text {
     font-size: 24rpx;
-    font-weight: 500;
     line-height: 1;
-    display: flex;
-    align-items: center;
   }
 }
 

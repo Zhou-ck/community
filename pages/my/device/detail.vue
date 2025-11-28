@@ -4,89 +4,168 @@
     <!-- 设备基本信息 -->
     <view class="device-info-card" v-if="deviceInfo">
       <view class="info-header">
-        <view class="device-avatar">
-          <text class="avatar-text">{{ (deviceInfo.deviceAlias || deviceInfo.deviceKey).charAt(0) }}</text>
+        <view class="device-avatar" :class="{'has-icon': getDeviceIcon(deviceInfo.deviceType)}">
+          <image 
+            v-if="getDeviceIcon(deviceInfo.deviceType)" 
+            :src="getDeviceIcon(deviceInfo.deviceType)" 
+            class="avatar-img"
+            mode="aspectFit"
+          ></image>
+          <text v-else class="avatar-text">{{ (deviceInfo.deviceAlias || deviceInfo.deviceKey).charAt(0) }}</text>
         </view>
         <view class="device-basic">
-          <view class="device-name">{{ deviceInfo.deviceAlias || deviceInfo.deviceKey }}</view>
-          <view class="device-type">{{ getDeviceTypeName(deviceInfo.deviceType) }}</view>
-          <view class="online-status" :class="deviceInfo.enableStatus === '1' ? 'online' : 'offline'">
-            <view class="status-dot"></view>
-            <text>{{ deviceInfo.enableStatus === '1' ? '在线' : '离线' }}</text>
+          <view class="name-row">
+             <text class="device-name">{{ deviceInfo.deviceAlias || deviceInfo.deviceKey }}</text>
+          </view>
+          <view class="tags-row">
+            <view class="device-tag type-tag">{{ getDeviceTypeName(deviceInfo.deviceType) }}</view>
+            <view class="device-tag status-tag" :class="deviceInfo.onlineStatus === '1' ? 'online' : 'offline'">
+              <view class="status-dot"></view>
+              <text>{{ getDictLabel('dev_online_status', deviceInfo.onlineStatus) }}</text>
+            </view>
           </view>
         </view>
       </view>
       
       <!-- 设备Key信息 -->
-      <view class="device-keys">
-        <view class="key-item">
-          <text class="key-label">设备Key:</text>
-          <text class="key-value">{{ deviceInfo.deviceKey }}</text>
+      <view class="info-list">
+        <view class="info-item">
+          <text class="info-label">设备Key:</text>
+          <text class="info-value">{{ deviceInfo.deviceKey }}</text>
         </view>
-        <view class="key-item">
-          <text class="key-label">设备编号:</text>
-          <text class="key-value">{{ deviceInfo.productKey + deviceInfo.deviceKey }}</text>
+        <view class="info-item">
+          <text class="info-label">设备编号:</text>
+          <text class="info-value">{{ deviceInfo.productKey + deviceInfo.deviceKey }}</text>
         </view>
-     
+        <!-- 最近在线时间 -->
+        <view class="info-item" v-if="deviceInfo.onlineTime">
+          <text class="info-label">最近在线:</text>
+          <text class="info-value">{{ deviceInfo.onlineTime }}</text>
+        </view>
+        <!-- 最近离线时间 -->
+        <view class="info-item" v-if="deviceInfo.offlineTime">
+          <text class="info-label">最近离线:</text>
+          <text class="info-value">{{ deviceInfo.offlineTime }}</text>
+        </view>
       </view>
     </view>
 
     <!-- 设备控制 -->
-    <view class="control-section">
-      <view class="section-title">设备控制</view>
+    <view class="section-card">
+      <view class="section-header">
+        <view class="section-title-bar"></view>
+        <text class="section-title">设备控制</text>
+      </view>
       
-      <!-- 设备开关 -->
-      <view class="control-item">
-        <view class="control-info">
-          <text class="control-label">设备布防</text>
-          <text class="control-desc">事件发生时将通知绑定的联系人</text>
+      <view class="control-row">
+        <view class="control-left">
+          <text class="control-title">设备布防</text>
+          <text class="control-subtitle">事件发生时将通知绑定的联系人</text>
         </view>
         <switch 
           :checked="deviceInfo && deviceInfo.defenseStatus === '1'" 
           @change="toggleDefenseStatus"
           color="#3ec6c6"
-          class="control-switch"
+          style="transform:scale(0.9)"
         />
       </view>
     </view>
 
-    <!-- 设置卡片区域 -->
-    <view class="settings-grid">
-      <!-- 报警设置卡片 -->
-      <view class="setting-card" @click="handleAlarmSettingsClick">
-        <view class="card-header">
+    <!-- 功能卡片网格 -->
+    <view class="function-grid">
+      <!-- 报警设置 -->
+      <view class="function-card" @click="handleAlarmSettingsClick">
+        <view class="card-content">
           <text class="card-title">报警设置</text>
-          <uni-icons type="sound" size="24" color="#3ec6c6"></uni-icons>
+          <text class="card-subtitle">配置设备报警开关</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="sound" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>
       
-      <!-- 参数设置卡片 -->
-      <view class="setting-card" @click="handleParamSettingsClick">
-        <view class="card-header">
+      <!-- 参数设置 -->
+      <view class="function-card" @click="handleParamSettingsClick">
+        <view class="card-content">
           <text class="card-title">参数设置</text>
-          <uni-icons type="gear" size="24" color="#3ec6c6"></uni-icons>
+          <text class="card-subtitle">调整设备运行参数</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="gear" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>
       
-      <!-- 绑定家人卡片 -->
-      <view class="setting-card" @click="handleBindFamilyClick">
-        <view class="card-header">
+      <!-- 绑定家人 -->
+      <view class="function-card" @click="handleBindFamilyClick">
+        <view class="card-content">
           <text class="card-title">绑定家人</text>
-          <uni-icons type="person" size="24" color="#3ec6c6"></uni-icons>
+          <text class="card-subtitle">已绑定 {{ boundFamilyMembers.length }} 人</text>
         </view>
-        <view class="card-desc">
-          <text>已绑定 {{ boundFamilyMembers.length }} 人</text>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="person" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>
       
-      <!-- 绑定接警人卡片 -->
-      <view class="setting-card" @click="handleBindReceiverClick">
-        <view class="card-header">
+      <!-- 绑定接警人 -->
+      <view class="function-card" @click="handleBindReceiverClick">
+        <view class="card-content">
           <text class="card-title">绑定接警人</text>
-          <uni-icons type="phone" size="24" color="#3ec6c6"></uni-icons>
+          <text class="card-subtitle">已绑定 {{ boundReceivers.length }} 人</text>
         </view>
-        <view class="card-desc">
-          <text>已绑定 {{ boundReceivers.length }} 人</text>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="phone" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+
+      <!-- 配置网络 -->
+      <view class="function-card" @click="handleConfigNetwork">
+        <view class="card-content">
+          <text class="card-title">配置网络</text>
+          <text class="card-subtitle">设备网络配置</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="tune" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+      <!-- 实时检测 -->
+      <view class="function-card" @click="handleRealTimeCheckClick" v-if="showRealTimeMonitor">
+        <view class="card-content">
+          <text class="card-title">实时监测</text>
+          <text class="card-subtitle">查看设备实时状态</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <text class="iconfontA icon-shishijianceshuju" style="font-size: 20px; color: #3ec6c6;"></text>
+        </view>
+      </view>
+      <!-- 睡眠报告 -->
+      <view class="function-card" @click="handleSleepReportClick" v-if="showSleepReport">
+        <view class="card-content">
+          <text class="card-title">睡眠报告</text>
+          <text class="card-subtitle">查看睡眠数据分析</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="bars" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>   
+      <!-- 编辑设备 -->
+      <view class="function-card" @click="editDevice(deviceInfo)">
+        <view class="card-content">
+          <text class="card-title">编辑设备</text>
+          <text class="card-subtitle">修改设备信息</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="compose" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+      
+      <!-- 删除设备 -->
+      <view class="function-card" @click="deleteDevice">
+        <view class="card-content">
+          <text class="card-title danger-text">删除设备</text>
+          <text class="card-subtitle">解除设备绑定</text>
+        </view>
+        <view class="card-icon red-bg">
+          <uni-icons type="trash" size="20" color="#f56c6c"></uni-icons>
         </view>
       </view>
     </view>
@@ -162,34 +241,6 @@
       </view>
     </uni-popup>
 
-
-    <!-- 操作卡片区域 -->
-    <view class="action-grid">
-      <!-- 配置网络卡片 -->
-      <view class="action-card network" @click="handleConfigNetwork">
-        <view class="card-header">
-          <text class="card-title">配置网络</text>
-          <uni-icons type="settings" size="24" color="#3ec6c6"></uni-icons>
-        </view>
-      </view>
-      
-      <!-- 编辑设备卡片 -->
-      <view class="action-card secondary" @click="editDevice(deviceInfo)">
-        <view class="card-header">
-          <text class="card-title">编辑设备</text>
-          <uni-icons type="compose" size="24" color="#3ec6c6"></uni-icons>
-        </view>
-      </view>
-      
-      <!-- 删除设备卡片 -->
-      <view class="action-card danger" @click="deleteDevice">
-        <view class="card-header">
-          <text class="card-title">删除设备</text>
-          <uni-icons type="trash" size="24" color="#f44336"></uni-icons>
-        </view>
-      </view>
-    </view>
-
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-mask">
       <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
@@ -260,7 +311,7 @@ export default {
       loading: false,
       dictData: {
         dev_device_type: [],
-        dev_defense_status: []
+        dev_online_status: []
       },
       // 报警开关设置
       alarmSwitches: [],
@@ -272,6 +323,11 @@ export default {
       editForm: {
         deviceId: '',
         deviceKey: '',
+        deviceAlias: '',
+        remark: ''
+      },
+      // 保存原始的编辑表单数据用于对比
+      originalEditForm: {
         deviceAlias: '',
         remark: ''
       },
@@ -294,6 +350,20 @@ export default {
     currentPopupTitle() {
       return this.popupType === 'alarm' ? '报警设置' : 
              this.popupType === 'param' ? '参数设置' : '设置'
+    },
+    // 是否显示实时监测模块
+    showRealTimeMonitor() {
+      if (!this.deviceInfo) return false
+      // 1: 呼吸睡眠, 2: 跌倒检测
+      const type = String(this.deviceInfo.deviceType)
+      return type === '1' || type === '2'
+    },
+    // 是否显示睡眠报告模块（仅呼吸睡眠设备）
+    showSleepReport() {
+      if (!this.deviceInfo) return false
+      // 1: 呼吸睡眠
+      const type = String(this.deviceInfo.deviceType)
+      return type === '1'
     }
   },
   
@@ -344,17 +414,17 @@ export default {
     // 加载字典数据
     async loadDictData() {
       try {
-        const [deviceType, defenseStatus] = await Promise.all([
+        const [deviceType, onlineStatus] = await Promise.all([
           getDicts('dev_device_type'),
-          getDicts('dev_defense_status')
+          getDicts('dev_online_status')
         ])
         
         if (deviceType.code === 200 && deviceType.data) {
           this.dictData.dev_device_type = deviceType.data
         }
         
-        if (defenseStatus.code === 200 && defenseStatus.data) {
-          this.dictData.dev_defense_status = defenseStatus.data
+        if (onlineStatus.code === 200 && onlineStatus.data) {
+          this.dictData.dev_online_status = onlineStatus.data
         }
         
       } catch (error) {
@@ -462,6 +532,27 @@ export default {
       console.log('设置默认报警开关配置完成，长度:', this.alarmSwitches.length)
     },
     
+    // 获取设备图标
+    getDeviceIcon(deviceType) {
+      const type = String(deviceType)
+      try {
+        const iconMap = {
+          '1': require('@/pages/my/static/breath.png'),
+          '2': require('@/pages/my/static/tumble.png'),
+          '3': require('@/pages/my/static/yangan.png'),
+          '4': require('@/pages/my/static/keranqiti.png'),
+          '5': require('@/pages/my/static/shuijin.png'),
+          '6': require('@/pages/my/static/menci.png'),
+          '7': require('@/pages/my/static/hongwai.png'),
+          '8': require('@/pages/my/static/wenshidu.png'),
+          '9': require('@/pages/my/static/yiyanghuatan.png')
+        }
+        return iconMap[type] || ''
+      } catch (e) {
+        return ''
+      }
+    },
+    
     // 获取设备类型名称
     getDeviceTypeName(type) {
       const deviceType = this.dictData.dev_device_type.find(item => item.dictValue === type)
@@ -478,9 +569,14 @@ export default {
     // 切换设备布防状态
     async toggleDefenseStatus() {
       const newDefenseStatus = this.deviceInfo.defenseStatus === '1' ? '2' : '1'
-      await this.updateDeviceStatus({ 
-        defenseStatus: newDefenseStatus
-      })
+      
+      // 构建提交参数
+      const params = {
+        defenseStatus: newDefenseStatus,
+        enableStatus: this.deviceInfo.enableStatus // 保持原有enableStatus
+      }
+      
+      await this.updateDeviceStatus(params)
     },
     
     // 更新设备状态
@@ -488,22 +584,26 @@ export default {
       try {
         uni.showLoading({ title: '更新中...' })
         
-        const response = await updateDevice({
+        const updateParams = {
           deviceId: this.deviceInfo.deviceId,
           deviceKey: this.deviceInfo.deviceKey,
           deviceAlias: this.deviceInfo.deviceAlias,
           remark: this.deviceInfo.remark || '',
-          enableStatus: params.enableStatus || this.deviceInfo.enableStatus,
-          defenseStatus: params.defenseStatus || this.deviceInfo.defenseStatus
-        })
+          enableStatus: this.deviceInfo.enableStatus, // 使用当前的 enableStatus
+          defenseStatus: this.deviceInfo.defenseStatus, // 默认使用当前的 defenseStatus
+          onlineStatus: this.deviceInfo.onlineStatus, // 确保传递 onlineStatus
+          ...params // 覆盖传入的参数
+        }
+        
+        const response = await updateDevice(updateParams)
         
         if (response.code === 200) {
           // 更新本地数据
           Object.assign(this.deviceInfo, params)
           
-          const statusText = params.defenseStatus ? this.getDictLabel('dev_defense_status', params.defenseStatus) : '更新'
+          const statusText = params.defenseStatus ? (params.defenseStatus === '1' ? '已开启布防' : '已关闭布防') : '更新成功'
           uni.showToast({
-            title: params.defenseStatus ? `已切换为${statusText}` : '更新成功',
+            title: statusText,
             icon: 'success'
           })
         } else {
@@ -531,6 +631,44 @@ export default {
     // 处理参数设置点击事件
     handleParamSettingsClick() {
       this.openSettingsPopup('param')
+    },
+    
+    // 处理实时检测点击事件
+    handleRealTimeCheckClick() {
+      if (!this.deviceInfo) return
+      
+      // 检查设备是否在线
+      if (this.deviceInfo.onlineStatus !== '1') {
+        uni.showToast({
+          title: '当前设备不在线',
+          icon: 'none'
+        })
+        return
+      }
+
+      const deviceType = String(this.deviceInfo.deviceType)
+      let targetPage = ''
+      
+      // 1: 呼吸睡眠, 2: 跌倒监测
+      if (deviceType === '1') {
+        targetPage = '/pages/my/device/sleep'
+      } else if (deviceType === '2') {
+        targetPage = '/pages/my/device/fall'
+      }
+      if (targetPage) {
+        uni.navigateTo({
+          url: `${targetPage}?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}`
+        })
+      }
+    },
+    
+    // 处理睡眠报告点击事件
+    handleSleepReportClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/sleep-report/sleep-report?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+      })
     },
     
     // 处理绑定家人点击事件
@@ -984,6 +1122,11 @@ export default {
         deviceAlias: device.deviceAlias || '',
         remark: device.remark || ''
       }
+      // 保存原始数据用于对比
+      this.originalEditForm = {
+        deviceAlias: device.deviceAlias || '',
+        remark: device.remark || ''
+      }
       // 打开编辑弹窗
       this.$refs.editDevicePopup.open()
     },
@@ -1014,14 +1157,29 @@ export default {
         return
       }
       
+      // 对比数据是否发生变化
+      const currentAlias = this.editForm.deviceAlias.trim()
+      const currentRemark = this.editForm.remark.trim()
+      const originalAlias = this.originalEditForm.deviceAlias.trim()
+      const originalRemark = this.originalEditForm.remark.trim()
+      
+      if (currentAlias === originalAlias && currentRemark === originalRemark) {
+        uni.showToast({
+          title: '数据未发生变化,无需提交',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      
       this.submitting = true
       
       try {
         const response = await updateDevice({
           deviceId: this.editForm.deviceId,
           deviceKey: this.editForm.deviceKey,
-          deviceAlias: this.editForm.deviceAlias.trim(),
-          remark: this.editForm.remark.trim()
+          deviceAlias: currentAlias,
+          remark: currentRemark
         })
         
         if (response.code === 200) {
@@ -1099,40 +1257,55 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/static/fontA/iconfont.css';
+
 .device-detail-page {
   min-height: 100vh;
   background: #f5f7fa;
+  padding: 24rpx;
 }
 
-
-/* 设备信息卡片 */
+/* Device Info Card */
 .device-info-card {
-  margin: 24rpx;
   background: #fff;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(62, 198, 198, 0.08);
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.03);
+  margin-bottom: 24rpx;
 }
 
 .info-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 24rpx;
   margin-bottom: 32rpx;
 }
 
 .device-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2eb8b8 50%, #1fa5a5 100%);
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 24rpx;
+  background: #3ec6c6;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 8rpx 16rpx rgba(62, 198, 198, 0.2);
+  overflow: hidden;
+  flex-shrink: 0;
+  
+  &.has-icon {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+  }
+  
+  .avatar-img {
+    width: 120rpx;
+    height: 120rpx;
+  }
   
   .avatar-text {
-    font-size: 32rpx;
+    font-size: 48rpx;
     color: #fff;
     font-weight: 600;
   }
@@ -1142,167 +1315,200 @@ export default {
   flex: 1;
 }
 
+.name-row {
+  margin-bottom: 12rpx;
+}
+
 .device-name {
   font-size: 32rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 8rpx;
 }
 
-.device-type {
-  font-size: 24rpx;
-  color: #3ec6c6;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+.tags-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.device-tag {
   padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-  display: inline-block;
-  margin-bottom: 12rpx;
-}
-
-.online-status {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 500;
   
-  .status-dot {
-    width: 12rpx;
-    height: 12rpx;
-    border-radius: 50%;
+  &.type-tag {
+    background: rgba(62, 198, 198, 0.1);
+    color: #3ec6c6;
   }
   
-  text {
-    font-size: 24rpx;
-    font-weight: 500;
-  }
-  
-  &.online {
+  &.status-tag {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+    
     .status-dot {
-      background: #4CAF50;
+      width: 10rpx;
+      height: 10rpx;
+      border-radius: 50%;
     }
-    text {
+    
+    &.online {
+      background: rgba(76, 175, 80, 0.1);
       color: #4CAF50;
+      .status-dot { background: #4CAF50; }
     }
-  }
-  
-  &.offline {
-    .status-dot {
-      background: #f44336;
-    }
-    text {
+    
+    &.offline {
+      background: rgba(244, 67, 54, 0.1);
       color: #f44336;
+      .status-dot { background: #f44336; }
     }
   }
 }
 
-.device-keys {
-  border-top: 1rpx solid #f0f0f0;
+.info-list {
   padding-top: 24rpx;
+  border-top: 2rpx dashed #f0f0f0;
 }
 
-.key-item {
+.info-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 16rpx;
   
   &:last-child {
     margin-bottom: 0;
   }
   
-  .key-label {
+  .info-label {
     font-size: 26rpx;
-    color: #666;
-    width: 140rpx;
+    color: #999;
   }
   
-  .key-value {
+  .info-value {
     font-size: 26rpx;
     color: #333;
     font-family: monospace;
-    flex: 1;
   }
 }
 
-/* 通用区块样式 */
-.control-section {
-  margin: 24rpx;
+/* Control Section */
+.section-card {
   background: #fff;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.03);
+  margin-bottom: 24rpx;
 }
 
-/* 设置卡片网格 */
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.section-header {
+  display: flex;
+  align-items: center;
   gap: 12rpx;
-  margin: 16rpx;
+  margin-bottom: 32rpx;
 }
 
-.setting-card {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 32rpx 28rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
-  }
+.section-title-bar {
+  width: 6rpx;
+  height: 28rpx;
+  background: #3ec6c6;
+  border-radius: 4rpx;
 }
 
-/* 操作卡片网格 */
-.action-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12rpx;
-  margin: 16rpx;
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
 }
 
-.action-card {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 32rpx 28rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
-  border: 2rpx solid transparent;
-  
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
-  }
-  
-  &.secondary {
-    border-color: rgba(62, 198, 198, 0.2);
-    
-    .card-title {
-      color: #3ec6c6;
-    }
-  }
-  
-  &.danger {
-    border-color: rgba(244, 67, 54, 0.2);
-    
-    .card-title {
-      color: #f44336;
-    }
-  }
-}
-
-.card-header {
+.control-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.control-left {
+  flex: 1;
+}
+
+.control-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.control-subtitle {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* Function Grid */
+.function-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.function-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .card-title {
   font-size: 28rpx;
   font-weight: 600;
   color: #333;
+  
+  &.danger-text {
+    color: #f56c6c;
+  }
 }
 
-/* 弹窗样式 */
+.card-subtitle {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.card-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  &.cyan-bg {
+    background: rgba(62, 198, 198, 0.08);
+  }
+  
+  &.red-bg {
+    background: rgba(245, 108, 108, 0.08);
+  }
+}
+
+/* Popup Styles (Preserved) */
 .popup-content {
   background: #fff;
   border-radius: 24rpx 24rpx 0 0;
@@ -1313,122 +1519,62 @@ export default {
 .popup-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 24rpx 32rpx 16rpx;
+  padding: 0 0 32rpx;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
 .popup-title {
   flex: 1;
+  text-align: center;
   font-size: 32rpx;
   font-weight: 600;
   color: #333;
-  text-align: center;
-}
-
-.popup-header .uni-icons {
-  flex-shrink: 0;
+  /* 为了视觉绝对居中，添加左内边距抵消右侧图标宽度 */
+  padding-left: 48rpx;
 }
 
 .setting-list {
+  padding-top: 16rpx;
   display: flex;
   flex-direction: column;
   gap: 24rpx;
 }
 
-.section-title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 24rpx;
-  padding-bottom: 16rpx;
-  border-bottom: 2rpx solid #f0f0f0;
-}
-
-/* 控制项样式 */
-.control-item,
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 0;
+  padding: 16rpx 0;
   border-bottom: 1rpx solid #f8f8f8;
-  
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
 }
 
-.control-info,
 .setting-info {
   flex: 1;
 }
 
-.control-label,
 .setting-label {
   font-size: 28rpx;
   font-weight: 500;
   color: #333;
   display: block;
-  margin-bottom: 4rpx;
+  margin-bottom: 8rpx;
 }
 
-.control-desc,
 .setting-desc {
   font-size: 22rpx;
   color: #999;
 }
 
-.control-status {
-  font-size: 22rpx;
-  color: #3ec6c6;
-  font-weight: 500;
-  margin-top: 4rpx;
-  display: block;
-}
-
-.control-switch,
 .setting-switch {
   transform: scale(0.9);
 }
 
-/* 参数设置样式 */
-.param-input {
-  width: 200rpx;
-  height: 60rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 8rpx;
-  padding: 0 16rpx;
-  font-size: 24rpx;
-  text-align: right;
-  background: #fafafa;
-}
-
-.param-input:focus {
-  border-color: #3ec6c6;
-  background: #fff;
-}
-
-.param-picker-text {
-  width: 200rpx;
-  height: 60rpx;
-  line-height: 60rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 8rpx;
-  padding: 0 16rpx;
-  font-size: 24rpx;
-  text-align: right;
-  background: #fafafa;
-  color: #333;
-}
-
-/* 新的参数设置样式 */
+/* Param Settings Styles */
 .param-setting-list {
   display: flex;
   flex-direction: column;
   gap: 32rpx;
-  padding: 16rpx 0;
+  padding: 32rpx 0;
 }
 
 .param-setting-item {
@@ -1449,7 +1595,6 @@ export default {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  flex-wrap: nowrap;
   white-space: nowrap;
 }
 
@@ -1457,15 +1602,11 @@ export default {
   font-size: 28rpx;
   font-weight: 600;
   color: #333;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .param-unit {
   font-size: 24rpx;
   color: #666;
-  font-weight: 400;
-  margin-left: 4rpx;
 }
 
 .param-value-container {
@@ -1487,10 +1628,6 @@ export default {
   flex-shrink: 0;
 }
 
-.param-value-input:focus {
-  border-color: #3ec6c6;
-}
-
 .param-value-picker {
   width: 200rpx;
   height: 64rpx;
@@ -1501,7 +1638,6 @@ export default {
   font-size: 26rpx;
   background: #fff;
   color: #333;
-  text-align: left;
   flex-shrink: 0;
 }
 
@@ -1510,62 +1646,36 @@ export default {
 }
 
 .param-set-btn {
-  background: #4CAF50;
+  background: #3ec6c6;
   color: #fff;
   border: none;
   border-radius: 8rpx;
   padding: 0 24rpx;
   font-size: 26rpx;
-  font-weight: 500;
-  min-width: 80rpx;
   height: 64rpx;
   line-height: 64rpx;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* 编辑设备弹窗样式 */
+/* Edit Device Popup */
 .add-device-popup {
   width: 600rpx;
   background: #fff;
   border-radius: 16rpx;
   overflow: hidden;
-}
-
-.add-device-popup .popup-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 32rpx;
-  border-bottom: 1rpx solid #f0f0f0;
-  background: #fafafa;
-  position: relative;
-}
-
-.add-device-popup .popup-title {
-  flex: 1;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-}
-
-.add-device-popup .popup-header .uni-icons {
-  flex-shrink: 0;
-}
-
-.add-device-popup .popup-content {
-  padding: 32rpx;
+  
+  .popup-header {
+    background: #fafafa;
+    padding: 32rpx;
+  }
+  
+  .popup-content {
+    padding: 32rpx;
+  }
 }
 
 .form-item {
   margin-bottom: 32rpx;
-}
-
-.form-item:last-child {
-  margin-bottom: 0;
+  &:last-child { margin-bottom: 0; }
 }
 
 .form-label {
@@ -1574,12 +1684,12 @@ export default {
   color: #333;
   margin-bottom: 16rpx;
   font-weight: 500;
-}
-
-.form-label.required::after {
-  content: '*';
-  color: #f44336;
-  margin-left: 4rpx;
+  
+  &.required::after {
+    content: '*';
+    color: #f44336;
+    margin-left: 4rpx;
+  }
 }
 
 .form-input {
@@ -1591,15 +1701,15 @@ export default {
   font-size: 28rpx;
   background: #fff;
   box-sizing: border-box;
-}
-
-.form-input.disabled {
-  background: #f5f5f5;
-  color: #999;
-}
-
-.form-input:focus {
-  border-color: #3ec6c6;
+  
+  &.disabled {
+    background: #f5f5f5;
+    color: #999;
+  }
+  
+  &:focus {
+    border-color: #3ec6c6;
+  }
 }
 
 .form-textarea {
@@ -1612,10 +1722,10 @@ export default {
   background: #fff;
   box-sizing: border-box;
   resize: none;
-}
-
-.form-textarea:focus {
-  border-color: #3ec6c6;
+  
+  &:focus {
+    border-color: #3ec6c6;
+  }
 }
 
 .char-count {
@@ -1656,11 +1766,7 @@ export default {
   font-size: 28rpx;
 }
 
-.confirm-btn[loading] {
-  opacity: 0.7;
-}
-
-/* 加载状态 */
+/* Loading Mask */
 .loading-mask {
   position: fixed;
   top: 0;
@@ -1677,15 +1783,6 @@ export default {
   .loading-text {
     margin-top: 16rpx;
     font-size: 24rpx;
-    color: #666;
-  }
-}
-
-.card-desc {
-  margin-top: 8rpx;
-  
-  text {
-    font-size: 22rpx;
     color: #666;
   }
 }

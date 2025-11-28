@@ -62,7 +62,7 @@
 		</scroll-view>
 
 		<!-- 底部添加按钮 -->
-		<view class="add-address-bar" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+		<view class="add-address-bar" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 			<view class="add-btn" @click="showAddressPopup()" hover-class="add-btn-hover">
 				<uni-icons type="plusempty" size="20" color="#fff" style="margin-right: 10rpx;"></uni-icons>
 				<text>新增服务地址</text>
@@ -95,7 +95,7 @@
 							<view class="picker-view" @click="showRegionPicker">
 								<text v-if="!addressForm.province" class="placeholder">请选择所在地区</text>
 								<text v-else class="value">{{ getFormAddressArea() }}</text>
-								<uni-icons type="right" size="16" color="#ccc"></uni-icons>
+								<uni-icons type="right" size="14" color="#ccc"></uni-icons>
 							</view>
 							<!-- #endif -->
 							<!-- #ifndef APP-PLUS -->
@@ -103,7 +103,7 @@
 								<view class="picker-view">
 									<text v-if="!addressForm.province" class="placeholder">请选择所在地区</text>
 									<text v-else class="value">{{ getFormAddressArea() }}</text>
-									<uni-icons type="right" size="16" color="#ccc"></uni-icons>
+									<uni-icons type="right" size="14" color="#ccc"></uni-icons>
 								</view>
 							</picker>
 							<!-- #endif -->
@@ -129,7 +129,7 @@
 					</view>
 				</scroll-view>
 
-				<view class="popup-footer" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+				<view class="popup-footer" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 					<view class="save-btn" @click="saveAddress" hover-class="save-btn-hover">
 						<text>保存地址</text>
 					</view>
@@ -163,6 +163,17 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 					detailAddress: '',
 					isDefault: '0',  // 后端使用字符串 '0' 或 '1'
 					remark: ''  // 备注
+				},
+				// 保存原始的表单数据用于对比
+				originalAddressForm: {
+					contactName: '',
+					contactPhone: '',
+					province: '',
+					city: '',
+					district: '',
+					detailAddress: '',
+					isDefault: '0',
+					remark: ''
 				},
 				selectedAddressId: null // 当前选中的地址ID
 			}
@@ -361,6 +372,17 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 						district: this.safeToString(address.district),
 						detailAddress: this.safeToString(address.detailAddress),
 						// isDefault 可能是布尔值或字符串，统一转为字符串
+						isDefault: (address.isDefault === true || address.isDefault === '1') ? '1' : '0',
+						remark: this.safeToString(address.remark)
+					}
+					// 保存原始数据用于对比
+					this.originalAddressForm = {
+						contactName: this.safeToString(address.contactName),
+						contactPhone: this.safeToString(address.contactPhone),
+						province: this.safeToString(address.province),
+						city: this.safeToString(address.city),
+						district: this.safeToString(address.district),
+						detailAddress: this.safeToString(address.detailAddress),
 						isDefault: (address.isDefault === true || address.isDefault === '1') ? '1' : '0',
 						remark: this.safeToString(address.remark)
 					}
@@ -660,6 +682,27 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 						title: '请输入详细地址',
 						icon: 'none'
 					})
+				}
+				
+				// 编辑模式下对比数据是否发生变化
+				if (this.isEdit) {
+					const isDataChanged = 
+						this.addressForm.contactName !== this.originalAddressForm.contactName ||
+						this.addressForm.contactPhone !== this.originalAddressForm.contactPhone ||
+						this.addressForm.province !== this.originalAddressForm.province ||
+						this.addressForm.city !== this.originalAddressForm.city ||
+						this.addressForm.district !== this.originalAddressForm.district ||
+						this.addressForm.detailAddress !== this.originalAddressForm.detailAddress ||
+						this.addressForm.isDefault !== this.originalAddressForm.isDefault ||
+						this.addressForm.remark !== this.originalAddressForm.remark
+					
+					if (!isDataChanged) {
+						return uni.showToast({
+							title: '数据未发生变化,无需提交',
+							icon: 'none',
+							duration: 2000
+						})
+					}
 				}
 
 				try {
@@ -1075,8 +1118,8 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				text-align: right;
 			}
 			
-			.input-placeholder {
-				color: #ccc;
+			.region-picker {
+				flex: 1;
 			}
 
 			.picker-view {
@@ -1088,13 +1131,19 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				.placeholder {
 					color: #ccc;
 					font-size: 30rpx;
-					margin-right: 10rpx;
+					margin-right: 12rpx;
 				}
 				
 				.value {
 					color: #333;
 					font-size: 30rpx;
-					margin-right: 10rpx;
+					margin-right: 12rpx;
+					
+					/* 限制文字长度，超出省略 */
+					max-width: 400rpx;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
 				}
 			}
 		}

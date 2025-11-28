@@ -49,6 +49,22 @@
 					</view>
 					
 					<view class="card-body">
+						<!-- 健康指标 -->
+						<view class="metrics-row" v-if="member.height || member.weight || member.bmi">
+							<view class="metric-item" v-if="member.bmi">
+								<text class="label">BMI</text>
+								<text class="value">{{ member.bmi }}</text>
+							</view>
+							<view class="metric-item" v-if="member.height">
+								<text class="label">身高</text>
+								<text class="value">{{ member.height }}<text class="unit">cm</text></text>
+							</view>
+							<view class="metric-item" v-if="member.weight">
+								<text class="label">体重</text>
+								<text class="value">{{ member.weight }}<text class="unit">kg</text></text>
+							</view>
+						</view>
+						
 						<view class="info-row">
 							<view class="info-item">
 								<text class="label">电话</text>
@@ -91,7 +107,7 @@
 		</scroll-view>
 
 		<!-- 底部按钮栏 -->
-		<view class="bottom-bar" v-if="!deviceId" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+		<view class="bottom-bar" v-if="!deviceId" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 			<view class="add-btn" @click="addMember" hover-class="btn-hover">
 				<uni-icons type="plusempty" size="20" color="#fff" style="margin-right: 10rpx;"></uni-icons>
 				<text>添加家庭成员</text>
@@ -99,7 +115,7 @@
 		</view>
 
 		<!-- 批量绑定操作栏 -->
-		<view class="bottom-bar bind-mode" v-if="deviceId" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+		<view class="bottom-bar bind-mode" v-if="deviceId" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 			<view class="bind-info">
 				<text>已选 {{ selectedMembers.length }} 人</text>
 			</view>
@@ -139,6 +155,35 @@
 								</view>
 							</picker>
 						</view>
+						<!-- 身高体重BMI -->
+						<view class="form-row">
+							<view class="form-item half">
+								<text class="label required">身高(cm)</text>
+								<input
+									type="digit"
+									v-model="formData.height"
+									placeholder="请输入"
+									placeholder-class="placeholder"
+									class="input-right"
+									@input="calculateBMI"
+								/>
+							</view>
+							<view class="form-item half">
+								<text class="label required">体重(kg)</text>
+								<input
+									type="digit"
+									v-model="formData.weight"
+									placeholder="请输入"
+									placeholder-class="placeholder"
+									class="input-right"
+									@input="calculateBMI"
+								/>
+							</view>
+						</view>
+						<view class="form-item">
+							<text class="label">BMI</text>
+							<input type="text" v-model="formData.bmi" disabled placeholder="-" placeholder-class="placeholder" />
+						</view>
 						<view class="form-item">
 							<text class="label required">电话</text>
 							<input type="number" v-model="formData.phone" maxlength="11" placeholder="请输入联系电话" placeholder-class="placeholder" />
@@ -146,13 +191,6 @@
 						<view class="form-item">
 							<text class="label required">身份证</text>
 							<input type="idcard" v-model="formData.idCard" maxlength="18" placeholder="请输入身份证号" placeholder-class="placeholder" />
-						</view>
-						<view class="form-item">
-							<text class="label">性别</text>
-							<view class="radio-group">
-								<view class="radio-tag" :class="{ active: formData.sex === '0' }" @click="formData.sex = '0'">男</view>
-								<view class="radio-tag" :class="{ active: formData.sex === '1' }" @click="formData.sex = '1'">女</view>
-							</view>
 						</view>
 						<view class="form-item column">
 							<text class="label">备注</text>
@@ -162,7 +200,7 @@
 					</view>
 				</scroll-view>
 				
-				<view class="popup-footer" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+				<view class="popup-footer" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 					<view class="save-btn" @click="submitForm" hover-class="btn-hover">
 						<text>{{ submitting ? '提交中...' : '保存' }}</text>
 					</view>
@@ -193,7 +231,9 @@ export default {
 				relationship: '',
 				phone: '',
 				idCard: '',
-				sex: '',
+				height: '',
+				weight: '',
+				bmi: '',
 				remark: ''
 			},
 			originalFormData: null, // 保存原始数据用于对比
@@ -258,7 +298,9 @@ export default {
 				relationship: '',
 				phone: '',
 				idCard: '',
-				sex: '',
+				height: '',
+				weight: '',
+				bmi: '',
 				remark: ''
 			}
 			this.showModal = true
@@ -273,7 +315,9 @@ export default {
 				relationship: member.relationship,
 				phone: member.phone,
 				idCard: member.idCard || '',
-				sex: member.sex || '',
+				height: member.height || '',
+				weight: member.weight || '',
+				bmi: member.bmi || '',
 				remark: member.remark || ''
 			}
 			// 保存原始数据的深拷贝用于对比
@@ -322,6 +366,20 @@ export default {
 			this.formData.relationship = this.relationList[e.detail.value]
 		},
 
+		// 计算BMI
+		calculateBMI() {
+			const height = parseFloat(this.formData.height)
+			const weight = parseFloat(this.formData.weight)
+			
+			if (height > 0 && weight > 0) {
+				const heightInMeters = height / 100
+				const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2)
+				this.formData.bmi = bmi
+			} else {
+				this.formData.bmi = ''
+			}
+		},
+
 		// 提交表单
 		async submitForm() {
 			// 检查数据是否有变更（仅在编辑模式下）
@@ -357,6 +415,24 @@ export default {
 			if (!phoneReg.test(this.formData.phone)) {
 				uni.showToast({
 					title: '请输入正确的手机号',
+					icon: 'none'
+				})
+				return
+			}
+
+			// 验证身高
+			if (!this.formData.height || parseFloat(this.formData.height) <= 0) {
+				uni.showToast({
+					title: '请输入有效的身高',
+					icon: 'none'
+				})
+				return
+			}
+
+			// 验证体重
+			if (!this.formData.weight || parseFloat(this.formData.weight) <= 0) {
+				uni.showToast({
+					title: '请输入有效的体重',
 					icon: 'none'
 				})
 				return
@@ -424,7 +500,9 @@ export default {
 				relationship: '',
 				phone: '',
 				idCard: '',
-				sex: '',
+				height: '',
+				weight: '',
+				bmi: '',
 				remark: ''
 			}
 			this.originalFormData = null
@@ -778,6 +856,58 @@ export default {
 	}
 	
 	.card-body {
+		.metrics-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 24rpx 0;
+			background: #f8fcfc;
+			border-radius: 16rpx;
+			margin-bottom: 24rpx;
+			border: none;
+			
+			.metric-item {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				position: relative;
+				
+				/* 添加竖向分割线 */
+				&:not(:last-child)::after {
+					content: '';
+					position: absolute;
+					right: 0;
+					top: 50%;
+					transform: translateY(-50%);
+					width: 2rpx;
+					height: 40rpx;
+					background: #e0e0e0;
+				}
+				
+				.label {
+					font-size: 24rpx;
+					color: #999;
+					margin-bottom: 12rpx;
+				}
+				
+				.value {
+					font-size: 36rpx;
+					font-weight: bold;
+					color: #333;
+					font-family: 'Roboto', sans-serif;
+					line-height: 1;
+					
+					.unit {
+						font-size: 22rpx;
+						font-weight: normal;
+						color: #999;
+						margin-left: 4rpx;
+					}
+				}
+			}
+		}
+		
 		.info-row {
 			margin-bottom: 16rpx;
 			
@@ -1002,6 +1132,58 @@ export default {
 		padding: 20rpx 0;
 	}
 
+	/* 并排表单行 */
+	.form-row {
+		display: flex;
+		align-items: center;
+		border-bottom: 2rpx solid #f5f7fa;
+		
+		.form-item {
+			flex: 1;
+			border-bottom: none;
+			padding: 32rpx 0;
+			position: relative;
+			
+			/* 标签和输入框布局 */
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			
+			&:first-child {
+				padding-right: 24rpx;
+				
+				/* 中间竖线 */
+				&::after {
+					content: '';
+					position: absolute;
+					right: 0;
+					top: 50%;
+					transform: translateY(-50%);
+					width: 2rpx;
+					height: 32rpx;
+					background: #f0f0f0;
+				}
+			}
+			
+			&:last-child {
+				padding-left: 24rpx;
+			}
+			
+			.label {
+				width: auto; 
+				margin-right: 12rpx;
+				font-size: 28rpx;
+				white-space: nowrap; /* 防止换行 */
+			}
+			
+			input {
+				text-align: right;
+				font-size: 30rpx;
+				width: 100%; /* 确保占满剩余空间 */
+			}
+		}
+	}
+
 	.form-item {
 		padding: 32rpx 0;
 		border-bottom: 2rpx solid #f5f7fa;
@@ -1052,6 +1234,10 @@ export default {
 			font-size: 30rpx;
 			color: #333;
 			text-align: right;
+			
+			&[disabled] {
+				color: #999;
+			}
 		}
 		
 		.placeholder {

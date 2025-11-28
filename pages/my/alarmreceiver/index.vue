@@ -220,6 +220,16 @@
 					userId: null,
 					wechatNotifySwitch: '2',
 					wechatOpenid: null
+				},
+				// 保存原始的表单数据用于对比
+				originalFormData: {
+					receiverName: '',
+					receiverPhone: '',
+					receiverEmail: '',
+					phoneNotifySwitch: '2',
+					smsNotifySwitch: '2',
+					wechatNotifySwitch: '2',
+					remark: null
 				}
 			}
 		},
@@ -369,6 +379,16 @@
 					wechatNotifySwitch: item.wechatNotifySwitch ?? '2',
 					wechatOpenid: item.wechatOpenid ?? null
 				}
+				// 保存原始数据用于对比
+				this.originalFormData = {
+					receiverName: item.receiverName || '',
+					receiverPhone: item.receiverPhone || '',
+					receiverEmail: item.receiverEmail || '',
+					phoneNotifySwitch: item.phoneNotifySwitch ?? '2',
+					smsNotifySwitch: item.smsNotifySwitch ?? '2',
+					wechatNotifySwitch: item.wechatNotifySwitch ?? '2',
+					remark: item.remark ?? null
+				}
 				this.showModal = true
 			},
 			closeModal() {
@@ -390,6 +410,27 @@
 					})
 					return
 				}
+				
+				// 编辑模式下对比数据是否发生变化
+				if (this.isEdit) {
+					const isDataChanged = 
+						this.formData.receiverName !== this.originalFormData.receiverName ||
+						this.formData.receiverPhone !== this.originalFormData.receiverPhone ||
+						this.formData.receiverEmail !== this.originalFormData.receiverEmail ||
+						this.formData.phoneNotifySwitch !== this.originalFormData.phoneNotifySwitch ||
+						this.formData.smsNotifySwitch !== this.originalFormData.smsNotifySwitch ||
+						this.formData.wechatNotifySwitch !== this.originalFormData.wechatNotifySwitch ||
+						(this.formData.remark ?? null) !== (this.originalFormData.remark ?? null)
+					
+					if (!isDataChanged) {
+						return uni.showToast({
+							title: '数据未发生变化,无需提交',
+							icon: 'none',
+							duration: 2000
+						})
+					}
+				}
+				
 				try {
 					this.submitting = true
 					const payload = {

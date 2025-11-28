@@ -37,39 +37,42 @@
 				<view class="divider"></view>
 
 				<view class="card-body">
-					<!-- 关键指标 Grid -->
-					<view class="metrics-grid">
-						<view class="metric-item">
-							<text class="metric-label">血型</text>
-							<text class="metric-value">{{ getBloodTypeText(record.bloodType) || '-' }}</text>
+					<!-- 关键指标 -->
+					<view class="health-info">
+						<view class="info-group">
+							<view class="info-item">
+								<text class="label">血型</text>
+								<text class="value">{{ getBloodTypeText(record.bloodType) || '-' }}</text>
+							</view>
+							<view class="info-item" v-if="record.bloodSugar">
+								<text class="label">血糖</text>
+								<text class="value">{{ record.bloodSugar }}<text class="unit">mmol/L</text></text>
+							</view>
 						</view>
-						<view class="metric-item">
-							<text class="metric-label">BMI</text>
-							<text class="metric-value">{{ record.bmi || '-' }}</text>
-						</view>
-						<view class="metric-item">
-							<text class="metric-label">身高</text>
-							<text class="metric-value">{{ record.height }}<text class="unit">cm</text></text>
-						</view>
-						<view class="metric-item">
-							<text class="metric-label">体重</text>
-							<text class="metric-value">{{ record.weight }}<text class="unit">kg</text></text>
+						
+						<view class="allergy-box" v-if="record.allergicDrugs">
+							<uni-icons type="info-filled" size="14" color="#ff9c6e"></uni-icons>
+							<text class="warning-text">过敏: {{ record.allergicDrugs }}</text>
 						</view>
 					</view>
 
 					<!-- 状态标签 -->
-					<view class="status-row">
-						<view class="status-tag" :class="'status-' + record.cognitiveStatus">
-							<text>认知: {{ getCognitiveStatusText(record.cognitiveStatus) }}</text>
+					<view class="status-grid">
+						<view class="status-item" :class="'status-' + record.cognitiveStatus">
+							<text class="label">认知</text>
+							<text class="val">{{ getCognitiveStatusText(record.cognitiveStatus) }}</text>
 						</view>
-						<view class="status-tag" :class="'status-' + record.selfCareStatus">
-							<text>自理: {{ getSelfCareStatusText(record.selfCareStatus) }}</text>
+						<view class="status-item" :class="'status-' + record.selfCareStatus">
+							<text class="label">自理</text>
+							<text class="val">{{ getSelfCareStatusText(record.selfCareStatus) }}</text>
 						</view>
-						<view class="status-tag" :class="'status-' + record.hearingStatus" v-if="record.hearingStatus">
-							<text>听力: {{ getHearingStatusText(record.hearingStatus) }}</text>
+						<view class="status-item" :class="'status-' + record.hearingStatus">
+							<text class="label">听力</text>
+							<text class="val">{{ getHearingStatusText(record.hearingStatus) }}</text>
 						</view>
-						<view class="status-tag" :class="'status-' + record.mobilityStatus" v-if="record.mobilityStatus">
-							<text>行动: {{ getMobilityStatusText(record.mobilityStatus) }}</text>
+						<view class="status-item" :class="'status-' + record.mobilityStatus">
+							<text class="label">行动</text>
+							<text class="val">{{ getMobilityStatusText(record.mobilityStatus) }}</text>
 						</view>
 					</view>
 				</view>
@@ -80,7 +83,7 @@
 		</scroll-view>
 
 		<!-- 底部按钮栏 -->
-		<view class="bottom-bar" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+		<view class="bottom-bar" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 			<view class="add-btn" @click="addRecord" hover-class="btn-hover">
 				<uni-icons type="plusempty" size="20" color="#fff" style="margin-right: 10rpx;"></uni-icons>
 				<text>新增健康档案</text>
@@ -121,55 +124,24 @@
 							</picker>
 						</view>
 						
-						<!-- 身高体重BMI -->
-						<view class="form-row">
-							<view class="form-item half">
-								<text class="label required">身高(cm)</text>
-								<input
-									v-model="formData.height"
-									class="input-right"
-									type="digit"
-									placeholder="0"
-									placeholder-class="placeholder"
-									@input="calculateBMI"
-								/>
-							</view>
-							<view class="form-item half">
-								<text class="label required">体重(kg)</text>
-								<input
-									v-model="formData.weight"
-									class="input-right"
-									type="digit"
-									placeholder="0"
-									placeholder-class="placeholder"
-									@input="calculateBMI"
-								/>
-							</view>
-						</view>
-						
-						<view class="form-row">
-							<view class="form-item half">
-								<text class="label">BMI</text>
-								<input v-model="formData.bmi" class="input-right disabled" placeholder="-" disabled />
-							</view>
-							<view class="form-item half">
-								<text class="label required">血型</text>
-								<picker
-									mode="selector"
-									:range="bloodTypeOptions"
-									range-key="label"
-									:value="getBloodTypeIndex()"
-									@change="onBloodTypeChange"
-									class="picker-flex"
-								>
-									<view class="picker-view">
-										<text :class="formData.bloodType ? 'value' : 'placeholder'">
-											{{ getBloodTypeText(formData.bloodType) || '请选择' }}
-										</text>
-										<uni-icons type="right" size="14" color="#ccc"></uni-icons>
-									</view>
-								</picker>
-							</view>
+						<!-- 血型 -->
+						<view class="form-item">
+							<text class="label required">血型</text>
+							<picker
+								mode="selector"
+								:range="bloodTypeOptions"
+								range-key="label"
+								:value="getBloodTypeIndex()"
+								@change="onBloodTypeChange"
+								class="picker-flex"
+							>
+								<view class="picker-view">
+									<text :class="formData.bloodType ? 'value' : 'placeholder'">
+										{{ getBloodTypeText(formData.bloodType) || '请选择' }}
+									</text>
+									<uni-icons type="right" size="14" color="#ccc"></uni-icons>
+								</view>
+							</picker>
 						</view>
 					</view>
 
@@ -313,7 +285,7 @@
 					</view>
 				</scroll-view>
 
-				<view class="popup-footer" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+				<view class="popup-footer" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 					<view class="save-btn" @click="submitForm" hover-class="btn-hover">
 						<text>{{ submitting ? '提交中...' : '保存' }}</text>
 					</view>
@@ -350,9 +322,20 @@ export default {
 			formData: {
 				recordId: null,
 				familyMemberId: null,
-				height: '',
-				weight: '',
-				bmi: '',
+				bloodType: '',
+				bloodSugar: '',
+				cognitiveStatus: '',
+				selfCareStatus: '',
+				hearingStatus: '',
+				mobilityStatus: '',
+				lastCheckupTime: '',
+				nextCheckupTime: '',
+				allergicDrugs: '',
+				medicalHistory: '',
+				remark: ''
+			},
+			// 保存原始的表单数据用于对比
+			originalFormData: {
 				bloodType: '',
 				bloodSugar: '',
 				cognitiveStatus: '',
@@ -542,9 +525,6 @@ export default {
 			this.formData = {
 				recordId: null,
 				familyMemberId: null,
-				height: '',
-				weight: '',
-				bmi: '',
 				bloodType: '',
 				bloodSugar: '',
 				cognitiveStatus: '',
@@ -569,9 +549,20 @@ export default {
 			this.formData = {
 				recordId: record.recordId,
 				familyMemberId: record.familyMemberId,
-				height: record.height || '',
-				weight: record.weight || '',
-				bmi: record.bmi || '',
+				bloodType: record.bloodType || '',
+				bloodSugar: record.bloodSugar || '',
+				cognitiveStatus: record.cognitiveStatus || '',
+				selfCareStatus: record.selfCareStatus || '',
+				hearingStatus: record.hearingStatus || '',
+				mobilityStatus: record.mobilityStatus || '',
+				lastCheckupTime: record.lastCheckupTime || '',
+				nextCheckupTime: record.nextCheckupTime || '',
+				allergicDrugs: record.allergicDrugs || '',
+				medicalHistory: record.medicalHistory || '',
+				remark: record.remark || ''
+			}
+			// 保存原始数据用于对比
+			this.originalFormData = {
 				bloodType: record.bloodType || '',
 				bloodSugar: record.bloodSugar || '',
 				cognitiveStatus: record.cognitiveStatus || '',
@@ -631,9 +622,6 @@ export default {
 			this.formData = {
 				recordId: null,
 				familyMemberId: null,
-				height: '',
-				weight: '',
-				bmi: '',
 				bloodType: '',
 				bloodSugar: '',
 				cognitiveStatus: '',
@@ -658,20 +646,6 @@ export default {
 			this.formData.familyMemberId = this.availableFamilyMembers[index].value
 		},
 		
-		// 计算BMI
-		calculateBMI() {
-			const height = parseFloat(this.formData.height)
-			const weight = parseFloat(this.formData.weight)
-			
-			if (height > 0 && weight > 0) {
-				const heightInMeters = height / 100
-				const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2)
-				this.formData.bmi = bmi
-			} else {
-				this.formData.bmi = ''
-			}
-		},
-		
 		// 血型选择
 		onBloodTypeChange(e) {
 			const index = e.detail.value
@@ -686,7 +660,7 @@ export default {
 			const item = this.bloodTypeOptions.find(item => item.value === value)
 			return item ? item.label : ''
 		},
-		
+
 		// 认知状态选择
 		onCognitiveStatusChange(e) {
 			const index = e.detail.value
@@ -766,22 +740,6 @@ export default {
 				return false
 			}
 			
-			if (!this.formData.height || this.formData.height <= 0) {
-				uni.showToast({
-					title: '请输入正确的身高',
-					icon: 'none'
-				})
-				return false
-			}
-			
-			if (!this.formData.weight || this.formData.weight <= 0) {
-				uni.showToast({
-					title: '请输入正确的体重',
-					icon: 'none'
-				})
-				return false
-			}
-			
 			if (!this.formData.bloodType) {
 				uni.showToast({
 					title: '请选择血型',
@@ -809,10 +767,49 @@ export default {
 			return true
 		},
 		
+		// 血型选择
+		onBloodTypeChange(e) {
+			const index = e.detail.value
+			this.formData.bloodType = this.bloodTypeOptions[index].value
+		},
+		
+		getBloodTypeIndex() {
+			return this.bloodTypeOptions.findIndex(item => item.value === this.formData.bloodType)
+		},
+		
+		getBloodTypeText(value) {
+			const item = this.bloodTypeOptions.find(item => item.value === value)
+			return item ? item.label : ''
+		},
+		
 		// 提交表单
 		async submitForm() {
 			if (!this.validateForm()) {
 				return
+			}
+			
+			// 编辑模式下对比数据是否发生变化
+			if (this.isEdit) {
+				const isDataChanged = 
+					this.formData.bloodType !== this.originalFormData.bloodType ||
+					this.formData.bloodSugar !== this.originalFormData.bloodSugar ||
+					this.formData.cognitiveStatus !== this.originalFormData.cognitiveStatus ||
+					this.formData.selfCareStatus !== this.originalFormData.selfCareStatus ||
+					this.formData.hearingStatus !== this.originalFormData.hearingStatus ||
+					this.formData.mobilityStatus !== this.originalFormData.mobilityStatus ||
+					this.formData.lastCheckupTime !== this.originalFormData.lastCheckupTime ||
+					this.formData.nextCheckupTime !== this.originalFormData.nextCheckupTime ||
+					this.formData.allergicDrugs !== this.originalFormData.allergicDrugs ||
+					this.formData.medicalHistory !== this.originalFormData.medicalHistory ||
+					this.formData.remark !== this.originalFormData.remark
+				
+				if (!isDataChanged) {
+					return uni.showToast({
+						title: '数据未发生变化,无需提交',
+						icon: 'none',
+						duration: 2000
+					})
+				}
 			}
 			
 			try {
@@ -976,66 +973,104 @@ export default {
 	.card-body {
 		padding: 30rpx;
 		
-		.metrics-grid {
-			display: grid;
-			grid-template-columns: repeat(4, 1fr);
-			gap: 20rpx;
-			margin-bottom: 30rpx;
+		.health-info {
+			margin-bottom: 20rpx;
 			
-			.metric-item {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				gap: 8rpx;
+			.info-group {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 20rpx;
+				margin-bottom: 20rpx;
 				
-				.metric-label {
-					font-size: 24rpx;
-					color: #999;
-				}
-				
-				.metric-value {
-					font-size: 32rpx;
-					font-weight: bold;
-					color: #333;
-					font-family: 'Roboto', sans-serif;
+				.info-item {
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					padding: 16rpx 24rpx;
+					background-color: #f9f9f9;
+					border-radius: 12rpx;
+					gap: 8rpx;
 					
-					.unit {
-						font-size: 22rpx;
-						font-weight: normal;
+					.label {
+						font-size: 24rpx;
 						color: #999;
-						margin-left: 4rpx;
 					}
+					
+					.value {
+						font-size: 30rpx;
+						font-weight: bold;
+						color: #333;
+						font-family: 'Roboto', sans-serif;
+						
+						.unit {
+							font-size: 22rpx;
+							font-weight: normal;
+							color: #999;
+							margin-left: 4rpx;
+						}
+					}
+				}
+			}
+			
+			.allergy-box {
+				display: flex;
+				align-items: center;
+				gap: 12rpx;
+				background-color: #fff2e8;
+				padding: 16rpx 24rpx;
+				border-radius: 12rpx;
+				border: 1rpx solid #ffbb96;
+				
+				.warning-text {
+					font-size: 26rpx;
+					color: #fa541c;
+					font-weight: 500;
 				}
 			}
 		}
 		
-		.status-row {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 16rpx;
+		.status-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 20rpx;
 			
-			.status-tag {
-				padding: 8rpx 20rpx;
-				border-radius: 30rpx;
-				font-size: 24rpx;
-				font-weight: 500;
+			.status-item {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 16rpx 24rpx;
+				border-radius: 12rpx;
+				background-color: #f5f7fa;
 				
+				.label {
+					font-size: 26rpx;
+					color: #666;
+				}
+				
+				.val {
+					font-size: 26rpx;
+					font-weight: 600;
+				}
+				
+				/* 状态颜色 */
 				&.status-0 { // 正常
-					background: #f6ffed;
-					color: #52c41a;
-					border: 1rpx solid #b7eb8f;
+					background-color: #f6ffed;
+					.val { color: #52c41a; }
 				}
 				
 				&.status-1 { // 轻度
-					background: #fffbe6;
-					color: #faad14;
-					border: 1rpx solid #ffe58f;
+					background-color: #fffbe6;
+					.val { color: #faad14; }
 				}
 				
-				&.status-2, &.status-3 { // 中重度
-					background: #fff1f0;
-					color: #ff4d4f;
-					border: 1rpx solid #ffa39e;
+				&.status-2 { // 中度
+					background-color: #fff2f0;
+					.val { color: #ff4d4f; }
+				}
+				
+				&.status-3 { // 重度
+					background-color: #fff1f0;
+					.val { color: #cf1322; }
 				}
 			}
 		}

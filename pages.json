@@ -142,6 +142,20 @@
 				}
 			},
 			{
+				"path" : "device/fall",
+				"style" : 
+				{
+					"navigationBarTitleText" : "跌倒数据监测"
+				}
+			},
+			{
+				"path" : "device/sleep",
+				"style" : 
+				{
+					"navigationBarTitleText" : "睡眠数据监测"
+				}
+			},
+			{
 				"path" : "alarmreceiver/index",
 				"style" : 
 				{
@@ -175,7 +189,39 @@
 				{
 					"navigationBarTitleText" : "余量消费"
 				}
+			},
+			{
+				"path" : "sleep-report/sleep-report",
+				"style" : 
+				{
+					"navigationBarTitleText" : "睡眠报告"
+				}
+			},
+			{
+				"path" : "day-report/day-report",
+				"style" : 
+				{
+					"navigationBarTitleText" : "日报告"
+				}
+			},
+			{
+				"path" : "month-report/month-report",
+				"style" : 
+				{
+					"navigationBarTitleText" : "月报告"
+				}
+			},
+			{
+				"path" : "week-report/week-report",
+				"style" : 
+				{
+					"navigationBarTitleText" : "周报告"
+				}
 			}
+			
+			
+			
+			
 			
 		]
 

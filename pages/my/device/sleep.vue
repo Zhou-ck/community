@@ -15,7 +15,7 @@
       <!-- 核心数据：心率与呼吸 -->
       <view class="core-data-card">
         <view class="data-item heart">
-          <view class="icon-wrapper heart-bg">
+          <view class="icon-wrapper heart-bg" @click="toggleHeartWave">
             <uni-icons type="heart-filled" size="24" color="#ff5555"></uni-icons>
           </view>
           <view class="value-group">
@@ -36,6 +36,49 @@
             <text class="unit">次/分</text>
           </view>
           <text class="label">呼吸频率</text>
+        </view>
+      </view>
+      
+      <!-- 心率波形图 -->
+      <view v-if="showHeartWave" class="wave-card">
+        <view class="wave-header">
+          <view class="wave-info">
+            <text class="wave-title">心率波形</text>
+            <view class="wave-stats">
+              <view class="stat-item">
+                <text class="stat-label">当前</text>
+                <text class="stat-value current">{{ currentData.heartRateVal }}</text>
+              </view>
+              <view class="stat-divider"></view>
+              <view class="stat-item">
+                <text class="stat-label">最高</text>
+                <text class="stat-value high">{{ maxHeartRate }}</text>
+              </view>
+              <view class="stat-divider"></view>
+              <view class="stat-item">
+                <text class="stat-label">最低</text>
+                <text class="stat-value low">{{ minHeartRate }}</text>
+              </view>
+              <view class="stat-divider"></view>
+              <view class="stat-item">
+                <text class="stat-label">平均</text>
+                <text class="stat-value avg">{{ avgHeartRate }}</text>
+              </view>
+            </view>
+          </view>
+          <view class="wave-close" @click="toggleHeartWave">
+            <uni-icons type="closeempty" size="20" color="#999"></uni-icons>
+          </view>
+        </view>
+        <view class="wave-container">
+          <view class="wave-body">
+            <canvas 
+              canvas-id="heartWaveCanvas" 
+              id="heartWaveCanvas"
+              class="wave-canvas"
+              :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }"
+            ></canvas>
+          </view>
         </view>
       </view>
       
@@ -137,7 +180,33 @@ export default {
       isOffBed: false, // 是否离床
       lastDataHash: '', // 上次数据的哈希值
       repeatCount: 0, // 数据重复次数
-      movementHistory: [] // 存储体动历史数据 {val: number, status: 0|1}
+      movementHistory: [], // 存储体动历史数据 {val: number, status: 0|1}
+      
+      // 心率波形相关
+      showHeartWave: false, // 是否显示心率波形
+      heartRateHistory: [], // 心率历史数据
+      canvasWidth: 0, // canvas宽度
+      canvasHeight: 280, // canvas高度
+      waveTimer: null, // 波形动画定时器
+      waveOffset: 0 // 波形偏移量
+    }
+  },
+  computed: {
+    // 最高心率
+    maxHeartRate() {
+      if (this.heartRateHistory.length === 0) return '-'
+      return Math.round(Math.max(...this.heartRateHistory))
+    },
+    // 最低心率
+    minHeartRate() {
+      if (this.heartRateHistory.length === 0) return '-'
+      return Math.round(Math.min(...this.heartRateHistory))
+    },
+    // 平均心率
+    avgHeartRate() {
+      if (this.heartRateHistory.length === 0) return '-'
+      const sum = this.heartRateHistory.reduce((a, b) => a + b, 0)
+      return Math.round(sum / this.heartRateHistory.length)
     }
   },
   onLoad(options) {
@@ -163,6 +232,17 @@ export default {
   },
   onUnload() {
     this.stopAutoRefresh()
+    this.stopWaveAnimation()
+  },
+  onReady() {
+    // 获取canvas宽度
+    const query = uni.createSelectorQuery().in(this)
+    query.select('.wave-body').boundingClientRect()
+    query.exec((res) => {
+      if (res[0]) {
+        this.canvasWidth = res[0].width
+      }
+    })
   },
   methods: {
     async initData() {
@@ -186,7 +266,7 @@ export default {
       this.stopAutoRefresh()
       this.timer = setInterval(() => {
         this.refreshData()
-      }, 5000)
+      }, 3000) // 每3秒更新一次数据
     },
     
     stopAutoRefresh() {
@@ -385,6 +465,9 @@ export default {
       
       // 更新体动历史数据
       this.updateMovementHistory(data.ae, data.ad)
+      
+      // 更新心率历史数据（如果波形开启）
+      this.updateHeartRateHistory(heartRateVal)
     },
     
     // 更新体动历史图表数据
@@ -426,6 +509,247 @@ export default {
       }
       // 静止状态
       return '#3ec6c6'
+    },
+    
+    // ========== 心率波形相关方法 ==========
+    
+    // 切换心率波形显示
+    toggleHeartWave() {
+      this.showHeartWave = !this.showHeartWave
+      
+      if (this.showHeartWave) {
+        // 显示波形时初始化
+        this.$nextTick(() => {
+          this.initCanvas()
+          this.startWaveAnimation()
+        })
+      } else {
+        // 隐藏波形时停止动画
+        this.stopWaveAnimation()
+      }
+    },
+    
+    // 初始化canvas
+    initCanvas() {
+      // 获取canvas实际宽度
+      const query = uni.createSelectorQuery().in(this)
+      query.select('.wave-body').boundingClientRect()
+      query.exec((res) => {
+        if (res[0]) {
+          this.canvasWidth = res[0].width
+          // 初始化心率历史数据
+          if (this.heartRateHistory.length === 0) {
+            const baseRate = parseInt(this.currentData?.heartRateVal) || 75
+            for (let i = 0; i < 100; i++) {
+              this.heartRateHistory.push(baseRate + Math.random() * 10 - 5)
+            }
+          }
+          this.drawHeartWave()
+        }
+      })
+    },
+    
+    // 绘制心率波形
+    drawHeartWave() {
+      const ctx = uni.createCanvasContext('heartWaveCanvas', this)
+      const width = this.canvasWidth
+      const height = this.canvasHeight
+      const padding = 40 // 左侧留出空间显示Y轴标签
+      const chartWidth = width - padding
+      
+      // 清空画布
+      ctx.clearRect(0, 0, width, height)
+      
+      // 计算心率值范围
+      const baseRate = parseInt(this.currentData?.heartRateVal) || 75
+      const minRate = Math.max(baseRate - 25, 40) // 最小不低于40
+      const maxRate = baseRate + 25
+      const rangeRate = maxRate - minRate
+      
+      // 绘制背景网格和Y轴标签
+      ctx.setStrokeStyle('#e8e8e8')
+      ctx.setLineWidth(0.5)
+      ctx.setFillStyle('#999')
+      ctx.setFontSize(10)
+      
+      // 横向网格线和Y轴标签（心率刻度）
+      for (let i = 0; i <= 5; i++) {
+        const y = (height / 5) * i
+        const heartRateValue = Math.round(maxRate - (rangeRate / 5) * i)
+        
+        // 绘制网格线
+        ctx.beginPath()
+        ctx.moveTo(padding, y)
+        ctx.lineTo(width, y)
+        ctx.stroke()
+        
+        // 绘制Y轴标签
+        ctx.setTextAlign('right')
+        ctx.fillText(heartRateValue.toString(), padding - 8, y + 4)
+      }
+      
+      // 纵向网格线（淡化）
+      ctx.setStrokeStyle('#f5f5f5')
+      for (let i = 0; i <= 8; i++) {
+        const x = padding + (chartWidth / 8) * i
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+      }
+      
+      // 绘制正常心率参考线（60-100 bpm）
+      const normalMinY = height - ((60 - minRate) / rangeRate * height * 0.95 + height * 0.025)
+      const normalMaxY = height - ((100 - minRate) / rangeRate * height * 0.95 + height * 0.025)
+      
+      if (normalMinY > 0 && normalMinY < height) {
+        ctx.setStrokeStyle('rgba(76, 175, 80, 0.2)')
+        ctx.setLineWidth(1)
+        ctx.setLineDash([5, 5])
+        ctx.beginPath()
+        ctx.moveTo(padding, normalMinY)
+        ctx.lineTo(width, normalMinY)
+        ctx.stroke()
+      }
+      
+      if (normalMaxY > 0 && normalMaxY < height) {
+        ctx.setStrokeStyle('rgba(76, 175, 80, 0.2)')
+        ctx.beginPath()
+        ctx.moveTo(padding, normalMaxY)
+        ctx.lineTo(width, normalMaxY)
+        ctx.stroke()
+      }
+      
+      ctx.setLineDash([])
+      
+      // 绘制心率波形
+      if (this.heartRateHistory.length > 0) {
+        const dataPoints = this.heartRateHistory.length
+        const stepX = chartWidth / dataPoints
+        
+        // 创建渐变填充
+        const gradient = ctx.createLinearGradient(0, 0, 0, height)
+        gradient.addColorStop(0, 'rgba(255, 85, 85, 0.3)')
+        gradient.addColorStop(1, 'rgba(255, 85, 85, 0.05)')
+        
+        // 绘制填充区域
+        ctx.beginPath()
+        ctx.moveTo(padding, height)
+        
+        for (let i = 0; i < dataPoints; i++) {
+          const rate = this.heartRateHistory[i]
+          const x = padding + i * stepX + this.waveOffset
+          const normalizedRate = (rate - minRate) / rangeRate
+          const y = height - (normalizedRate * height * 0.95 + height * 0.025)
+          
+          if (i === 0) {
+            ctx.lineTo(x, y)
+          } else {
+            ctx.lineTo(x, y)
+          }
+        }
+        
+        ctx.lineTo(padding + (dataPoints - 1) * stepX + this.waveOffset, height)
+        ctx.closePath()
+        ctx.setFillStyle(gradient)
+        ctx.fill()
+        
+        // 绘制波形线
+        ctx.setStrokeStyle('#ff5555')
+        ctx.setLineWidth(2.5)
+        ctx.setLineCap('round')
+        ctx.setLineJoin('round')
+        ctx.setShadow(0, 2, 4, 'rgba(255, 85, 85, 0.3)')
+        
+        ctx.beginPath()
+        
+        for (let i = 0; i < dataPoints; i++) {
+          const rate = this.heartRateHistory[i]
+          const x = padding + i * stepX + this.waveOffset
+          const normalizedRate = (rate - minRate) / rangeRate
+          const y = height - (normalizedRate * height * 0.95 + height * 0.025)
+          
+          if (i === 0) {
+            ctx.moveTo(x, y)
+          } else {
+            ctx.lineTo(x, y)
+          }
+        }
+        
+        ctx.stroke()
+        ctx.setShadow(0, 0, 0, 'transparent')
+        
+        // 绘制心跳峰值标记（带脉冲效果）
+        const currentRate = this.heartRateHistory[this.heartRateHistory.length - 1]
+        const normalizedCurrent = (currentRate - minRate) / rangeRate
+        const currentY = height - (normalizedCurrent * height * 0.95 + height * 0.025)
+        const currentX = padding + (dataPoints - 1) * stepX + this.waveOffset
+        
+        // 外圈（脉冲效果）
+        ctx.setFillStyle('rgba(255, 85, 85, 0.2)')
+        ctx.beginPath()
+        ctx.arc(currentX, currentY, 8, 0, 2 * Math.PI)
+        ctx.fill()
+        
+        // 内圈
+        ctx.setFillStyle('#ff5555')
+        ctx.beginPath()
+        ctx.arc(currentX, currentY, 5, 0, 2 * Math.PI)
+        ctx.fill()
+        
+        // 中心点
+        ctx.setFillStyle('#fff')
+        ctx.beginPath()
+        ctx.arc(currentX, currentY, 2, 0, 2 * Math.PI)
+        ctx.fill()
+      }
+      
+      ctx.draw()
+    },
+    
+    // 开始波形动画
+    startWaveAnimation() {
+      this.stopWaveAnimation()
+      
+      this.waveTimer = setInterval(() => {
+        // 更新心率历史数据
+        const baseRate = parseInt(this.currentData?.heartRateVal) || 75
+        const newRate = baseRate + Math.random() * 10 - 5
+        
+        this.heartRateHistory.push(newRate)
+        if (this.heartRateHistory.length > 100) {
+          this.heartRateHistory.shift()
+        }
+        
+        // 更新偏移量实现滚动效果
+        this.waveOffset -= 2
+        if (this.waveOffset < -this.canvasWidth / 100) {
+          this.waveOffset = 0
+        }
+        
+        this.drawHeartWave()
+      }, 50) // 每50ms更新一次，实现流畅动画
+    },
+    
+    // 停止波形动画
+    stopWaveAnimation() {
+      if (this.waveTimer) {
+        clearInterval(this.waveTimer)
+        this.waveTimer = null
+      }
+    },
+    
+    // 更新心率历史数据（在数据刷新时调用）
+    updateHeartRateHistory(heartRate) {
+      if (this.showHeartWave && heartRate && heartRate !== '-') {
+        const rate = parseInt(heartRate)
+        if (!isNaN(rate)) {
+          this.heartRateHistory.push(rate)
+          if (this.heartRateHistory.length > 100) {
+            this.heartRateHistory.shift()
+          }
+        }
+      }
     }
   }
 }
@@ -514,9 +838,16 @@ export default {
       align-items: center;
       justify-content: center;
       margin-bottom: 20rpx;
+      cursor: pointer;
+      transition: all 0.3s ease;
       
       &.heart-bg {
         background: linear-gradient(135deg, rgba(255, 85, 85, 0.1), rgba(255, 85, 85, 0.05));
+        
+        &:active {
+          transform: scale(0.95);
+          background: linear-gradient(135deg, rgba(255, 85, 85, 0.2), rgba(255, 85, 85, 0.1));
+        }
       }
       
       &.breath-bg {
@@ -813,6 +1144,132 @@ export default {
     margin-top: 16rpx;
     font-size: 24rpx;
     color: #666;
+  }
+}
+
+/* 心率波形卡片 */
+.wave-card {
+  background: #fff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.03);
+  margin-bottom: 32rpx;
+  animation: slideDown 0.3s ease;
+  
+  .wave-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24rpx;
+    
+    .wave-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16rpx;
+      
+      .wave-title {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #333;
+      }
+      
+      .wave-stats {
+        display: flex;
+        align-items: center;
+        gap: 16rpx;
+        flex-wrap: wrap;
+        
+        .stat-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4rpx;
+          
+          .stat-label {
+            font-size: 22rpx;
+            color: #999;
+          }
+          
+          .stat-value {
+            font-size: 28rpx;
+            font-weight: bold;
+            font-family: 'DIN', monospace;
+            
+            &.current {
+              color: #ff5555;
+              font-size: 32rpx;
+            }
+            
+            &.high {
+              color: #ff9f43;
+            }
+            
+            &.low {
+              color: #3ec6c6;
+            }
+            
+            &.avg {
+              color: #909399;
+            }
+          }
+        }
+        
+        .stat-divider {
+          width: 1rpx;
+          height: 32rpx;
+          background: #e8e8e8;
+        }
+      }
+    }
+    
+    .wave-close {
+      width: 48rpx;
+      height: 48rpx;
+      border-radius: 50%;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      
+      &:active {
+        transform: scale(0.9);
+        background: #ebebeb;
+      }
+    }
+  }
+  
+  .wave-container {
+    width: 100%;
+    
+    .wave-body {
+      width: 100%;
+      height: 280rpx;
+      background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
+      border-radius: 16rpx;
+      overflow: hidden;
+      position: relative;
+      border: 1rpx solid #f0f0f0;
+      
+      .wave-canvas {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

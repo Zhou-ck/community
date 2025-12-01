@@ -12,6 +12,30 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-lianxiren:before {
+  content: "\e68d";
+}
+
+.icon-shebeikaobei:before {
+  content: "\e603";
+}
+
+.icon-shishijiance:before {
+  content: "\e62d";
+}
+
+.icon-shebei:before {
+  content: "\e663";
+}
+
+.icon-shishijianceyujing:before {
+  content: "\e7ce";
+}
+
+.icon-shishijianceshuju:before {
+  content: "\e8b3";
+}
+
 .icon-shebeiguanli:before {
   content: "\e61a";
 }

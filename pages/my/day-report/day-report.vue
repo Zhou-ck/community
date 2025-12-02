@@ -1638,11 +1638,8 @@
 				const queryParams = {
 					pageNum: 1,
 					pageSize: 300,
-					deviceKey: this.deviceKey,//devicekey
-					productKey: this.productKey,//productkey
-					// isShare: this.isShare,//是否是被分享的设备
-					// date:this.queryParams.date,
-					// selectTime:  new Date(this.chooseDate).getTime(),
+					deviceKey: this.deviceKey,
+					productKey: this.productKey,
 					StartTime:timeStampStart,
 					EndTime:timeStampEnd
 				}
@@ -1653,21 +1650,12 @@
 </script>
 
 <style lang="scss" scoped>
-	@font-face {
-		font-family: shangsheng;
-		src: url('/static/font/iconfontShangsheng.ttf') format('truetype');;
-	}
-	@font-face {
-		font-family: xiajiang;
-		src: url('/static/font/iconfontXiajiang.ttf') format('truetype');;
-	}
 	.day_report_all {
 		font-size: $all-font-size-medium;
 		/* 睡眠总结区域 */
 		.summarize {
 			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 			padding: 40rpx 25rpx 2rpx 25rpx;
-			margin: 25rpx auto;
 			width: 700rpx;
 			background: #fff;
 			border-radius: 10rpx;

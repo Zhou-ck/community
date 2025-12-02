@@ -147,6 +147,18 @@
           <uni-icons type="bars" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>   
+
+      <!-- 需求消息 -->
+      <view class="function-card" @click="handleSleepDemandClick" v-if="showSleepReport">
+        <view class="card-content">
+          <text class="card-title">需求消息</text>
+          <text class="card-subtitle">查看需求消息列表</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="chat" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+
       <!-- 编辑设备 -->
       <view class="function-card" @click="editDevice(deviceInfo)">
         <view class="card-content">
@@ -668,6 +680,15 @@ export default {
       
       uni.navigateTo({
         url: `/pages/my/sleep-report/sleep-report?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+      })
+    },
+
+    // 处理需求消息点击事件
+    handleSleepDemandClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/device/msg?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}`
       })
     },
     

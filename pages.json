@@ -156,6 +156,13 @@
 				}
 			},
 			{
+				"path" : "device/msg",
+				"style" : 
+				{
+					"navigationBarTitleText" : "需求消息"
+				}
+			},
+			{
 				"path" : "alarmreceiver/index",
 				"style" : 
 				{

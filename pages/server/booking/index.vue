@@ -645,10 +645,12 @@ export default {
           // 清除缓存
           uni.removeStorageSync('bookingDataCache');
           
-          // 延迟跳转
+          // 延迟跳转到订单页面
           setTimeout(() => {
-            // 编辑模式返回1层，新增模式返回2层
-            uni.navigateBack({ delta: this.isEditMode ? 1 : 2 });
+            // 跳转到订单页面，显示全部订单
+            uni.reLaunch({
+              url: '/pages/order/index?status=0'
+            });
           }, 2000);
         } else {
           uni.showToast({

@@ -1,5 +1,12 @@
 <template>
 	<view class="order-container">
+		<!-- 新订单提示横幅 -->
+		<view class="new-order-banner" v-if="showNewOrderBadge" @click="scrollToTop">
+			<uni-icons type="sound" size="18" color="#ff9900"></uni-icons>
+			<text class="banner-text">您有 {{ newOrderCount }} 条新订单，点击查看</text>
+			<uni-icons type="right" size="14" color="#ff9900"></uni-icons>
+		</view>
+
 		<!-- 订单状态切换栏 -->
 		<view class="order-tabs">
 			<view
@@ -100,15 +107,29 @@
 					</view>
 				</view>
 
-				<view class="order-footer">
+				<!-- 拒绝原因提示 -->
+				<view class="reject-reason" v-if="order.status === 'rejected' && order.rejectReason">
+					<uni-icons type="info-filled" size="16" color="#fa8c16"></uni-icons>
+					<text class="reason-title">拒绝原因：</text>
+					<text class="reason-content">{{ order.rejectReason }}</text>
+				</view>
+
+				<!-- 关闭原因提示 -->
+			<view class="reject-reason" v-if="order.status === 'closed' && order.remark">
+				<uni-icons type="info-filled" size="16" color="#fa8c16"></uni-icons>
+				<text class="reason-title">关闭原因：</text>
+				<text class="reason-content">{{ order.remark }}</text>
+			</view>
+
+			<view class="order-footer">
 					<view class="order-summary">
 						<text class="total-text">服务价格：￥{{ order.price }}</text>
 						<text class="subsidy-text" v-if="order.useSubsidy === '1' && order.subsidyAmount > 0">补贴：-￥{{ order.subsidyAmount }}</text>
 						<view class="amount-wrapper">
-							<text class="total-price" :class="{ 'refunded': order.status === 'cancelled' || order.status === 'rejected' }">
+							<text class="total-price" :class="{ 'refunded': order.status === 'cancelled' || order.status === 'rejected' || order.status === 'closed' }">
 								实付：￥{{ order.actualAmount }}
 							</text>
-							<text v-if="order.status === 'cancelled' || order.status === 'rejected'" class="refund-tag">
+							<text v-if="order.status === 'cancelled' || order.status === 'rejected' || order.status === 'closed'" class="refund-tag">
 								已退款
 							</text>
 						</view>
@@ -144,8 +165,8 @@
 							<button class="action-btn reviewed" @click="viewMyReview(order.id)">查看评价</button>
 						</template>
 						
-						<!-- 已取消/已拒绝状态 -->
-						<template v-if="order.status === 'cancelled' || order.status === 'rejected'">
+						<!-- 已取消/已拒绝/已关闭状态 -->
+						<template v-if="order.status === 'cancelled' || order.status === 'rejected' || order.status === 'closed'">
 							<button class="action-btn delete" @click="deleteOrder(order.id)">删除订单</button>
 						</template>
 					</view>
@@ -212,6 +233,7 @@
 <script>
 	import { listServiceorder, cancelServiceorder, updateServiceorder, delServiceorder, evaluationServiceorder } from '@/api/service'
 	import config from '@/config.js'
+	import websocket from '@/utils/websocket.js'
 	
 	export default {
 		data() {
@@ -246,11 +268,22 @@
 					serving: { text: '服务中', class: 'status-serving' },
 					completed: { text: '已完成', class: 'status-completed' },
 					cancelled: { text: '已取消', class: 'status-cancelled' },
-					rejected: { text: '已拒绝', class: 'status-rejected' }
-				}
+					rejected: { text: '已拒绝', class: 'status-rejected' },
+					closed: { text: '已关闭', class: 'status-closed' }
+				},
+				
+				// WebSocket 相关
+				wsStatus: '', // WebSocket 连接状态: pending, connecting, connected, reconnecting, error, failed, closed
+				showNewOrderBadge: false, // 显示新订单提示
+				newOrderCount: 0, // 新订单数量
+				unsubscribeList: [], // 取消订阅函数列表
+				isPageUnloaded: false // 页面是否已卸载，防止卸载后继续处理消息
 			}
 		},
 		onLoad(options) {
+			// 重置页面卸载标记（防止页面缓存复用）
+			this.isPageUnloaded = false
+			
 			// 如果有状态参数，切换到对应标签
 			if (options.status) {
 				this.currentTab = parseInt(options.status)
@@ -259,23 +292,37 @@
 			this.loadReviewStats()
 			this.loadOrders()
 
-			// 监听订单更新事件
-			uni.$on('orderUpdated', this.handleOrderUpdated)
-			// 监听打开评价弹窗事件
-			uni.$on('openReviewModal', this.handleOpenReviewModal)
+			// 连接 WebSocket
+			this.connectWebSocket()
 		},
 
 		onShow() {
-			// 页面显示时刷新评价统计和订单数据
+			// 重置页面卸载标记
+			this.isPageUnloaded = false
+			
 			this.loadReviewStats()
 			// 强制刷新订单数据
 			this.refreshOrders()
+			
+			// 检查 WebSocket 连接状态，如果未连接则重新连接
+			if (this.wsStatus !== 'connected') {
+				this.connectWebSocket()
+			}
+		},
+		
+		onHide() {
+			// 页面隐藏时断开连接，节省资源
+			this.disconnectWebSocket()
 		},
 
 		onUnload() {
-			// 移除事件监听
-			uni.$off('orderUpdated', this.handleOrderUpdated)
-			uni.$off('openReviewModal', this.handleOpenReviewModal)
+			// 标记页面已卸载，防止后续消息处理
+			this.isPageUnloaded = true
+			
+			// 页面卸载时断开 WebSocket 连接
+			// 确保只调用一次，清理所有资源
+			this.disconnectWebSocket()
+			
 			// 清除搜索防抖定时器
 			if (this.searchTimer) {
 				clearTimeout(this.searchTimer)
@@ -283,23 +330,6 @@
 			}
 		},
 		methods: {
-			// 处理订单更新事件
-			handleOrderUpdated(data) {
-				console.log('收到订单更新事件:', data)
-				// 刷新评价统计
-				this.loadReviewStats()
-				// 强制刷新订单数据
-				this.refreshOrders()
-			},
-
-			// 处理打开评价弹窗事件
-			handleOpenReviewModal(data) {
-				console.log('打开评价弹窗:', data)
-				if (data && data.orderId) {
-					this.goToReview(data.orderId)
-				}
-			},
-
 			// 切换标签
 			switchTab(index) {
 				if (this.currentTab === index) return
@@ -403,7 +433,6 @@
 					}
 
 					// 前端搜索，不再传递搜索参数到后端
-					console.log('查询订单列表参数:', query)
 
 					// 调用后端API
 					const response = await listServiceorder(query)
@@ -430,15 +459,12 @@
 						// 判断是否还有更多数据
 						const total = response.total || 0
 						this.hasMore = this.orderList.length < total
-						
-						console.log('订单列表加载成功:', { total, current: this.orderList.length, hasMore: this.hasMore })
 					} else {
 						// API返回失败
 						if (this.page === 1) {
 							this.orderList = []
 						}
 						this.hasMore = false
-						console.warn('获取订单列表失败:', response.msg)
 					}
 				} catch (error) {
 					console.error('加载订单列表异常:', error)
@@ -465,13 +491,14 @@
 					'2': 'serving',    // 服务中
 					'3': 'completed',  // 已完成
 					'4': 'cancelled',  // 已取消
-					'5': 'rejected'    // 已拒绝
+					'5': 'rejected',   // 已拒绝
+					'6': 'closed'      // 已关闭
 				}
 				
 				const status = statusTextMap[order.orderStatus] || 'pending'
 				const statusInfo = this.statusMap[status] || this.statusMap.pending
 				
-				return {
+				const formattedOrder = {
 					id: order.orderId,
 					createTime: order.createTime || '',
 					status: status,
@@ -487,7 +514,7 @@
 					contactPhone: order.contactPhone || '',
 					appointmentDate: order.appointmentDate || '',
 					appointmentPeriod: order.appointmentPeriod || '',
-					serviceAddress: order.serviceAddress || '',
+					serviceAddress: order.detailAddress || '',
 					
 					// 价格相关
 					price: order.price || 0,
@@ -498,8 +525,15 @@
 					// 其他信息
 					remark: order.remark || '',
 					rating: order.rating || null,
-					evaluationContent: order.evaluationContent || ''
+					evaluationContent: order.evaluationContent || '',
+					rejectReason: order.rejectReason || '', // 拒绝原因
+
+					// 用户信息 - 从后端返回的订单数据中获取
+					userId: order.userId || '',
+					deptId: order.deptId || '',
 				}
+				
+				return formattedOrder
 			},
 
 			// 加载更多
@@ -511,21 +545,16 @@
 
 			// 下拉刷新
 			async onRefresh() {
-				console.log('触发下拉刷新')
 				this.isRefreshing = true
 				this.page = 1
 				this.hasMore = true
 				this.orderList = [] // 清空列表
 				
 				try {
-					// 重新加载订单数据
+					// 刷新订单列表
 					await this.loadOrders()
-					
-					// 同时刷新评价统计
+					// 刷新评价统计
 					await this.loadReviewStats()
-					
-					// 刷新成功提示（可选）
-					console.log('刷新完成')
 				} catch (error) {
 					console.error('刷新失败:', error)
 					uni.showToast({
@@ -695,6 +724,9 @@
 										icon: 'success'
 									})
 									
+									// 通过 WebSocket 发送取消消息
+									this.sendCancelMessage(orderId)
+									
 									// 刷新订单列表
 									this.refreshOrders()
 								} else {
@@ -714,6 +746,48 @@
 						}
 					}
 				})
+			},
+
+			/**
+			 * 通过 WebSocket 发送取消订单消息
+			 * @param {String} orderId - 订单ID
+			 */
+			sendCancelMessage(orderId) {
+				// 从订单列表中查找对应的订单
+				let order = this.orderList.find(item => item.id === orderId)
+				if (!order) {
+					// 如果当前列表中没有，尝试从 allOrders 中查找
+					order = this.allOrders.find(item => item.id === orderId)
+				}
+
+				if (!order) {
+					console.error('[订单页面] 未找到订单信息，无法发送取消消息')
+					return
+				}
+
+				// 从订单对象中获取 userId 和 deptId
+				const userId = order.userId
+				const deptId = order.deptId
+
+				if (!userId || !deptId) {
+					console.error('[订单页面] 订单中缺少用户ID或部门ID')
+					return
+				}
+
+				// 构建消息数据
+				const message = {
+					type: 'service_order_cancel',
+					data: {
+						orderId: orderId,
+						userId: userId,
+						deptId: deptId,
+						timestamp: Date.now()
+					},
+					timestamp: Date.now()
+				}
+
+				// 发送消息
+				websocket.send(message)
 			},
 
 			// 修改预约
@@ -793,9 +867,315 @@
 				})
 			},
 
-		
+			// ============ WebSocket 相关方法 ============
 
-			
+			/**
+			 * 连接 WebSocket
+			 */
+			connectWebSocket() {
+				// 获取用户信息
+				const userInfo = uni.getStorageSync('userInfo')
+				
+				// 尝试从多个可能的字段获取 userId
+				let userId = null
+				
+				if (userInfo) {
+					// 尝试不同的字段名
+					userId = userInfo.userId || userInfo.id || userInfo.user_id || userInfo.uid
+				}
+				
+				// 如果 userInfo 中没有，尝试从已加载的订单中获取
+				if (!userId && this.orderList.length > 0) {
+					userId = this.orderList[0].userId
+				}
+				
+				if (!userId) {
+					// 延迟连接，等待订单数据加载
+					this.wsStatus = 'pending'
+					return
+				}
+
+				// 连接 WebSocket
+				websocket.connect(userId)
+
+				// 订阅连接状态变化
+				const unsubscribeStatus = websocket.subscribe('status', (status) => {
+					this.handleConnectionStatus(status)
+				})
+				this.unsubscribeList.push(unsubscribeStatus)
+
+				// 订阅订单创建消息
+				const unsubscribeCreate = websocket.subscribe('service_order_create', (message) => {
+					this.handleOrderCreate(message)
+				})
+				this.unsubscribeList.push(unsubscribeCreate)
+
+				// 订阅订单更新消息
+				const unsubscribeUpdate = websocket.subscribe('service_order_update', (message) => {
+					this.handleOrderUpdate(message)
+				})
+				this.unsubscribeList.push(unsubscribeUpdate)
+
+				// 订阅订单取消/拒绝消息
+				const unsubscribeRejectCancel = websocket.subscribe('service_order_reject_cancel', (message) => {
+					this.handleOrderRejectCancel(message)
+				})
+				this.unsubscribeList.push(unsubscribeRejectCancel)
+			},
+
+			/**
+			 * 断开 WebSocket 连接
+			 */
+			disconnectWebSocket() {
+				// 取消所有订阅
+				this.unsubscribeList.forEach(unsubscribe => {
+					if (typeof unsubscribe === 'function') {
+						unsubscribe()
+					}
+				})
+				this.unsubscribeList = []
+
+				// 关闭 WebSocket 连接（订单页面独占，离开页面时断开）
+				websocket.close()
+				
+				// 重置连接状态
+				this.wsStatus = ''
+			},
+
+			/**
+			 * 处理连接状态变化
+			 * @param {String} status - 连接状态
+			 */
+			handleConnectionStatus(status) {
+				// 防止页面已卸载后继续处理消息
+				if (this.isPageUnloaded) return
+				
+				this.wsStatus = status
+			},
+
+			/**
+			 * 处理订单创建消息
+			 * @param {Object} message - 消息对象
+			 */
+			handleOrderCreate(message) {
+				// 防止页面已卸载后继续处理消息
+				if (this.isPageUnloaded) return
+				
+				const orderData = message.data
+				if (!orderData) return
+
+				// 格式化订单数据
+				const newOrder = this.formatOrderData(orderData)
+
+				// 判断是否在当前标签页显示
+				if (this.shouldShowInCurrentTab(newOrder)) {
+					// 插入到列表顶部
+					this.orderList.unshift(newOrder)
+					
+					// 如果在全部标签，也添加到 allOrders
+					if (this.currentTab === 0) {
+						this.allOrders.unshift(newOrder)
+					}
+
+					// 显示新订单提示
+					this.newOrderCount++
+					this.showNewOrderBadge = true
+					
+					// 播放提示音（可选）
+					// uni.vibrateShort()
+					
+					// 显示通知
+					uni.showToast({
+						title: '收到新的服务订单',
+						icon: 'none',
+						duration: 2000
+					})
+
+					// 5秒后自动隐藏角标
+					setTimeout(() => {
+						this.showNewOrderBadge = false
+					}, 5000)
+				}
+			},
+
+			/**
+			 * 处理订单更新消息
+			 * @param {Object} message - 消息对象
+			 */
+			handleOrderUpdate(message) {
+				// 防止页面已卸载后继续处理消息
+				if (this.isPageUnloaded) return
+				
+				const orderData = message.data
+				if (!orderData || !orderData.orderId) {
+					console.warn('[订单页面] 消息数据为空或缺少订单ID')
+					return
+				}
+
+				// 状态映射
+				const statusTextMap = {
+					'0': 'pending',    // 待接单
+					'1': 'accepted',   // 已接单
+					'2': 'serving',    // 服务中
+					'3': 'completed',  // 已完成
+					'4': 'cancelled',  // 已取消
+					'5': 'rejected'    // 已拒绝
+				}
+				
+				const newStatus = statusTextMap[orderData.orderStatus]
+				if (!newStatus) {
+					console.warn('[订单页面] 未知的订单状态:', orderData.orderStatus)
+					return
+				}
+				
+				const newStatusInfo = this.statusMap[newStatus]
+
+				// 查找订单在列表中的位置
+				const index = this.orderList.findIndex(o => o.id === orderData.orderId)
+
+				if (index !== -1) {
+					// 找到订单，只更新状态字段
+					const order = this.orderList[index]
+					console.log('[订单页面] 更新订单状态:', {
+						orderId: orderData.orderId,
+						oldStatus: order.status,
+						newStatus: newStatus
+					})
+					
+					// 使用 Vue.set 或 this.$set 确保响应式更新
+					this.$set(this.orderList[index], 'status', newStatus)
+					this.$set(this.orderList[index], 'statusText', newStatusInfo.text)
+					this.$set(this.orderList[index], 'statusClass', newStatusInfo.class)
+					
+					// 显示更新提示
+					uni.showToast({
+						title: `订单状态已更新: ${newStatusInfo.text}`,
+						icon: 'none',
+						duration: 1500
+					})
+					
+					// 同步更新 allOrders
+					if (this.currentTab === 0) {
+						const allIndex = this.allOrders.findIndex(o => o.id === orderData.orderId)
+						if (allIndex !== -1) {
+							this.$set(this.allOrders[allIndex], 'status', newStatus)
+							this.$set(this.allOrders[allIndex], 'statusText', newStatusInfo.text)
+							this.$set(this.allOrders[allIndex], 'statusClass', newStatusInfo.class)
+						}
+					}
+				} else {
+					console.warn('[订单页面] 订单不在列表中，无法更新状态，订单ID:', orderData.orderId)
+				}
+			},
+
+			/**
+			 * 处理订单取消/拒绝消息
+			 * @param {Object} message - 消息对象
+			 */
+			handleOrderRejectCancel(message) {
+				// 防止页面已卸载后继续处理消息
+				if (this.isPageUnloaded) return
+				
+				const orderData = message.data
+				if (!orderData || !orderData.orderId) return
+
+				// 状态映射
+				const statusTextMap = {
+					'4': 'cancelled',  // 已取消
+					'5': 'rejected'    // 已拒绝
+				}
+				
+				const newStatus = statusTextMap[orderData.orderStatus]
+				if (!newStatus) return
+				
+				const newStatusInfo = this.statusMap[newStatus]
+
+				// 查找订单在列表中的位置
+				const index = this.orderList.findIndex(o => o.id === orderData.orderId)
+
+				if (index !== -1) {
+					// 更新订单状态字段
+					this.$set(this.orderList[index], 'status', newStatus)
+					this.$set(this.orderList[index], 'statusText', newStatusInfo.text)
+					this.$set(this.orderList[index], 'statusClass', newStatusInfo.class)
+					
+					// 如果是拒绝状态，更新拒绝原因
+					if (newStatus === 'rejected' && orderData.rejectReason) {
+						this.$set(this.orderList[index], 'rejectReason', orderData.rejectReason)
+					}
+					
+					// 同步更新 allOrders
+					if (this.currentTab === 0) {
+						const allIndex = this.allOrders.findIndex(o => o.id === orderData.orderId)
+						if (allIndex !== -1) {
+							this.$set(this.allOrders[allIndex], 'status', newStatus)
+							this.$set(this.allOrders[allIndex], 'statusText', newStatusInfo.text)
+							this.$set(this.allOrders[allIndex], 'statusClass', newStatusInfo.class)
+							if (newStatus === 'rejected' && orderData.rejectReason) {
+								this.$set(this.allOrders[allIndex], 'rejectReason', orderData.rejectReason)
+							}
+						}
+					}
+
+					// 显示提示
+					const statusText = newStatus === 'cancelled' ? '已取消' : '已拒绝'
+					let content = `订单${statusText}，已退款到原支付账户`
+					
+					// 如果有拒绝原因，显示在弹窗中
+					if (newStatus === 'rejected' && orderData.rejectReason) {
+						content += `\n\n拒绝原因：${orderData.rejectReason}`
+					}
+					
+					uni.showModal({
+						title: '订单状态变更',
+						content: content,
+						showCancel: false,
+						confirmText: '知道了'
+					})
+				}
+			},
+
+			/**
+			 * 判断订单是否应该在当前标签页显示
+			 * @param {Object} order - 订单对象
+			 * @returns {Boolean}
+			 */
+			shouldShowInCurrentTab(order) {
+				if (this.currentTab === 0) {
+					// 全部标签，显示所有订单
+					return true
+				}
+
+				// 其他标签根据状态判断
+				const tabStatusMap = {
+					1: 'pending',    // 待接单
+					2: 'accepted',   // 已接单
+					3: 'serving',    // 服务中
+					4: 'completed'   // 评价（已完成）
+				}
+
+				const expectedStatus = tabStatusMap[this.currentTab]
+				
+				// 评价标签额外判断是否已评价
+				if (this.currentTab === 4) {
+					return order.status === expectedStatus && !order.isReviewed
+				}
+
+				return order.status === expectedStatus
+			},
+
+			/**
+			 * 点击新订单提示，跳转到订单顶部
+			 */
+			scrollToTop() {
+				this.showNewOrderBadge = false
+				this.newOrderCount = 0
+				// 滚动到顶部
+				uni.pageScrollTo({
+					scrollTop: 0,
+					duration: 300
+				})
+			}
 		}
 	}
 </script>
@@ -809,6 +1189,42 @@
 		overflow: hidden;
 	}
 
+	// 新订单提示横幅
+	.new-order-banner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 16rpx 32rpx;
+		background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+		border-bottom: 1rpx solid #ffd591;
+		flex-shrink: 0;
+		z-index: 100;
+		cursor: pointer;
+		animation: slideDown 0.3s ease-out;
+
+		&:active {
+			background: linear-gradient(135deg, #ffe7ba 0%, #ffd591 100%);
+		}
+
+		.banner-text {
+			font-size: 26rpx;
+			color: #d48806;
+			font-weight: 500;
+			margin: 0 12rpx;
+		}
+
+		@keyframes slideDown {
+			from {
+				transform: translateY(-100%);
+				opacity: 0;
+			}
+			to {
+				transform: translateY(0);
+				opacity: 1;
+			}
+		}
+	}
+
 	.order-tabs {
 		display: flex;
 		background-color: #fff;
@@ -816,6 +1232,7 @@
 		flex-shrink: 0;
 		z-index: 100;
 		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02);
+		position: relative;
 
 		.tab-item {
 			flex: 1;
@@ -1050,6 +1467,10 @@
 					color: #ff5722;
 					background: rgba(255, 87, 34, 0.08);
 				}
+				&.status-closed {
+					color: #999999;
+					background: #f5f5f5;
+				}
 				&.status-refunded {
 					color: #ff5722;
 					background: rgba(255, 87, 34, 0.08);
@@ -1112,6 +1533,32 @@
 						}
 					}
 				}
+			}
+		}
+
+		// 拒绝原因提示框
+		.reject-reason {
+			margin: 20rpx 0 0 0;
+			padding: 20rpx 24rpx;
+			background: #fffbf0;
+			border-radius: 12rpx;
+			display: flex;
+			align-items: flex-start;
+			gap: 8rpx;
+			
+			.reason-title {
+				font-size: 26rpx;
+				color: #fa8c16;
+				font-weight: 500;
+				flex-shrink: 0;
+				line-height: 1.5;
+			}
+			
+			.reason-content {
+				font-size: 26rpx;
+				color: #8c5a00;
+				line-height: 1.5;
+				flex: 1;
 			}
 		}
 
@@ -1236,51 +1683,6 @@
 						border-color: #eee !important;
 						box-shadow: none;
 					}
-				}
-			}
-		}
-
-		.logistics-info {
-			margin-top: 20rpx;
-			padding: 24rpx 20rpx;
-			background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-			border-radius: 12rpx;
-			border-left: 4rpx solid #67c23a;
-			position: relative;
-			overflow: hidden;
-			cursor: pointer;
-
-			&::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				right: 0;
-				width: 60rpx;
-				height: 60rpx;
-				background: rgba(103, 194, 58, 0.1);
-				border-radius: 0 12rpx 0 60rpx;
-			}
-
-			.logistics-header {
-				display: flex;
-				align-items: flex-start;
-				gap: 12rpx;
-				position: relative;
-				z-index: 1;
-
-				.logistics-status {
-					font-size: 28rpx;
-					color: #67c23a;
-					font-weight: 600;
-					white-space: nowrap;
-				}
-
-				.logistics-detail {
-					font-size: 24rpx;
-					color: #666;
-					flex: 1;
-					line-height: 1.4;
-					margin-top: 2rpx;
 				}
 			}
 		}

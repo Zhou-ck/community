@@ -82,6 +82,7 @@
 
 <script>
 import config from '@/config.js'
+import { mapGetters } from 'vuex'
 
 export default {
   data() {
@@ -101,6 +102,8 @@ export default {
   },
   
   computed: {
+    ...mapGetters(['joinedCommunity']),
+    
     // 过滤后的服务列表
     filteredServiceList() {
       if (!this.searchKeyword.trim()) {
@@ -120,6 +123,12 @@ export default {
     // 获取状态栏高度
     const systemInfo = uni.getSystemInfoSync();
     this.statusBarHeight = systemInfo.statusBarHeight;
+    
+    // 检查是否已加入社区
+    if (!this.checkHasJoinedCommunity()) {
+      this.showJoinCommunityModal();
+      return;
+    }
     
     this.loadDataFromCache();
   },
@@ -168,6 +177,12 @@ export default {
     
     // 查看服务详情
     viewServiceDetail(item) {
+      // 检查是否已加入社区
+      if (!this.checkHasJoinedCommunity()) {
+        this.showJoinCommunityModal();
+        return;
+      }
+      
       console.log('选择的服务项:', item);
       
       // 准备服务详情页面需要的数据
@@ -195,6 +210,12 @@ export default {
     
     // 直接预约服务
     bookService(item) {
+      // 检查是否已加入社区
+      if (!this.checkHasJoinedCommunity()) {
+        this.showJoinCommunityModal();
+        return;
+      }
+      
       console.log('直接预约服务:', item);
       
       // 准备预约页面需要的数据
@@ -248,6 +269,32 @@ export default {
     // 清除搜索
     clearSearch() {
       this.searchKeyword = '';
+    },
+    
+    // 检查是否已加入社区
+    checkHasJoinedCommunity() {
+      return !!this.joinedCommunity;
+    },
+    
+    // 显示加入社区提示弹窗
+    showJoinCommunityModal() {
+      uni.showModal({
+        title: '提示',
+        content: '您还未加入社区，请先加入社区后再使用服务功能',
+        confirmText: '去加入',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户点击确定，跳转到加入社区页面
+            uni.navigateTo({
+              url: '/pages/my/joincommunity/index'
+            });
+          } else {
+            // 用户点击取消，返回上一页
+            uni.navigateBack();
+          }
+        }
+      });
     }
   }
 }

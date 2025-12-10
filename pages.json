@@ -177,6 +177,13 @@
 				}
 			},
 			{
+				"path" : "network/bluetooth",
+				"style" : 
+				{
+					"navigationBarTitleText" : "网络配置"
+				}
+			},
+			{
 				"path" : "balancePackage/index",
 				"style" : 
 				{
@@ -202,6 +209,13 @@
 				"style" : 
 				{
 					"navigationBarTitleText" : "睡眠报告"
+				}
+			},
+			{
+				"path" : "sleep-report-info/sleep-report-info",
+				"style" : 
+				{
+					"navigationBarTitleText" : "报告详情"
 				}
 			},
 			{

@@ -89,27 +89,78 @@
 				this.getServerData();
 			},
 			getServerData() {
-				// console.log(this.sleepReport,'ahhahaasdasdasdasdasdsadasfasfasfasfdsafafawef34tr234t324t34t34');
+				console.log('睡眠比例图组件获取数据:', this.sleepReport);
+				
+				// 检查字段名兼容性（新字段优先）
+				let deepSleep, lightSleep, awake;
+				
+				// 优先使用新字段名
+				if (this.sleepReport.bi !== undefined) {
+					deepSleep = Number(this.sleepReport.bi) || 0;
+					lightSleep = Number(this.sleepReport.bh) || 0;
+					awake = Number(this.sleepReport.bg) || 0;
+					console.log('使用新字段名: bi(深睡)=', deepSleep, ', bh(浅睡)=', lightSleep, ', bg(清醒)=', awake);
+				} 
+				// 兼容旧字段名
+				else if (this.sleepReport.sssczb !== undefined) {
+					deepSleep = Number(this.sleepReport.sssczb) || 0;
+					lightSleep = Number(this.sleepReport.jssczb) || 0;
+					awake = Number(this.sleepReport.qxsczb) || 0;
+					console.log('使用旧字段名: sssczb(深睡)=', deepSleep, ', jssczb(浅睡)=', lightSleep, ', qxsczb(清醒)=', awake);
+				} 
+				// 都没有数据时的默认值
+				else {
+					console.error('睡眠比例数据字段缺失，使用默认值');
+					deepSleep = 0;
+					lightSleep = 0;
+					awake = 0;
+				}
+				
 				// 模拟从服务器获取数据，使用setTimeout模拟网络延迟  
 				setTimeout(() => {
+					// 构建数据数组，过滤掉0%的项目
+					let chartData = [];
+					
+					if (deepSleep > 0) {
+						chartData.push({
+							"name": "深睡",
+							"value": deepSleep
+						});
+					}
+					
+					if (lightSleep > 0) {
+						chartData.push({
+							"name": "浅睡", 
+							"value": lightSleep
+						});
+					}
+					
+					if (awake > 0) {
+						chartData.push({
+							"name": "清醒",
+							"value": awake
+						});
+					}
+					
+					// 如果所有数据都为0，显示一个占位项
+					if (chartData.length === 0) {
+						chartData.push({
+							"name": "无数据",
+							"value": 100
+						});
+					}
+					
 					//模拟服务器返回数据，如果数据格式和标准格式不同，需自行按下面的格式拼接
 					let res = {
 						series: [{
-							data: [{
-								"name": "深睡",
-								"value": Number(this.sleepReport.sssczb)
-							}, {
-								"name": "浅睡",
-								"value": Number(this.sleepReport.jssczb)
-							}, {
-								"name": "清醒",
-								"value": Number(this.sleepReport.qxsczb)
-							}]
+							data: chartData
 						}],
 						subtitle: {//百分比文字
-							name: Number(this.sleepReport.sssczb)+Number(this.sleepReport.jssczb)+''
+							name: (deepSleep + lightSleep) + '%'
 						}
 					};
+					
+					console.log('睡眠比例图数据(已过滤0%):', res);
 					this.drawCharts('smyh', res); // 调用方法绘制图表  
 				}, 500);
 			},
@@ -139,12 +190,12 @@
 						lineHeight: 25
 					},
 					title: {
-						name: "睡眠比例",
+						name: "",
 						fontSize: 15,
 						color: "#969696"
 					},
 					subtitle: {//百分比文字
-						name: data.subtitle.name+'%',
+						name: data.subtitle.name,
 						fontSize: 25,
 						color: "#7cb5ec"
 					},

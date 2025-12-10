@@ -10,7 +10,7 @@
 			</view>
 			
 			<!-- 睡眠报告均值数据展示 -->
-			<view class="summarize" style="padding-top: 0rpx;" v-if="(daySleppDatas.reports.length > 0)">
+			<view class="summarize" style="padding-top: 0rpx;" v-if="daySleppDatas.reports && daySleppDatas.reports.length > 0 && hasSleepData">
 				<view class="sleep_times" >
 					<view class="all_time">
 						{{daySleppDatas.allData.sleepTimeFormat || '- -'}}
@@ -120,7 +120,7 @@
 			</view>
 			
 			<!-- AHI值数据展示 -->
-			<view class="summarize" style="padding: 20rpx 20rpx 50rpx 20rpx;" v-if="(daySleppDatas.reports.length > 0) && AHIzhishuShow">
+			<view class="summarize" style="padding: 20rpx 20rpx 50rpx 20rpx;" v-if="daySleppDatas.reports && daySleppDatas.reports.length > 0 && AHIzhishuShow && hasSleepData">
 				<view class="ahi" >
 					AHI指数
 					<uni-icons type="help-filled" size="22" color="#bbb" @click="showTipAHI" style="font-weight: lighter;"></uni-icons>
@@ -202,15 +202,13 @@
 				
 			</view>
 			
-			<!-- 20:00~8:00间的睡眠情况 -->
-			<view class="" v-if="dayTenDatas.length>0">
-				<!-- 20:00~8:00间的睡眠情况 -->
-				<!-- <sleepCanvasss  :sleepDatas="dayTenDatas" :startTimeStamp="startTimeStamp" :endTimeStamp="endTimeStamp"/> -->
+			<!-- 当天睡眠状态图（有实际睡眠数据时才显示） -->
+			<view class="" v-if="dayTenDatas.length>0 && hasSleepData">
 				<sleepCanvasss  :sleepDatas="dayTenDatas" />
 			</view>
 			
 			<!-- 今天 - 昨天 对比数据展示 -->
-			<view v-show="showDuiBiFlag" v-if="(daySleppDatas.reports.length > 0)">
+			<view v-show="showDuiBiFlag" v-if="daySleppDatas.reports && daySleppDatas.reports.length > 0 && hasSleepData">
 				<view class="duibishuju" v-if="!Number.isNaN(shuiMianShiChangCha)">
 					<view>
 						<text style="color: #a214a3;">睡眠时长</text>  
@@ -303,14 +301,10 @@
 					</view>
 				</view>
 			</view>
-			
-			
-			
-			
-			
+	
 			<!-- 睡眠报告区域 -->
-			<view class="sleep_report_area" v-if="(daySleppDatas.reports.length!==0) && !!show">
-				<view v-for="(report,index) of daySleppDatas.reports" :key="index" style="box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);margin-bottom: 30rpx;background: #fff;border-radius: 15rpx;padding: 30rpx 10rpx ;">
+			<view class="sleep_report_area" v-if="daySleppDatas.reports && daySleppDatas.reports.length > 0 && hasSleepData && !!show">
+				<view v-for="(report,index) of daySleppDatas.reports" :key="index" v-if="report.sleepTimeAll > 0" style="box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);margin-bottom: 30rpx;background: #fff;border-radius: 15rpx;padding: 30rpx 10rpx ;">
 					
 					<!-- 睡眠报告图 -->
 					<view class="report_head"  @click="goReportInfo(index,report)" >
@@ -338,7 +332,7 @@
 						</view>
 						<view class="report_foot_item">
 							<text class="title">平均心跳</text>
-							<text class="content">{{report.pjxt || '- -'}} 次</text>
+							<text class="content">{{report.bn !== undefined && report.bn !== null ? report.bn : (report.pjxt || '- -')}} 次</text>
 						</view>
 						<view class="report_foot_item">
 							<text class="title">在床时长</text>
@@ -346,7 +340,7 @@
 						</view>
 						<view class="report_foot_item">
 							<text class="title">深睡占比</text>
-							<text class="content">{{report.bi || '- -'}} %</text>
+							<text class="content">{{report.bi !== undefined && report.bi !== null ? report.bi : (report.sssczb || '- -')}} %</text>
 						</view>
 					</view>
 					
@@ -512,7 +506,7 @@
 				</view>
 				<button @click="closeReports()" style="color: #888;font-size: 16px;">{{`收起所有报告`}}</button>
 			</view>
-			<view v-else-if="daySleppDatas.reports.length==0" style="text-align: center;font-size: 15px;height: auto;color: #aaa;">
+			<view v-else-if="!daySleppDatas.reports || daySleppDatas.reports.length==0 || !hasSleepData" style="text-align: center;font-size: 15px;height: auto;color: #aaa;">
 				<image src="/static/devicetypeicon/kongkongde.svg" style="width: 250px;margin-top: 90px;margin-bottom: -20px;" />
 				<view style="font-weight: bold;">该设备在此日期无睡眠报告数据</view>
 			</view>
@@ -644,13 +638,13 @@
 			},
 			//今天和昨天的AHI值差
 			ahiCha(){
-				const todayBreatheStopSum = this.daySleppDatas.allData.breatheStopSum
+				const todayBreatheStopSum = this.daySleppDatas.allData.huxizantingcishu
 				const todayTST = Math.round(this.daySleppDatas.allData.sleepTimeAll * 10 / 60)  /10;
 				let todayNum = (todayBreatheStopSum / todayTST) * 10;
 				let todayAHI = Math.round(todayNum) / 10;
 				
 				
-				const yesterdaybreatheStopSum = this.yesterdaySleppDatas.allData.breatheStopSum
+				const yesterdaybreatheStopSum = this.yesterdaySleppDatas.allData.huxizantingcishu
 				const yesterdayTST = Math.round(this.yesterdaySleppDatas.allData.sleepTimeAll * 10 / 60)  /10;
 				let yesterdayNum = (yesterdaybreatheStopSum / yesterdayTST) * 10;
 				let yesterdayAHI = Math.round(yesterdayNum) / 10;
@@ -658,6 +652,37 @@
 				const ahicha = todayAHI - yesterdayAHI;
 				return `${ahicha}`;
 				// return 30;
+			},
+			// 判断是否有实际睡眠数据（不全是清醒/离床状态）
+			hasSleepData(){
+				// 优先检查睡眠报告数据
+				if(this.daySleppDatas.reports && this.daySleppDatas.reports.length > 0) {
+					// 如果有睡眠报告，检查是否有有效的睡眠时长
+					const hasValidReport = this.daySleppDatas.reports.some(report => 
+						(report.sleepTimeAll && Number(report.sleepTimeAll) > 0) ||
+						(report.bf && Number(report.bf) > 0)
+					);
+					
+					// 如果睡眠报告显示有睡眠时长，认为有数据
+					if(hasValidReport && this.daySleppDatas.allData.sleepTimeAll > 0) {
+						return true;
+					}
+				}
+				
+				// 备用检查：如果有十分钟数据且不全是清醒/无数据状态
+				if(this.dayTenDatas && this.dayTenDatas.length > 0) {
+					// al字段: '0'=深睡, '1'=浅睡, '2'=清醒, '3'=无数据
+					const hasSleepState = this.dayTenDatas.some(item => 
+						item.al === '0' || item.al === '1' || item.al === 0 || item.al === 1
+					);
+					
+					// 如果有睡眠状态且总睡眠时长大于0，认为有数据
+					if(hasSleepState && this.daySleppDatas.allData.sleepTimeAll > 0) {
+						return true;
+					}
+				}
+				
+				return false;
 			}
 		},
 		data() {
@@ -953,18 +978,14 @@
 				//将sleepReportItem存入store
 				this.$store.commit('SET_SLEEP_REPORT_ITEM',JSON.parse(JSON.stringify(sleepReportItem)));
 				
-				/* // 1. 将对象转换为 JSON 字符串
-				const reportDataJSON = JSON.stringify(sleepReportItem);
-				 
-				// 2. 对 JSON 字符串进行 URL 编码（防止特殊字符破坏 URL 结构）
-				const encodedReportData = encodeURIComponent(reportDataJSON); */
 				let startTime=null;
 				let endTime=null;
-				endTime=sleepReportItem.timeStamp;
-				startTime=sleepReportItem.timeStamp-(Number(sleepReportItem.duration) * 60*1000);
+				// 兼容timeStamp和tts字段
+				endTime=sleepReportItem.timeStamp || sleepReportItem.tts || sleepReportItem.endSleepTime;
+				startTime=endTime-(Number(sleepReportItem.duration) * 60*1000);
 				
 				//传递productKey、deviceKey、reportIndex、date、startTime、endTime、isShare
-				this.$tab.navigateTo('/indexpages/sleep-report-info/sleep-report-info?productKey='+this.productKey+'&deviceKey='+this.deviceKey+'&reportIndex='+reportIndex+'&date='+this.queryParams.date+'&startTime='+startTime+'&endTime='+endTime+'&isShare='+this.isShare/* +'&reportData='+encodedReportData */)
+				this.$tab.navigateTo('/pages/my/sleep-report-info/sleep-report-info?productKey='+this.productKey+'&deviceKey='+this.deviceKey+'&reportIndex='+reportIndex+'&date='+this.queryParams.date+'&startTime='+startTime+'&endTime='+endTime+'&isShare='+this.isShare)
 				
 			},
 			
@@ -1024,15 +1045,26 @@
 				let todayReports = [];
 				
 				for(let report of res.rows){
-					// report.timeStamp = report.timeStamp - 6*60*1000
-					if(report.timeStamp < todayStartTimeStamp){
+					// 兼容timeStamp和tts字段
+					const reportEndTime = report.timeStamp || report.tts || report.endSleepTime;
+					
+					// 调试日志：查看报告归属判断
+					console.log('报告归属判断:', {
+						'report.timeStamp': report.timeStamp,
+						'report.tts': report.tts,
+						'report.endSleepTime': report.endSleepTime,
+						'使用的结束时间': reportEndTime,
+						'报告时间': new Date(reportEndTime).toLocaleString(),
+						'当天开始时间': new Date(todayStartTimeStamp).toLocaleString(),
+						'归属': reportEndTime < todayStartTimeStamp ? '昨天' : '今天'
+					});
+					
+					if(reportEndTime < todayStartTimeStamp){
 						yesterdayReports.push(report);
 					}else{
 						todayReports.push(report);
 					}
 				}
-				// console.log("前一天的报告",yesterdayReports);
-				// console.log("当天的报告",todayReports);
 				
 				await Promise.all([
 					//1.获取 当天 睡眠报告的内容
@@ -1047,8 +1079,16 @@
 				//1.
 				let todayRepports = todayRepportss;
 				//2.查询日睡眠报告内容(可能有多段睡眠)
-
-				this.daySleppDatasTemp = sleepReportHandler(todayRepports);//调用工具类处理睡眠报告（不包含十分钟数据的)
+				
+				// 调试：查看原始报告数据中的睡眠占比字段
+				console.log('[日报告调试] 原始报告睡眠占比:', todayRepports.map(r => ({
+					bg: r.bg, // 清醒占比
+					bh: r.bh, // 浅睡占比
+					bi: r.bi, // 深睡占比
+					bn: r.bn  // 平均心跳
+				})));
+				
+				this.daySleppDatasTemp = sleepReportHandler(todayRepports);//调用工具类处理睡眠报告（不包含十分钟数据的）
 				// console.log(this.daySleppDatasTemp);
 				
 				//3.查询十分钟数据
@@ -1076,88 +1116,70 @@
 				
 				this.getTodayHuxizantingAll();
 				
+				//更新睡眠段数为过滤后的实际段数
+				this.daySleppDatasTemp.allData['shuiMianCiShuAll'] = this.daySleppDatasTemp.reports.length;
+				
 				//5.给渲染的数据赋值(最好在这里进行赋值，不然会闪一下)
 				//6.计算加权平均分
 				const weightAvg = sleepReportHandlerAvg(this.daySleppDatasTemp)
 				this.daySleppDatasTemp.allData['weightAvg'] = weightAvg;
-				// try{
+				try{
 					this.huoqushimianzhishu();
 					this.huoqujingshenyalizhishu();
-				// }catch(err){
-					// console.log(err);
-				// }
+				}catch(err){
+					console.log(err);
+				}
 				this.daySleppDatas = JSON.parse(JSON.stringify(this.daySleppDatasTemp));
 				console.log('-----------');
 				console.log(this.daySleppDatas);
-				console.log(this.daySleppDatasTemp);
-				// console.log(this.daySleppDatas);
-				
 			},
-			/** 计算当日睡眠报告 */
+			/** 计算当日睡眠报告呼吸暂停次数 */
 			getTodayHuxizantingAll(){
 				let count = 0;
 				for(let report of this.daySleppDatasTemp.reports){
-					count += report.bn;
+					count += Number(report.bo) || 0; // 使用bo（呼吸暂停次数）
 					let TST = Math.round(report.sleepTimeAll * 10 / 60) / 10;
 					if(!!TST){
-						let num = (report.bn / TST) * 10;
-					// console.log(report.bn,"/",TST);
+						let num = ((Number(report.bo) || 0) / TST) * 10;
 						let AHI = Math.round(num) / 10;
 						this.$set(report,'AHI',AHI)
 					}
-					
-				// console.log(JSON.parse(JSON.stringify(report)));
 				}
-				this.daySleppDatasTemp.allData['bn'] = count;
+				this.daySleppDatasTemp.allData['huxizantingcishu'] = count;
 			},
-			/** 计算前一天的睡眠报告 */
+			/** 计算前一天的睡眠报告呼吸暂停次数 */
 			getYesterDayHhuxizantingAll(){
 				let count = 0;
 				for(let report of this.yesterdaySleppDatasTemp.reports){
-					count += report.bn;
+					count += Number(report.bo) || 0; // 使用bo（呼吸暂停次数）
 				}
-				this.yesterdaySleppDatasTemp.allData['bn'] = count;
-				
+				this.yesterdaySleppDatasTemp.allData['huxizantingcishu'] = count;
 			},
-			
 			/* 获取昨天一天的数据 */
 			async getYesterdayReport(yesterdayReportss){
-				/* let oneDayTimeStamp = 24*60*60*1000;
-				const statYesterdayTimeStamp = this.timeStampStart - oneDayTimeStamp;
-				const endYesterdayTimeStamp = this.timeStampEnd - oneDayTimeStamp; */
+				//1.处理数据
+				this.yesterdaySleppDatasTemp = sleepReportHandler(yesterdayReportss);
+				console.log('【日报告调试-昨天】处理后:', this.yesterdaySleppDatasTemp.allData);
 				
-				//1-1.先获取上一天的睡眠报告数据
-				const yesterdayQuery = {
-					deviceKey: this.deviceKey,
-					productKey: this.productKey,
-					selectTime: new Date(this.chooseDate).getTime() - 24 * 60 * 60 * 1000,
-					isShare: this.isShare,
-					startTimeStamps: this.timeStampStart - 24 * 60 * 60 * 1000,
-					endTimeStamps: this.timeStampEnd - 24 * 60 * 60 * 1000
-				};
-				const yesterdayReportRes = await listReportsleep(yesterdayQuery);
-				console.log('【日报告调试-昨天】原始数据:', yesterdayReportRes.rows?.[0]);
-				//1-2.处理数据
-				this.yesterdaySleppDatas = sleepReportHandler(yesterdayReportRes.rows);
-				console.log('【日报告调试-昨天】处理后:', this.yesterdaySleppDatas.allData);//调用工具类处理睡眠报告（不包含十分钟数据的）
-				
-				//3.查询十分钟数据
+				//2.查询十分钟数据
 				await this.getTenData(this.yesterdaySleppDatasTemp.reports);
 				
-				//4.删除延迟上报的睡眠报告
+				//3.删除延迟上报的睡眠报告
 				for(let i = this.yesterdaySleppDatasTemp.reports.length - 1; i >= 0; i--) {
 				    const report = this.yesterdaySleppDatasTemp.reports[i];
-				    // console.log(report);
-				    const smzb = Number(report.bg) + Number(report.bi); //浅睡+深睡占比
+				    const smzb = Number(report.bg) + Number(report.bi);
 				    const tiaoshuMin = Math.floor(Number(report.bf) * (smzb / 100));
 				    const minRequired = Math.floor(tiaoshuMin / 10);
-				
 				    if(!!report.tenDatas && report.tenDatas.length + Math.ceil(tiaoshuMin/60) < minRequired) {
-				        this.yesterdaySleppDatasTemp.reports.splice(i, 1); // 删除当前元素
+				        this.yesterdaySleppDatasTemp.reports.splice(i, 1);
 				    }
 				}
 				this.getYesterDayHhuxizantingAll();
-				//5.给渲染的数据赋值(最好在这里进行赋值，不然会闪一下)
+				
+				//更新昨天睡眠段数
+				this.yesterdaySleppDatasTemp.allData['shuiMianCiShuAll'] = this.yesterdaySleppDatasTemp.reports.length;
+				
+				//4.给渲染的数据赋值
 				this.yesterdaySleppDatas = JSON.parse(JSON.stringify(this.yesterdaySleppDatasTemp));
 			},
 			
@@ -1187,11 +1209,12 @@
 				}
 				//3.发送请求
 				const res = await listTensleep(queryTen);
-				let bn = 0;
-				const ress = await this.getHuXiZanTing(report.startSleepTime,report.endSleepTime);
-				bn = ress.rows.length;
-				this.$set(report, 'bn', bn);
-				
+				//统计呼吸暂停次数（从十分钟数据的bw字段累计）
+				let hxztcs = 0;
+				for(let tenData of res.rows){
+					hxztcs += Number(tenData.bw) || 0;
+				}
+				this.$set(report, 'hxztcs', hxztcs); // 呼吸暂停次数，不要覆盖bn（平均心跳）
 				//4.对十分钟数据进行排序
 				const tenDatas = sortTenData(res.rows);
 				//5.添加十分钟数据
@@ -1203,12 +1226,12 @@
 			}));
 			},
 			
-			/** 获取20:00~08:00间的十分钟睡眠数据 */
+			/** 获取当天所有睡眠的十分钟数据 */
 			async getNSleepCanvasNewTenDatas(){
-				//1.算出昨天晚上20:00的时间戳
-				const starTimeStamp = this.timeStampStart - (4 * 60 *60 *1000);
-				//2.算出今天上午8:00的时间戳
-				const endTimeStamp = this.timeStampStart + (9 * 60 *60 *1000);
+				//1.当天00:00:00的时间戳
+				const starTimeStamp = this.timeStampStart;
+				//2.当天23:59:59的时间戳
+				const endTimeStamp = this.timeStampEnd;
 				
 				// 验证时间戳有效性
 				if (!this.timeStampStart || isNaN(starTimeStamp) || isNaN(endTimeStamp)) {
@@ -1224,45 +1247,33 @@
 				const queryTen={
 					pageNum: 1,
 					pageSize: 300,
-				    deviceKey: this.deviceKey,//devicekey
-				    productKey: this.productKey,//productkey
-					isShare: this.isShare,//是否是被分享的设备
-					date:this.queryParams.date,
-				    selectTime:  new Date(this.chooseDate).getTime(),
-				    sleepStartTimestamp: starTimeStamp,
-				    sleepEndTimestamp: endTimeStamp
+					deviceKey: this.deviceKey,
+					productKey: this.productKey,
+					isShare: this.isShare,
+					date: this.queryParams.date,
+					selectTime: new Date(this.chooseDate).getTime(),
+					sleepStartTimestamp: starTimeStamp,
+					sleepEndTimestamp: endTimeStamp
 				}
 				//4.发送请求
 				const res = await listTensleep(queryTen);
-				// console.log('[睡眠状态调试] 20:00~09:00 十分钟数据原始结果:', res.rows?.length || 0, '条');
+				console.log('[睡眠状态调试] 查询时间范围:', new Date(starTimeStamp).toLocaleString(), '~', new Date(endTimeStamp).toLocaleString());
+				console.log('[睡眠状态调试] 十分钟数据原始结果:', res.rows?.length || 0, '条');
 				//5.对十分钟数据进行排序
 				const tenDatas = sortTenData(res.rows);
-				// console.log('[睡眠状态调试] 排序后:', tenDatas?.length || 0, '条');
-				//6.截取出睡眠时段的十分钟数据(去掉头尾的 清醒 和 无 )
-				let shuiMianShiDuanTenDatas = huoQuShuiMianShiDuan(tenDatas);
-				// console.log('[睡眠状态调试] 处理后睡眠时段数据:', shuiMianShiDuanTenDatas?.length || 0, '条');
-				if(shuiMianShiDuanTenDatas.length == 0) {
-					// console.warn('[睡眠状态调试] 处理后数据为空,退出');
+				//6.使用完整的十分钟数据
+				if(tenDatas.length == 0) {
 					return;
-				}
-				if(shuiMianShiDuanTenDatas[0].timeStamp < starTimeStamp){
-					shuiMianShiDuanTenDatas[0].timeStamp = starTimeStamp;
-					shuiMianShiDuanTenDatas[0].createTime = formatDate(new Date(starTimeStamp));
-				}
-				if(shuiMianShiDuanTenDatas[shuiMianShiDuanTenDatas.length-1].timeStamp > endTimeStamp){
-					shuiMianShiDuanTenDatas[shuiMianShiDuanTenDatas.length-1].timeStamp = endTimeStamp;
-					shuiMianShiDuanTenDatas[shuiMianShiDuanTenDatas.length-1].createTime = formatDate(new Date(endTimeStamp));
 				}
 				//7.给props变量赋值 
 				this.startTimeStamp = starTimeStamp;
 				//8.给props变量赋值
 				this.endTimeStamp = endTimeStamp;
-				//9.深拷贝处理后的十分钟数据 并 给props变量赋值
-				this.dayTenDatas = JSON.parse(JSON.stringify(shuiMianShiDuanTenDatas));
-				//10.到此处深浅睡眠图就更新渲染好了
+				//9.深拷贝十分钟数据
+				this.dayTenDatas = JSON.parse(JSON.stringify(tenDatas));
 			},
 			
-			/** 今天和昨天数据的数据尽心对比 */
+			/** 今天和昨天数据的数据进行对比 */
 			duibiDatas(){
 				const smscChange = this.daySleppDatas.allData.sleepTimeAll - this.yesterdaySleppDatas.allData.sleepTimeAll;
 				const ssscChange = this.daySleppDatas.allData.shenShuiShiChangALL - this.yesterdaySleppDatas.allData.shenShuiShiChangALL;
@@ -1283,7 +1294,7 @@
 				const fscsChange = this.daySleppDatas.allData.fanShenCiShuALL - this.yesterdaySleppDatas.allData.fanShenCiShuALL;
 				this.fanShenCiShiCha = fscsChange;
 				
-				const breatheStopChange = this.daySleppDatas.allData.breatheStopSum - this.yesterdaySleppDatas.allData.breatheStopSum;
+				const breatheStopChange = this.daySleppDatas.allData.huxizantingcishu - this.yesterdaySleppDatas.allData.huxizantingcishu;
 				this.breatheStopCha = breatheStopChange;
 				
 				this.showDuiBiFlag = true;
@@ -1578,11 +1589,11 @@
 					//计算呼吸率样本标准差（默认
 					let sampleHuXiLvSD = 0;
 					try{
-						sampleHuXiLvSD = calculateStandardDeviation(xinlvArr);
+						sampleHuXiLvSD = calculateStandardDeviation(huxiArr);
 					}catch(err){
 					}
 					
-					// console.log(`心率样本标准差: ${sampleHuXiLvSD.toFixed(2)}`); // 输出：5.8
+					// console.log(`呼吸率样本标准差: ${sampleHuXiLvSD.toFixed(2)}`); // 输出：5.8
 					huxibiaozhuncha = sampleHuXiLvSD.toFixed(2);
 					
 					/* let normalized_deep = 1 - shenshuizhanbi;
@@ -1599,7 +1610,7 @@
 					let stressScore = 0;
 					stressScore = (
 						(0.4 * (1 - shenshuizhanbi)) +
-						(0.3 * (fanshencishu / zaichuangshichang)) +
+						(0.3 * (fanshencishu / (zaichuangshichang * 60))) +
 						(0.2 * (xintiaobiaozhuncha / 10)) +
 						(0.1 * (huxibiaozhuncha / 5))
 					) * 100;
@@ -1633,18 +1644,6 @@
 				});
 			},
 			
-			/** 获取呼吸暂停次数 */
-			async getHuXiZanTing(timeStampStart,timeStampEnd){
-				const queryParams = {
-					pageNum: 1,
-					pageSize: 300,
-					deviceKey: this.deviceKey,
-					productKey: this.productKey,
-					StartTime:timeStampStart,
-					EndTime:timeStampEnd
-				}
-				return await listTensleep(queryParams);
-			}
 		}
 	}
 </script>

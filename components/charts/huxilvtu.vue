@@ -1,7 +1,7 @@
 <template>
   <view>
 	  <view class="head_info" v-if="!!sortedSleepData.length">
-	  	<view class="head_info_item">平均呼吸:{{sleepReport.pjhx?sleepReport.pjhx:'--'}}</view>
+	  	<view class="head_info_item">平均呼吸:{{sleepReport.bm !== undefined ? sleepReport.bm : '--'}}</view>
 	  	<!-- <view class="head_info_item">呼吸暂停:{{sleepReport.hxztcs?sleepReport.hxztcs:0}}</view> -->
 	  </view>
     <!-- <canvas canvas-id="xl" id="xl" class="charts" @touchend="tap" v-if="!!sortedSleepData.length"/> -->

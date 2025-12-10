@@ -1,7 +1,7 @@
 <template>
   <view>
 	  <view class="head_info" v-if="!!sortedSleepData.length">
-	  	<view class="head_info_item">平均心跳:{{sleepReport.pjxt?sleepReport.pjxt:'--'}}</view>
+	  	<view class="head_info_item">平均心跳:{{displayAvgHeartRate}}</view>
 	  </view>
     <!-- <canvas canvas-id="hxl" id="hxl" class="charts" @touchend="tap" v-if="!!sortedSleepData.length"/> -->
     <canvas canvas-id="hxl" id="hxl" class="charts" @touchmove="tap" @touchend="tap" v-if="!!sortedSleepData.length"/>
@@ -41,8 +41,18 @@ export default {
     return {
       cWidth: 700,
       cHeight: 400,
-	  sortedSleepData:[]
+	  sortedSleepData:[],
+	  avgHeartRate: 0  // 计算的平均心跳
     };
+  },
+  computed: {
+    // 显示平均心跳：优先使用bn字段，如果为0则使用计算值
+    displayAvgHeartRate() {
+      if (this.sleepReport.bn && this.sleepReport.bn > 0) {
+        return this.sleepReport.bn;
+      }
+      return this.avgHeartRate > 0 ? this.avgHeartRate : '--';
+    }
   },
   mounted() {
     //这里的 750 对应 css .charts 的 width
@@ -102,8 +112,13 @@ export default {
 		  	  res.series[0].data.push(Number(this.sortedSleepData[i].bs))
 		  }
 		  res.max=this.getMaxValue(res.series[0].data)
-		  // console.log(res.max)
-		  // console.log(res)
+		  
+		  // 计算平均心跳
+		  if (res.series[0].data.length > 0) {
+		    const sum = res.series[0].data.reduce((a, b) => a + b, 0);
+		    this.avgHeartRate = Math.round(sum / res.series[0].data.length);
+		  }
+		  
         this.drawCharts('hxl', res);
      /* }, 500); */
     },

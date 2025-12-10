@@ -35,6 +35,8 @@ export function parseDeviceNumber(deviceNumBering) {
         resDeviceNumber.deviceType = '2';
     } else if (deviceTypeStr === 'Ld') {//呼吸睡眠
         resDeviceNumber.deviceType = '1';
+    } else if (deviceTypeStr === 'La') {//呼吸睡眠-L2
+        resDeviceNumber.deviceType = '4';
     } else if (deviceTypeStr === 'Sd') {//水浸
         resDeviceNumber.deviceType = '13';
     } else if (deviceTypeStr === 'Md') {//门磁

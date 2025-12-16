@@ -17,14 +17,22 @@
 		</view>
 
 		<!-- 步骤1: 扫描并连接设备 -->
-		<view v-if="currentStep === 1" class="step-content">
-			<view class="content-header">
+		<view v-if="currentStep === 1" class="step-content scan-step-content">
+			<view class="scan-visual-area" v-if="!scanning && !(hasScanned && devices.length === 0)">
+				<view class="radar-circle">
+					<uni-icons type="search" size="40" color="#3ec6c6"></uni-icons>
+					<view class="radar-wave wave-1"></view>
+					<view class="radar-wave wave-2"></view>
+				</view>
+			</view>
+			
+			<view class="content-header" v-if="!scanning && !(hasScanned && devices.length === 0)">
 				<text class="content-title">扫描设备</text>
 				<text class="content-desc">请确保设备已进入配网模式</text>
 			</view>
 
-			<button v-if="!scanning" @click="startScan" class="scan-btn">
-				开始扫描
+			<button v-if="!scanning && !(hasScanned && devices.length === 0)" @click="startScan" class="scan-btn">
+				{{ devices.length > 0 ? '重新扫描' : '开始扫描' }}
 			</button>
 			
 			<view v-if="scanning" class="scanning-box">
@@ -45,10 +53,17 @@
 				</view>
 			</view>
 
-			<view v-if="!scanning && devices.length === 0" class="empty-state">
-				<text class="empty-icon">📱</text>
-				<text class="empty-text">未发现设备</text>
-				<text class="empty-hint">请确保设备已进入配网模式</text>
+			<view v-if="!scanning && devices.length === 0 && hasScanned" class="empty-state">
+				<view class="empty-icon-wrapper">
+					<uni-icons type="search" size="40" color="#999"></uni-icons>
+				</view>
+				<text class="empty-title">未搜索到设备</text>
+				<view class="empty-tips-list">
+					<text class="tip-item">1. 请确保设备已接通电源</text>
+					<text class="tip-item">2. 请确保设备处于配网模式（指示灯闪烁）</text>
+					<text class="tip-item">3. 尝试将手机尽量靠近设备</text>
+				</view>
+				<button class="retry-scan-btn" @click="startScan">重新扫描</button>
 			</view>
 		</view>
 
@@ -142,6 +157,7 @@ export default {
       
       // 步骤1: 扫描设备
       scanning: false,
+      hasScanned: false, // 是否已执行过扫描
       devices: [],
       currentDevice: null,
       
@@ -208,6 +224,7 @@ export default {
     async startScan() {
       this.devices = []
       this.scanning = true
+      this.hasScanned = true
       
       try {
         await uni.startBluetoothDevicesDiscovery({
@@ -227,8 +244,14 @@ export default {
             // 获取设备名称（优先使用 localName，其次使用 name）
             const deviceName = device.localName || device.name
             
-            // 只显示设备名称以"L"开头的设备
-            if (deviceName && deviceName.startsWith('L')) {
+            // 扩展设备过滤逻辑：支持多种设备类型
+            const isValidDevice = deviceName && (
+              deviceName.startsWith('L') ||          // L系列设备
+              deviceName.startsWith('La') ||         // La系列设备  
+              /^[A-Z]+\d+$/.test(deviceName)         // 字母+数字格式的设备
+            )
+            
+            if (isValidDevice) {
               const exists = this.devices.find((d) => d.deviceId === device.deviceId)
               if (!exists) {
                 // 确保显示的名称是有效的
@@ -247,9 +270,9 @@ export default {
           this.scanning = false
         }, BLUETOOTH_CONFIG.SCAN_TIMEOUT)
       } catch (e) {
-        const errorMsg = e.errMsg || e.message || e.toString() || '未知错误'
+        const errorMsg = this.getBluetoothErrorMessage(e)
         console.error('蓝牙扫描失败:', e)
-        uni.showToast({ title: '扫描失败: ' + errorMsg, icon: 'none' })
+        uni.showToast({ title: errorMsg, icon: 'none' })
         this.scanning = false
       }
     },
@@ -354,9 +377,9 @@ export default {
         this.currentStep = 2
       } catch (e) {
         uni.hideLoading()
-        const errorMsg = e.errMsg || e.message || e.toString() || '未知错误'
+        const errorMsg = this.getBluetoothErrorMessage(e)
         console.error('蓝牙连接失败:', e)
-        uni.showToast({ title: '连接失败: ' + errorMsg, icon: 'none' })
+        uni.showToast({ title: errorMsg, icon: 'none' })
       }
     },
     
@@ -493,11 +516,8 @@ export default {
         )
         
         // 配置发送成功
-        this.statusMessage = '配置已发送'
-        this.statusDetail = '设备正在验证WiFi连接...'
-        
-        // 等待设备验证WiFi（等待3秒）
-        await this.sleep(3000)
+        this.statusMessage = '配网完成！'
+        this.statusDetail = '设备已收到WiFi配置，请在设备管理中查看上线状态'
         
         // 断开蓝牙连接
         try {
@@ -509,8 +529,6 @@ export default {
         // 显示配网成功
         this.configSuccess = true
         this.configFailed = false
-        this.statusMessage = '配网完成！'
-        this.statusDetail = '设备已收到WiFi配置，正在连接网络...'
         
         // 2秒后返回
         await this.sleep(2000)
@@ -520,11 +538,12 @@ export default {
         this.configFailed = true
         this.configSuccess = false
         this.statusMessage = '发送配置失败'
-        const errorMsg = e.errMsg || e.message || e.toString() || '未知错误'
-        this.statusDetail = errorMsg || '请检查蓝牙连接是否正常'
+        const errorMsg = this.getBluetoothErrorMessage(e)
+        this.statusDetail = errorMsg
         console.error('WiFi配置发送失败:', e)
       }
     },
+    
     
     // 取消配网
     cancelConfig() {
@@ -581,6 +600,49 @@ export default {
         view[i] = utf8[i]
       }
       return buffer
+    },
+    
+    // 获取友好的蓝牙错误信息
+    getBluetoothErrorMessage(error) {
+      const errMsg = error.errMsg || error.message || error.toString()
+      
+      // 常见错误码映射
+      const errorMap = {
+        '10000': '未初始化蓝牙适配器',
+        '10001': '当前蓝牙适配器不可用',
+        '10002': '没有找到指定设备', 
+        '10003': '连接失败',
+        '10004': '没有找到指定服务',
+        '10005': '没有找到指定特征值',
+        '10006': '当前连接已断开',
+        '10007': '当前特征值不支持此操作',
+        '10008': '其余所有系统上报的异常',
+        '10009': 'Android 系统特有，系统版本低于 4.3 不支持BLE',
+        '10012': '连接超时',
+        '10013': '连接 deviceId 为空或者是格式不正确'
+      }
+      
+      // 提取错误码
+      const codeMatch = errMsg.match(/(\d{5})/)
+      if (codeMatch && errorMap[codeMatch[1]]) {
+        return errorMap[codeMatch[1]]
+      }
+      
+      // 关键字匹配
+      if (errMsg.includes('timeout')) {
+        return '连接超时，请确保设备在附近且处于配网模式'
+      }
+      if (errMsg.includes('not found')) {
+        return '未找到设备，请确保设备已进入配网模式'
+      }
+      if (errMsg.includes('permission')) {
+        return '缺少蓝牙权限，请在设置中开启蓝牙权限'
+      }
+      if (errMsg.includes('unavailable')) {
+        return '蓝牙不可用，请开启手机蓝牙功能'
+      }
+      
+      return errMsg || '操作失败，请重试'
     },
     
     // 延迟函数
@@ -715,12 +777,76 @@ export default {
 /* 步骤内容 */
 .step-content {
 	background: #fff;
-	padding: 32rpx;
+	padding: 40rpx 32rpx;
 	margin-bottom: 24rpx;
+	min-height: 40vh; /* 增加最小高度 */
+	display: flex;
+	flex-direction: column;
+}
+
+/* 扫描步骤特定样式 */
+.scan-step-content {
+	justify-content: center;
+	align-items: center;
+}
+
+.scan-visual-area {
+	margin-bottom: 60rpx;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.radar-circle {
+	width: 120rpx; /* 缩小尺寸 */
+	height: 120rpx;
+	background: #f0fcfc; /* 改为浅色背景 */
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	/* 移除原来的阴影，改为更淡的 */
+}
+
+.radar-wave {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	border: 2rpx solid #e0f8f8; /* 变淡波纹颜色 */
+	border-radius: 50%;
+	opacity: 0;
+	z-index: -1;
+}
+
+.wave-1 {
+	width: 120rpx;
+	height: 120rpx;
+	animation: radarWave 2s infinite ease-out;
+}
+
+.wave-2 {
+	width: 120rpx;
+	height: 120rpx;
+	animation: radarWave 2s infinite ease-out 0.6s;
+}
+
+@keyframes radarWave {
+	0% {
+		width: 120rpx;
+		height: 120rpx;
+		opacity: 0.8;
+	}
+	100% {
+		width: 240rpx; /* 减小扩散范围 */
+		height: 240rpx;
+		opacity: 0;
+	}
 }
 
 .content-header {
-	margin-bottom: 32rpx;
+	margin-bottom: 60rpx; /* 增加标题和内容的间距 */
 	text-align: center;
 }
 
@@ -740,16 +866,23 @@ export default {
 
 /* 扫描按钮 */
 .scan-btn {
-	width: 100%;
-	height: 88rpx;
-	line-height: 88rpx;
+	width: 80%; /* 稍微收窄按钮宽度 */
+	height: 96rpx;
+	line-height: 96rpx;
 	background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
 	color: #fff;
-	font-size: 32rpx;
+	font-size: 34rpx;
 	font-weight: 500;
-	border-radius: 12rpx;
+	border-radius: 48rpx;
 	border: none;
 	margin-bottom: 24rpx;
+	box-shadow: 0 10rpx 20rpx rgba(62, 198, 198, 0.3); /* 增加按钮投影 */
+	transition: all 0.3s;
+}
+
+.scan-btn:active {
+	transform: scale(0.98);
+	box-shadow: 0 5rpx 10rpx rgba(62, 198, 198, 0.2);
 }
 
 .scan-btn::after {
@@ -821,27 +954,64 @@ export default {
 
 /* 空状态 */
 .empty-state {
-	text-align: center;
-	padding: 80rpx 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 60rpx 32rpx;
+	margin-top: 40rpx;
 }
 
-.empty-icon {
-	font-size: 80rpx;
-	display: block;
-	margin-bottom: 24rpx;
+.empty-icon-wrapper {
+	width: 120rpx;
+	height: 120rpx;
+	background: #f5f5f5;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 32rpx;
 }
 
-.empty-text {
+.empty-title {
 	font-size: 30rpx;
-	color: #999;
-	display: block;
-	margin-bottom: 12rpx;
+	font-weight: 600;
+	color: #333;
+	margin-bottom: 32rpx;
 }
 
-.empty-hint {
-	font-size: 24rpx;
-	color: #ccc;
+.empty-tips-list {
+	width: 100%;
+	background: #f9f9f9;
+	padding: 24rpx 32rpx;
+	border-radius: 12rpx;
+	margin-bottom: 40rpx;
+}
+
+.tip-item {
 	display: block;
+	font-size: 26rpx;
+	color: #666;
+	line-height: 2;
+}
+
+.retry-scan-btn {
+	width: 280rpx;
+	height: 72rpx;
+	line-height: 72rpx;
+	background: #fff;
+	color: #3ec6c6;
+	border: 2rpx solid #3ec6c6;
+	border-radius: 36rpx;
+	font-size: 28rpx;
+	font-weight: 500;
+}
+
+.retry-scan-btn::after {
+	border: none;
+}
+
+.retry-scan-btn:active {
+	background: #f0fcfc;
 }
 
 /* 表单项 */

@@ -256,13 +256,11 @@
       },
       // 隐私协议
       handlePrivacy() {
-        let site = this.globalConfig.appInfo.agreements[0]
-        this.$tab.navigateTo(`/pages/common/webview/index?title=${site.title}&url=${site.url}`)
+        this.$tab.navigateTo('/pages/common/privacy/index')
       },
       // 用户协议
       handleUserAgrement() {
-        let site = this.globalConfig.appInfo.agreements[1]
-        this.$tab.navigateTo(`/pages/common/webview/index?title=${site.title}&url=${site.url}`)
+        this.$tab.navigateTo('/pages/common/protocol/index')
       },
       // 获取图形验证码
       getCode() {

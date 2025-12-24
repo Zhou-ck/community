@@ -727,13 +727,19 @@ export default {
       }
     },
     
-    // 获取最小日期（今天）
+    // 获取最小日期（今天）并设置默认日期
     getMinDate() {
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
-      this.minDate = `${year}-${month}-${day}`;
+      const todayStr = `${year}-${month}-${day}`;
+      this.minDate = todayStr;
+      
+      // 默认选择当天
+      if (!this.bookingData.appointmentDate) {
+        this.bookingData.appointmentDate = todayStr;
+      }
     }
   },
   

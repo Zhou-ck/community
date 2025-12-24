@@ -168,6 +168,7 @@
 
 <script>
   import { getUserProfile, updateUserProfile } from "@/api/system/user"
+  import config from '@/config.js'
 
   export default {
     data() {
@@ -245,9 +246,8 @@
           return this.user[field] !== this.originalUser[field]
         })
         
-        // 检查必填字段是否为空且符合要求
-        const hasRequiredFields = this.user.nickName && this.user.nickName.trim().length >= 2 &&
-                                 this.user.phonenumber && this.user.phonenumber.trim() !== ''
+        // 检查必填字段是否为空且符合要求（只有昵称是必填的）
+        const hasRequiredFields = this.user.nickName && this.user.nickName.trim().length >= 2
         
         // 检查是否有验证错误
         const hasNoErrors = !this.nickNameError && !this.phoneNumberError && !this.emailError
@@ -258,11 +258,21 @@
     methods: {
       getUser() {
         getUserProfile().then(response => {
-          this.user = response.data
+          const userData = response.data
+          // 处理头像路径，如果是相对路径则拼接baseUrl
+          if (userData.avatar && !userData.avatar.startsWith('http')) {
+            userData.avatar = config.baseUrl + userData.avatar
+          }
+          // 处理手机号，如果不是有效的手机号格式则清空
+          const phoneRegex = /^1[3-9]\d{9}$/
+          if (userData.phonenumber && !phoneRegex.test(userData.phonenumber)) {
+            userData.phonenumber = ''
+          }
+          this.user = userData
           this.roleGroup = response.roleGroup
           this.postGroup = response.postGroup
           // 保存原始数据的深拷贝
-          this.originalUser = JSON.parse(JSON.stringify(response.data))
+          this.originalUser = JSON.parse(JSON.stringify(userData))
         })
       },
       validateNickName() {

@@ -20,6 +20,7 @@
 						</view>
 						<view class="tags-row">
 							<text class="tag default" v-if="address.isDefault">默认</text>
+							<text class="tag set-default" v-if="!address.isDefault" @click.stop="setDefaultAddress(index)">设为默认</text>
 							<text class="tag selected" v-if="isFromBooking && selectedAddressId === address.addressId">已选</text>
 						</view>
 					</view>
@@ -463,6 +464,45 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				})
 			},
 
+			// 设为默认地址
+			async setDefaultAddress(index) {
+				const address = this.addressList[index]
+				
+				if (!address || !address.addressId) {
+					uni.showToast({
+						title: '地址信息异常',
+						icon: 'none'
+					})
+					return
+				}
+				
+				try {
+					const response = await updateServicesaddress({
+						addressId: address.addressId,
+						isDefault: '1'
+					})
+					
+					if (response.code === 200) {
+						uni.showToast({
+							title: '设置成功',
+							icon: 'success'
+						})
+						// 重新加载列表
+						this.loadAddressList()
+					} else {
+						uni.showToast({
+							title: response.msg || '设置失败',
+							icon: 'none'
+						})
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '设置失败',
+						icon: 'none'
+					})
+				}
+			},
+
 			// 复制地址文字信息
 			copyAddress(index) {
 				const address = this.addressList[index]
@@ -848,6 +888,16 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 					&.default {
 						background: rgba(62, 198, 198, 0.1);
 						color: #3ec6c6;
+					}
+					
+					&.set-default {
+						background: rgba(255, 153, 0, 0.1);
+						color: #ff9900;
+						border: 1rpx solid rgba(255, 153, 0, 0.3);
+						
+						&:active {
+							background: rgba(255, 153, 0, 0.2);
+						}
 					}
 					
 					&.selected {

@@ -93,7 +93,7 @@
 		</scroll-view>
 
 		<!-- 底部按钮栏 -->
-		<view class="bottom-bar" :style="{ paddingBottom: safeAreaBottom + 'rpx' }">
+		<view class="bottom-bar" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 			<template v-if="deviceId">
 				<view class="batch-info">
 					<text>已选 {{ selectedReceivers.length }} 人</text>
@@ -165,7 +165,7 @@
 					</view>
 				</scroll-view>
 
-				<view class="popup-footer" :style="{ paddingBottom:safeAreaBottom + 'rpx' }">
+				<view class="popup-footer" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 					<view class="save-btn" @click="submitReceiver" hover-class="btn-hover">
 						<text>{{ submitting ? '提交中...' : '保存' }}</text>
 					</view>
@@ -524,34 +524,6 @@
 				if (idx >= 0) {
 					this.selectedReceivers.splice(idx, 1)
 				} else {
-					// 选中时，检查是否所有通知开关都关闭
-					const allOff = item.phoneNotifySwitch === '2' && item.smsNotifySwitch === '2' && item.wechatNotifySwitch === '2'
-					
-					if (allOff) {
-						// 自动开启电话、短信和微信通知
-						try {
-							const payload = {
-								...item,
-								phoneNotifySwitch: '1',
-								smsNotifySwitch: '1',
-								wechatNotifySwitch: '1'
-							}
-							const res = await updateAlarmreceiver(payload)
-							if (res.code === 200) {
-								item.phoneNotifySwitch = '1'
-								item.smsNotifySwitch = '1'
-								item.wechatNotifySwitch = '1'
-								uni.showToast({
-									title: '已自动开启电话、短信和微信通知',
-									icon: 'none',
-									duration: 2000
-								})
-							}
-						} catch (e) {
-							console.error('自动开启通知失败:', e)
-						}
-					}
-					
 					this.selectedReceivers.push(item)
 				}
 			},
@@ -578,23 +550,6 @@
 					if (res.code === 200) {
 						const idx = this.boundReceivers.findIndex(r => r.receiverId === item.receiverId)
 						if (idx >= 0) this.boundReceivers.splice(idx, 1)
-						
-						// 取消绑定后，自动关闭所有通知开关
-						try {
-							const payload = {
-								...item,
-								phoneNotifySwitch: '2',
-								smsNotifySwitch: '2',
-								wechatNotifySwitch: '2'
-							}
-							await updateAlarmreceiver(payload)
-							// 更新本地数据
-							item.phoneNotifySwitch = '2'
-							item.smsNotifySwitch = '2'
-							item.wechatNotifySwitch = '2'
-						} catch (e) {
-							console.error('关闭通知开关失败:', e)
-						}
 						
 						uni.showToast({
 							title: `已取消绑定 ${item.receiverName || ''}`,
@@ -941,6 +896,7 @@
 		padding: 24rpx 40rpx;
 		box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 		z-index: 99;
+		min-height: 135rpx;
 		
 		/* 适配全面屏 */
 		padding-bottom: calc(24rpx + constant(safe-area-inset-bottom));
@@ -1178,7 +1134,7 @@
 			background: #fff;
 			box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
 			flex-shrink: 0;
-			
+
 			.save-btn {
 				height: 88rpx;
 				background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);

@@ -36,7 +36,7 @@
           </view>
           <view class="card-content">
             <text class="card-label">官方邮箱</text>
-            <text class="card-value email-text">community@care.com</text>
+            <text class="card-value email-text">15005460333@163.com</text>
           </view>
           <view class="card-arrow">
             <uni-icons type="copy" size="16" color="#ccc"></uni-icons>
@@ -50,7 +50,7 @@
           </view>
           <view class="card-content">
             <text class="card-label">服务热线</text>
-            <text class="card-value phone-text">400-888-6666</text>
+            <text class="card-value phone-text">0546-8080588</text>
           </view>
         </view>
 

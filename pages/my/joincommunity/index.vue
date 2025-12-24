@@ -435,6 +435,27 @@ export default {
     this.refreshData()
   },
   
+  // 拦截返回按钮
+  onBackPress() {
+    // 检查是否来自服务分类页面且用户未加入社区
+    if (!this.userStatus.hasCommunity) {
+      // 检查页面栈，判断上一页是否是服务分类页面
+      const pages = getCurrentPages();
+      if (pages.length >= 2) {
+        const prevPage = pages[pages.length - 2];
+        if (prevPage.route === 'pages/server/index') {
+          // 如果来自服务分类页面且未加入社区，直接返回到首页
+          uni.reLaunch({
+            url: '/pages/index'
+          });
+          return true; // 阻止默认返回行为
+        }
+      }
+    }
+    // 其他情况使用默认返回行为
+    return false;
+  },
+  
   methods: {
     // 初始化页面
     async initPage() {

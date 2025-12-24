@@ -1,18 +1,7 @@
 <template>
 	<view class="notice-page">
-		<!-- 自定义导航栏 -->
-		<view class="navbar-wrapper" :style="{ paddingTop: statusBarHeight + 'px' }">
-			<view class="navbar">
-				<view class="navbar-left" @click="goBack">
-					<uni-icons type="back" size="24" color="#333"></uni-icons>
-				</view>
-				<view class="navbar-title">公告通知</view>
-				<view class="navbar-right"></view>
-			</view>
-		</view>
-
 		<!-- 搜索栏 -->
-		<view class="search-container" :style="{ top: (statusBarHeight * 2 + 88) + 'rpx' }">
+		<view class="search-container">
 			<view class="search-box">
 				<uni-icons type="search" size="18" color="#999"></uni-icons>
 				<input 
@@ -154,10 +143,6 @@
 			this.statusBarHeight = systemInfo.statusBarHeight || 0
 		},
 		methods: {
-			// 返回上一页
-			goBack() {
-				uni.navigateBack()
-			},
 
 			// 搜索输入
 			onSearchInput() {
@@ -212,51 +197,10 @@
 	background: linear-gradient(180deg, #f0f4f7 0%, #f8f9fa 100%);
 }
 
-/* 导航栏 */
-.navbar-wrapper {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	background: rgba(255, 255, 255, 0.95);
-	backdrop-filter: blur(10px);
-	z-index: 999;
-	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.03);
-}
-
-.navbar {
-	height: 88rpx;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 24rpx;
-}
-
-.navbar-left,
-.navbar-right {
-	width: 80rpx;
-	display: flex;
-	align-items: center;
-}
-
-.navbar-title {
-	flex: 1;
-	text-align: center;
-	font-size: 34rpx;
-	font-weight: 600;
-	color: #333;
-	letter-spacing: 1rpx;
-}
-
 /* 搜索栏 */
 .search-container {
-	position: fixed;
-	left: 0;
-	right: 0;
 	background: rgba(240, 244, 247, 0.95);
-	backdrop-filter: blur(10px);
-	padding: 12rpx 24rpx;
-	z-index: 998;
+	padding: 24rpx;
 }
 
 .search-box {
@@ -289,8 +233,8 @@
 
 /* 公告列表 */
 .notice-list {
-	padding:120rpx 24rpx 40rpx;
-	min-height: calc(100vh - 220rpx);
+	padding: 0 24rpx 40rpx;
+	min-height: calc(100vh - 180rpx);
 }
 
 @keyframes slideUp {

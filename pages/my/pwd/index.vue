@@ -68,7 +68,7 @@
 
       <!-- 提交按钮 -->
       <view class="submit-section">
-        <view class="submit-btn" @click="submit">
+        <view class="submit-btn" :class="{ disabled: !isFormValid }" @click="submit">
           <text class="submit-text">确认修改</text>
         </view>
       </view>
@@ -94,6 +94,29 @@
   import { updateUserPwd } from "@/api/system/user"
 
   export default {
+    computed: {
+      // 表单是否有效
+      isFormValid() {
+        const { oldPassword, newPassword, confirmPassword } = this.user
+        // 所有字段都有值
+        if (!oldPassword || !newPassword || !confirmPassword) {
+          return false
+        }
+        // 新密码长度符合要求
+        if (newPassword.length < 6 || newPassword.length > 20) {
+          return false
+        }
+        // 两次密码一致
+        if (newPassword !== confirmPassword) {
+          return false
+        }
+        // 没有错误信息
+        if (this.oldPasswordError || this.newPasswordError || this.confirmPasswordError) {
+          return false
+        }
+        return true
+      }
+    },
     data() {
       return {
         user: {
@@ -293,6 +316,11 @@
       },
       
       submit() {
+        // 如果表单无效，不执行提交
+        if (!this.isFormValid) {
+          return;
+        }
+        
         // 先进行所有字段的验证
         const isOldPasswordValid = this.validateOldPassword();
         const isNewPasswordValid = this.validateNewPassword();
@@ -305,6 +333,9 @@
         this.$refs.form.validate().then(res => {
           updateUserPwd(this.user.oldPassword, this.user.newPassword).then(response => {
             this.$modal.msgSuccess("修改成功，请重新登录")
+            
+            // 保存用户名，以便登录页面自动填充
+            const savedUsername = uni.getStorageSync('user_username')
             
             // 删除密码缓存
             try {
@@ -325,9 +356,16 @@
             setTimeout(() => {
               // 退出登录并跳转到登录页面
               this.$store.dispatch('LogOut').then(() => {
+                // 恢复用户名缓存
+                if (savedUsername) {
+                  uni.setStorageSync('user_username', savedUsername)
+                }
                 this.$tab.reLaunch('/pages/login')
               }).catch(() => {
-                // 如果退出登录失败，直接跳转
+                // 如果退出登录失败，恢复用户名并跳转
+                if (savedUsername) {
+                  uni.setStorageSync('user_username', savedUsername)
+                }
                 this.$tab.reLaunch('/pages/login')
               })
             }, 1500)
@@ -403,9 +441,18 @@ page {
   text-align: center;
   box-shadow: 0 6rpx 20rpx rgba(168, 230, 207, 0.4);
   transition: all 0.3s ease;
+  
+  &.disabled {
+    background: #ccc;
+    box-shadow: none;
+    
+    .submit-text {
+      color: #999;
+    }
+  }
 }
 
-.submit-btn:active {
+.submit-btn:active:not(.disabled) {
   transform: scale(0.98);
   box-shadow: 0 4rpx 16rpx rgba(168, 230, 207, 0.6);
 }

@@ -1,5 +1,8 @@
 <template>
   <view class="msg-page">
+    <!-- 顶部装饰背景 -->
+    <view class="top-decoration"></view>
+    
     <!-- 顶部 Tabs -->
     <view class="tabs-header">
       <view class="tab-item" :class="{ active: currentTab === 0 }" @click="switchTab(0)">
@@ -16,7 +19,7 @@
     <view class="content-area">
       <!-- 消息列表 -->
       <view v-if="currentTab === 0">
-        <view class="list-item" v-for="(item, index) in msgList" :key="item._key" @click="showDetail(item)" @longpress="handleDelete(item)">
+        <view class="list-item" v-for="item in msgList" :key="item._key" @click="showDetail(item)">
           <view class="item-header">
             <view class="header-left">
               <text class="item-time">{{ item.createTime }}</text>
@@ -24,7 +27,9 @@
             <view class="header-right" v-if="item.sendMessageUserName">
               <text class="item-user">发送人: {{ item.sendMessageUserName }}</text>
             </view>
-            <uni-icons type="trash" size="18" color="#999" @click.stop="handleDelete(item)" class="delete-icon"></uni-icons>
+            <view class="delete-icon" @click.stop="handleDelete(item, $event)">
+              <uni-icons type="trash" size="18" color="#999"></uni-icons>
+            </view>
           </view>
           <view class="item-content">
             <!-- 只有当有文字内容，或者既没有文字也不是音频/文件时（纯文本空消息），才显示文本行 -->
@@ -35,12 +40,17 @@
             
             <!-- 音频播放器 -->
             <view class="audio-player" v-if="isAudio(item)" @click.stop="playAudio(item)">
-              <view class="play-icon-box">
-                <uni-icons :type="isPlaying(item) ? 'videocam-filled' : 'videocam'" size="24" color="#3ec6c6"></uni-icons>
+              <view class="play-icon-box" :class="{ playing: isPlaying(item) }">
+                <uni-icons :type="isPlaying(item) ? 'sound-filled' : 'sound'" size="22" :color="isPlaying(item) ? '#fff' : '#3ec6c6'"></uni-icons>
               </view>
               <view class="audio-info">
-                <text class="audio-name">{{ item.filename || '音频消息' }}</text>
+                <text class="audio-name">{{ item.title || '语音消息' }}</text>
                 <text class="audio-status">{{ isPlaying(item) ? '播放中...' : '点击播放' }}</text>
+              </view>
+              <view class="audio-wave" v-if="isPlaying(item)">
+                <view class="bar bar1"></view>
+                <view class="bar bar2"></view>
+                <view class="bar bar3"></view>
               </view>
             </view>
 
@@ -55,25 +65,29 @@
                <text class="address-text">{{ item.deviceAddress }}</text>
             </view>
           </view>
-        </view>
-        <!-- 空状态 -->
-        <view v-if="msgList.length === 0 && !loading" class="empty-state">
-          <uni-icons type="chatbubbles" size="50" color="#ccc"></uni-icons>
-          <text class="empty-text">暂无消息数据</text>
+          <!-- 底部操作栏 -->
+          <view class="item-footer">
+            <view class="resend-btn" @click.stop="handleResend(item)">
+              <uni-icons type="redo" size="16" color="#3ec6c6"></uni-icons>
+              <text>再次发送</text>
+            </view>
+          </view>
         </view>
       </view>
 
       <!-- 需求列表 -->
       <view v-if="currentTab === 1">
-        <view class="list-item demand-item" v-for="(item, index) in demandList" :key="item._key" @click="showDetail(item)" @longpress="handleDelete(item)">
+        <view class="list-item demand-item" v-for="item in demandList" :key="item._key" @click="showDetail(item)">
           <view class="item-header">
              <view class="header-left">
               <text class="item-time">{{ item.createTime }}</text>
             </view>
-            <view class="header-right" v-if="item.sendMessageUserName">
-              <text class="item-user">发送人: {{ item.sendMessageUserName }}</text>
+            <view class="header-right" v-if="item.sendDemandUserName">
+              <text class="item-user">发送人: {{ item.sendDemandUserName }}</text>
             </view>
-            <uni-icons type="trash" size="18" color="#999" @click.stop="handleDelete(item)" class="delete-icon"></uni-icons>
+            <view class="delete-icon" @click.stop="handleDelete(item, $event)">
+              <uni-icons type="trash" size="18" color="#999"></uni-icons>
+            </view>
           </view>
           <view class="item-content">
             <view class="demand-row">
@@ -83,12 +97,17 @@
             
             <!-- 音频播放器 -->
             <view class="audio-player" v-if="isAudio(item)" @click.stop="playAudio(item)">
-              <view class="play-icon-box">
-                <uni-icons :type="isPlaying(item) ? 'videocam-filled' : 'videocam'" size="24" color="#3ec6c6"></uni-icons>
+              <view class="play-icon-box" :class="{ playing: isPlaying(item) }">
+                <uni-icons :type="isPlaying(item) ? 'sound-filled' : 'sound'" size="22" :color="isPlaying(item) ? '#fff' : '#3ec6c6'"></uni-icons>
               </view>
               <view class="audio-info">
-                <text class="audio-name">{{ item.filename || '音频消息' }}</text>
+                <text class="audio-name">{{ item.title || '语音消息' }}</text>
                 <text class="audio-status">{{ isPlaying(item) ? '播放中...' : '点击播放' }}</text>
+              </view>
+              <view class="audio-wave" v-if="isPlaying(item)">
+                <view class="bar bar1"></view>
+                <view class="bar bar2"></view>
+                <view class="bar bar3"></view>
               </view>
             </view>
 
@@ -104,11 +123,15 @@
             </view>
           </view>
         </view>
-        <!-- 空状态 -->
-        <view v-if="demandList.length === 0 && !loading" class="empty-state">
-          <uni-icons type="list" size="50" color="#ccc"></uni-icons>
-          <text class="empty-text">暂无需求数据</text>
+      </view>
+      
+      <!-- 公用空状态 -->
+      <view v-if="showEmptyState" class="empty-state">
+        <view class="empty-icon-wrapper">
+          <uni-icons type="chatboxes" size="80" color="#d4d4d4"></uni-icons>
         </view>
+        <text class="empty-title">{{ emptyTitle }}</text>
+        <text class="empty-subtitle">还没有更多数据哦~</text>
       </view>
       
       <!-- 加载更多 loading -->
@@ -116,7 +139,7 @@
         <uni-icons type="spinner-cycle" size="24" color="#999"></uni-icons>
         <text>加载中...</text>
       </view>
-      <view class="no-more" v-if="!loading && isEnd">
+      <view class="no-more" v-if="!loading && isEnd && ((currentTab === 0 && msgList.length > 0) || (currentTab === 1 && demandList.length > 0))">
         <text>没有更多数据了</text>
       </view>
     </view>
@@ -126,8 +149,6 @@
       <uni-icons type="plusempty" size="26" color="#fff"></uni-icons>
     </view>
     
-    <!-- ... (后续代码保持结构但会通过 edit 更新颜色) ... -->
-
     <!-- 添加弹窗 -->
     <uni-popup ref="addPopup" type="center" :mask-click="false">
       <view class="popup-box add-msg-popup">
@@ -221,12 +242,12 @@
           <text class="popup-title">详细信息</text>
           <uni-icons class="close-icon" type="closeempty" size="20" color="#666" @click="closeDetailPopup"></uni-icons>
         </view>
-        <scroll-view scroll-y class="popup-body detail-body">
+        <view class="popup-body detail-body">
           <view class="detail-item" v-for="(value, key) in currentDetail" :key="key">
              <text class="detail-label">{{ getFieldLabel(key) }}</text>
-             <text class="detail-value">{{ formatValue(key, value) }}</text>
+             <text class="detail-value" :class="{ 'highlight-current': key === 'isCurrent' && value == 1 }">{{ formatValue(key, value) }}</text>
           </view>
-        </scroll-view>
+        </view>
       </view>
     </uni-popup>
 
@@ -234,7 +255,8 @@
 </template>
 
 <script>
-import { listSleepmessage, addSleepmessage, delSleepmessage } from '@/api/sleepmessage.js'
+import { listSleepmessage, getSleepmessage, addSleepmessage, delSleepmessage, setcurrentMsg } from '@/api/sleepmessage.js'
+import { resetDeviceNetwork } from '@/api/device.js'
 import { listSleepdemand, addSleepdemand, delSleepdemand } from '@/api/sleepdemand.js'
 import { getDicts } from '@/api/system/dict/data'
 import config from '@/config'
@@ -266,7 +288,8 @@ export default {
         content: '',
         title: '',
         sendMessageUserName: '',
-        filename: '' // 音频文件名
+        filename: '', // 音频文件名
+        audioData: '' // 音频 base64 数据
       },
       submitting: false,
       
@@ -280,6 +303,7 @@ export default {
       
       // 详情
       currentDetail: {},
+      currentDetailItem: null,
       fieldMap: {
         messageId: '消息ID',
         demandId: '需求ID',
@@ -306,7 +330,7 @@ export default {
         audioData: '音频数据',
         timeStamp: '时间戳',
         deviceAlias: '设备别名',
-        isCurrent: '是否当前',
+
         sendMessageUserId: '发送人ID',
         sendDemandUserName: '发送人',
         title: '标题'
@@ -315,6 +339,17 @@ export default {
       // 音频播放
       innerAudioContext: null,
       currentPlayingItem: null
+    }
+  },
+  computed: {
+    // 是否显示空状态
+    showEmptyState() {
+      if (this.loading) return false
+      return this.currentTab === 0 ? this.msgList.length === 0 : this.demandList.length === 0
+    },
+    // 空状态标题
+    emptyTitle() {
+      return this.currentTab === 0 ? '暂无消息数据' : '暂无需求数据'
     }
   },
   onLoad(options) {
@@ -328,16 +363,33 @@ export default {
     this.initRecorder();
   },
   onUnload() {
-    // 清理音频播放器
-    if (this.innerAudioContext) {
-      this.innerAudioContext.destroy();
+    try {
+      // 清理音频播放器
+      if (this.innerAudioContext && typeof this.innerAudioContext.destroy === 'function') {
+        this.innerAudioContext.stop();
+        this.innerAudioContext.destroy();
+      }
+    } catch (e) {
+      console.error('清理音频播放器失败', e);
     }
-    // 清理录音资源
-    if (this.recordTimer) {
-      clearInterval(this.recordTimer);
+    
+    try {
+      // 清理录音资源
+      if (this.recordTimer) {
+        clearInterval(this.recordTimer);
+        this.recordTimer = null;
+      }
+    } catch (e) {
+      console.error('清理计时器失败', e);
     }
-    if (this.recorderManager) {
-      this.recorderManager.stop();
+    
+    try {
+      // 只有在录音中才停止录音
+      if (this.recorderManager && this.recording) {
+        this.recorderManager.stop();
+      }
+    } catch (e) {
+      console.error('清理录音管理器失败', e);
     }
   },
   onPullDownRefresh() {
@@ -381,8 +433,8 @@ export default {
           this.recordTimer = null;
         }
         this.audioTempPath = res.tempFilePath;
-        // 自动上传
-        this.uploadAudio(res.tempFilePath);
+        // 将音频转为 base64
+        this.convertAudioToBase64(res.tempFilePath);
       });
       
       // 录音错误事件
@@ -405,10 +457,23 @@ export default {
         this.isPlayingTemp = false; // 试听结束
       });
       this.innerAudioContext.onError((res) => {
-        console.error('音频播放错误', res);
+        console.error('音频播放错误详情:', {
+          errMsg: res ? res.errMsg : '未知错误',
+          errCode: res ? res.errCode : '无错误码',
+          src: this.innerAudioContext.src
+        });
         this.currentPlayingItem = null;
         this.isPlayingTemp = false; // 试听出错
-        uni.showToast({ title: '播放失败，请检查网络或文件', icon: 'none' });
+        
+        let errorMsg = '播放失败';
+        if (res && res.errMsg) {
+          if (res.errMsg.indexOf('NotSupportedError') > -1) {
+            errorMsg = '不支持的音频格式或文件不可访问';
+          } else if (res.errMsg.indexOf('NetworkError') > -1) {
+            errorMsg = '网络错误，请检查连接';
+          }
+        }
+        uni.showToast({ title: errorMsg, icon: 'none' });
       });
     },
     
@@ -420,7 +485,7 @@ export default {
     },
     
     // 播放音频
-    playAudio(item) {
+    async playAudio(item) {
       if (this.currentPlayingItem === item) {
         // 暂停/停止
         this.innerAudioContext.stop();
@@ -430,15 +495,60 @@ export default {
       
       // 构造 URL
       let url = '';
-      if (item.audioData) {
-        // 如果有 base64 数据或完整 URL
-        url = item.audioData;
+      let audioData = item.audioData;
+      
+      // 如果是音频类型但 audioData 为空，需要先获取详情
+      if (this.isAudio(item) && !audioData && item.messageId) {
+        uni.showLoading({ title: '加载音频...' });
+        try {
+          const res = await getSleepmessage(item.messageId);
+          if (res.code === 200 && res.data && res.data.audioData) {
+            audioData = res.data.audioData;
+            // 缓存到列表项中，避免重复请求
+            item.audioData = audioData;
+            item.audioMime = res.data.audioMime || item.audioMime;
+          }
+        } catch (e) {
+          console.error('获取音频详情失败', e);
+        } finally {
+          uni.hideLoading();
+        }
+      }
+      
+      if (audioData) {
+        // 检查是否已经是完整的 data URI 或 http(s) URL
+        if (audioData.startsWith('data:') || audioData.startsWith('http://') || audioData.startsWith('https://')) {
+          url = audioData;
+        } else {
+          // 纯 base64 字符串，需要添加 data URI 前缀
+          const mimeType = item.audioMime || 'audio/mpeg';
+          url = `data:${mimeType};base64,${audioData}`;
+          console.log('转换 base64 为 data URI，MIME类型:', mimeType);
+        }
       } else if (item.filename) {
-        if (item.filename.startsWith('http')) {
+        // 检查是否是临时文件路径或自定义文件名（无实际文件）
+        if (item.filename.startsWith('wxfile://')) {
+          // #ifdef H5
+          uni.showToast({ 
+            title: '浏览器环境无法试听，请在小程序中使用', 
+            icon: 'none',
+            duration: 3000 
+          });
+          console.warn('H5环境无法播放微信临时文件');
+          return;
+          // #endif
+          // #ifndef H5
+          url = item.filename;
+          // #endif
+        } else if (item.filename.startsWith('audio_')) {
+          // 自定义文件名格式，但没有 audioData，说明音频数据未存储
+          uni.showToast({ title: '音频数据未存储，无法播放', icon: 'none' });
+          console.warn('音频数据为空，filename:', item.filename);
+          return;
+        } else if (item.filename.startsWith('http')) {
           url = item.filename;
         } else {
           // 使用 config.baseUrl 拼接
-          // 假设文件存储在 /profile/upload/ 目录下
           url = config.baseUrl + '/profile/upload/' + item.filename;
         }
       }
@@ -448,10 +558,17 @@ export default {
         return;
       }
       
-      this.innerAudioContext.stop();
-      this.innerAudioContext.src = url;
-      this.innerAudioContext.play();
-      this.currentPlayingItem = item;
+      console.log('准备播放音频，URL长度:', url.length, 'URL前50个字符:', url.substring(0, 50));
+      
+      try {
+        this.innerAudioContext.stop();
+        this.innerAudioContext.src = url;
+        this.innerAudioContext.play();
+        this.currentPlayingItem = item;
+      } catch (e) {
+        console.error('播放音频异常:', e);
+        uni.showToast({ title: '播放失败: ' + e.message, icon: 'none' });
+      }
     },
     
     isPlaying(item) {
@@ -479,13 +596,16 @@ export default {
 
     // 显示详情
     showDetail(item) {
-      // 不需要显示的字段
-      const excludeFields = ['createBy', 'messageId', 'demandId', 'userId', 'deptId', 'deviceId', 'productKey', 'messageType', 'timeStamp', '_key','audioMime'];
+      // 保存完整的 item 对象，用于后续操作
+      this.currentDetailItem = item;
       
-      // 过滤空值
+      // 需要显示的字段（白名单）
+      const showFields = ['content', 'messageContent', 'demandContent', 'createTime', 'sendMessageUserName', 'sendDemandUserName', 'deviceAddress', 'deviceKey', 'contentType', 'demandType', 'filename', 'remark', 'title'];
+      
+      // 只显示白名单中的非空字段
       const detail = {};
-      for (const key in item) {
-        if (item[key] !== null && item[key] !== '' && item[key] !== undefined && !excludeFields.includes(key)) {
+      for (const key of showFields) {
+        if (item[key] !== null && item[key] !== '' && item[key] !== undefined) {
           detail[key] = item[key];
         }
       }
@@ -516,7 +636,7 @@ export default {
       if (typeof value === 'object') return JSON.stringify(value);
       return value;
     },
-
+    
     // 切换 Tab
     switchTab(index) {
       if (this.currentTab === index) return;
@@ -531,13 +651,22 @@ export default {
 
     // 加载数据
     async loadData(callback) {
+      // 记录请求发起时的 Tab，防止切换 Tab 后数据错乱
+      const requestTab = this.currentTab;
+      
       this.loading = true;
       try {
         let res;
-        if (this.currentTab === 0) {
+        if (requestTab === 0) {
           res = await listSleepmessage(this.queryParams);
         } else {
           res = await listSleepdemand(this.queryParams);
+        }
+
+        // 如果请求返回时 Tab 已经切换，丢弃这次请求的数据
+        if (this.currentTab !== requestTab) {
+          console.log('Tab 已切换，丢弃旧数据');
+          return;
         }
 
         if (res.code === 200) {
@@ -546,7 +675,7 @@ export default {
           
           // 为每条数据添加唯一的 _key 字段
           const processedList = list.map((item, index) => {
-            if (this.currentTab === 0) {
+            if (requestTab === 0) {
               item._key = item.messageId ? 'msg_' + item.messageId : 'temp_msg_' + Date.now() + '_' + index;
             } else {
               item._key = item.demandId ? 'demand_' + item.demandId : 'temp_demand_' + Date.now() + '_' + index;
@@ -555,11 +684,19 @@ export default {
           });
           
           if (this.queryParams.pageNum === 1) {
-            if (this.currentTab === 0) this.msgList = processedList;
+            if (requestTab === 0) this.msgList = processedList;
             else this.demandList = processedList;
           } else {
-            if (this.currentTab === 0) this.msgList = [...this.msgList, ...processedList];
-            else this.demandList = [...this.demandList, ...processedList];
+            // 追加时过滤掉已存在的数据，避免重复 key
+            if (requestTab === 0) {
+              const existingKeys = new Set(this.msgList.map(item => item._key));
+              const newItems = processedList.filter(item => !existingKeys.has(item._key));
+              this.msgList = [...this.msgList, ...newItems];
+            } else {
+              const existingKeys = new Set(this.demandList.map(item => item._key));
+              const newItems = processedList.filter(item => !existingKeys.has(item._key));
+              this.demandList = [...this.demandList, ...newItems];
+            }
           }
 
           // 判断是否加载完毕
@@ -583,7 +720,8 @@ export default {
         content: '',
         title: '',
         sendMessageUserName: '',
-        filename: ''
+        filename: '',
+        audioData: ''
       };
       // 重置录音状态
       this.recording = false;
@@ -618,6 +756,7 @@ export default {
       if (this.formData.contentType === '1') {
         this.formData.title = '';
         this.formData.filename = '';
+        this.formData.audioData = '';
         this.audioTempPath = '';
         // 停止可能的试听
         if (this.isPlayingTemp) {
@@ -667,9 +806,28 @@ export default {
         this.innerAudioContext.stop();
       }
       
-      this.innerAudioContext.src = this.audioTempPath;
-      this.innerAudioContext.play();
-      this.isPlayingTemp = true;
+      console.log('试听临时录音:', this.audioTempPath);
+      
+      // #ifdef H5
+      if (this.audioTempPath.startsWith('wxfile://')) {
+        uni.showToast({ 
+          title: '浏览器环境无法试听，请在小程序中使用', 
+          icon: 'none',
+          duration: 3000 
+        });
+        console.warn('H5环境无法播放微信临时文件');
+        return;
+      }
+      // #endif
+      
+      try {
+        this.innerAudioContext.src = this.audioTempPath;
+        this.innerAudioContext.play();
+        this.isPlayingTemp = true;
+      } catch (e) {
+        console.error('试听录音异常:', e);
+        uni.showToast({ title: '试听失败: ' + e.message, icon: 'none' });
+      }
     },
     
     // 重新录制
@@ -684,56 +842,88 @@ export default {
        this.audioTempPath = '';
        this.recordDuration = 0;
        this.formData.filename = '';
+       this.formData.audioData = '';
        
        // 开始新录音
        this.startRecord();
     },
     
-    // 上传音频文件
-    async uploadAudio(filePath) {
-      uni.showLoading({ title: '上传中...' });
+    // 将音频文件转为 base64
+    convertAudioToBase64(filePath) {
+      uni.showLoading({ title: '处理中...' });
       
-      try {
-        const uploadRes = await new Promise((resolve, reject) => {
-          uni.uploadFile({
-            url: config.baseUrl + '/common/upload',
-            filePath: filePath,
-            name: 'file',
-            header: {
-              // 如果需要 token，在这里添加
-              // 'Authorization': 'Bearer ' + token
-            },
-            success: (res) => {
-              if (res.statusCode === 200) {
-                try {
-                  const data = JSON.parse(res.data);
-                  resolve(data);
-                } catch (e) {
-                  reject(new Error('解析响应失败'));
-                }
-              } else {
-                reject(new Error('上传失败，状态码：' + res.statusCode));
-              }
-            },
-            fail: (err) => {
-              reject(err);
-            }
-          });
-        });
-        
-        if (uploadRes.code === 200) {
-          // 保存文件名到表单数据
-          this.formData.filename = uploadRes.fileName;
-          uni.showToast({ title: '录音上传成功', icon: 'success' });
-        } else {
-          uni.showToast({ title: uploadRes.msg || '上传失败', icon: 'none' });
+      // #ifdef MP-WEIXIN
+      // 微信小程序使用 FileSystemManager
+      const fs = uni.getFileSystemManager();
+      fs.readFile({
+        filePath: filePath,
+        encoding: 'base64',
+        success: (res) => {
+          this.formData.audioData = res.data;
+          this.formData.filename = `audio_${Date.now()}.mp3`;
+          uni.hideLoading();
+          uni.showToast({ title: '录音处理成功', icon: 'success' });
+        },
+        fail: (err) => {
+          console.error('读取音频文件失败', err);
+          uni.hideLoading();
+          uni.showToast({ title: '处理失败，请重试', icon: 'none' });
         }
-      } catch (e) {
-        console.error('上传音频失败', e);
-        uni.showToast({ title: '上传失败：' + e.message, icon: 'none' });
-      } finally {
+      });
+      // #endif
+      
+      // #ifdef H5
+      // H5 环境使用 fetch + FileReader
+      fetch(filePath)
+        .then(response => response.blob())
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            // 去掉 data:audio/xxx;base64, 前缀
+            const base64 = reader.result.split(',')[1];
+            this.formData.audioData = base64;
+            this.formData.filename = `audio_${Date.now()}.mp3`;
+            uni.hideLoading();
+            uni.showToast({ title: '录音处理成功', icon: 'success' });
+          };
+          reader.onerror = () => {
+            uni.hideLoading();
+            uni.showToast({ title: '处理失败，请重试', icon: 'none' });
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(err => {
+          console.error('读取音频文件失败', err);
+          uni.hideLoading();
+          uni.showToast({ title: '处理失败，请重试', icon: 'none' });
+        });
+      // #endif
+      
+      // #ifdef APP-PLUS
+      // APP 环境
+      plus.io.resolveLocalFileSystemURL(filePath, (entry) => {
+        entry.file((file) => {
+          const reader = new plus.io.FileReader();
+          reader.onloadend = (e) => {
+            // 去掉 data:audio/xxx;base64, 前缀
+            const base64 = e.target.result.split(',')[1];
+            this.formData.audioData = base64;
+            this.formData.filename = `audio_${Date.now()}.mp3`;
+            uni.hideLoading();
+            uni.showToast({ title: '录音处理成功', icon: 'success' });
+          };
+          reader.onerror = () => {
+            uni.hideLoading();
+            uni.showToast({ title: '处理失败，请重试', icon: 'none' });
+          };
+          reader.readAsDataURL(file);
+        });
+      }, (err) => {
+        console.error('读取音频文件失败', err);
         uni.hideLoading();
-      }
+        uni.showToast({ title: '处理失败，请重试', icon: 'none' });
+      });
+      // #endif
     },
     
     // 提交添加
@@ -747,48 +937,69 @@ export default {
         }
       } else {
         // 音频模式
-        if (!this.audioTempPath && !this.formData.filename) {
+        if (!this.audioTempPath || !this.formData.audioData) {
           uni.showToast({ title: '请先录制音频', icon: 'none' });
           return;
         }
-        // 如果有临时路径但上传失败，生成自定义文件名
-        if (this.audioTempPath && !this.formData.filename) {
-          this.formData.filename = `audio_${Date.now()}.mp3`;
-          console.log('上传失败，使用自定义文件名:', this.formData.filename);
-        }
-      }
-      
-      if (!this.formData.sendMessageUserName.trim()) {
-        uni.showToast({ title: '请输入发布者姓名', icon: 'none' });
-        return;
       }
       
       this.submitting = true;
       try {
+        // 构造完整的消息数据，包含 isCurrent: 1
         const data = {
-          deviceKey: this.queryParams.deviceKey,
-          productKey: this.queryParams.productKey,
-          deviceId: this.queryParams.deviceId,
+          audioData: this.formData.contentType === '2' ? this.formData.audioData : null,
+          audioMime: this.formData.contentType === '2' ? 'audio/mp3' : null,
+          content: this.formData.contentType === '1' ? this.formData.content : null,
           contentType: this.formData.contentType,
-          sendMessageUserName: this.formData.sendMessageUserName
+          createBy: null,
+          createTime: null,
+          deptId: null,
+          deviceAddress: null,
+          deviceId: this.queryParams.deviceId,
+          deviceKey: this.queryParams.deviceKey,
+          filename: this.formData.contentType === '2' ? this.formData.filename : null,
+          isCurrent: 1,
+          messageId: null,
+          messageType: null,
+          productKey: this.queryParams.productKey,
+          remark: null,
+          sendMessageUserId: null,
+          sendMessageUserName: this.formData.sendMessageUserName || null,
+          timeStamp: null,
+          title: this.formData.title || null,
+          updateBy: null,
+          updateTime: null,
+          userId: null
         };
-        
-        // 根据内容类型添加不同字段
-        if (this.formData.contentType === '1') {
-          // 文本模式
-          data.content = this.formData.content;
-        } else {
-          // 音频模式
-          data.filename = this.formData.filename;
-          if (this.formData.title) {
-            data.title = this.formData.title;
-          }
-        }
 
+        console.log('addSleepmessage 传递参数:', data);
         const res = await addSleepmessage(data);
 
         if (res.code === 200) {
-          uni.showToast({ title: '发布成功', icon: 'success' });
+          // 消息保存成功后，调用服务接口发送指令
+          try {
+            // contentType: 1=文本传0, 2=音频传1
+            const msgVoiceValue = this.formData.contentType === '2' ? 1 : 0;
+            const invokeRes = await resetDeviceNetwork({
+              ack: 1,
+              address: null,
+              deviceKey: this.queryParams.deviceKey,
+              function: 'msgVoice',
+              productKey: this.queryParams.productKey,
+              propertyValue: { msgVoice: msgVoiceValue },
+              type: null
+            });
+            
+            if (invokeRes.code === 200) {
+              uni.showToast({ title: '发布成功', icon: 'success' });
+            } else {
+              uni.showToast({ title: '消息已保存，发送指令失败', icon: 'none' });
+            }
+          } catch (invokeErr) {
+            console.error('调用服务接口失败', invokeErr);
+            uni.showToast({ title: '消息已保存，发送指令失败', icon: 'none' });
+          }
+          
           this.closeAddPopup();
           // 刷新列表
           this.queryParams.pageNum = 1;
@@ -817,8 +1028,87 @@ export default {
       }
     },
 
+    // 再次发送
+    async handleResend(item) {
+      if (!item.messageId) {
+        uni.showToast({ title: '无效的消息', icon: 'none' });
+        return;
+      }
+      
+      uni.showLoading({ title: '发送中...' });
+      try {
+        // 1. 先调用 setcurrent 接口，传递完整消息对象
+        const msgData = {
+          audioData: item.audioData || null,
+          audioFile: item.audioFile || null,
+          audioMime: item.audioMime || null,
+          content: item.content || item.messageContent || null,
+          contentType: item.contentType || null,
+          createBy: item.createBy || null,
+          createTime: item.createTime || null,
+          deptId: item.deptId || null,
+          deviceAddress: item.deviceAddress || null,
+          deviceAlias: item.deviceAlias || null,
+          deviceId: item.deviceId || this.queryParams.deviceId,
+          deviceKey: item.deviceKey || this.queryParams.deviceKey,
+          filename: item.filename || null,
+          isCurrent: 1,
+          messageId: item.messageId,
+          messageType: item.messageType || null,
+          productKey: item.productKey || this.queryParams.productKey,
+          remark: item.remark || null,
+          sendMessageUserId: item.sendMessageUserId || null,
+          sendMessageUserName: item.sendMessageUserName || null,
+          timeStamp: item.timeStamp || null,
+          title: item.title || null,
+          updateBy: item.updateBy || null,
+          updateTime: item.updateTime || null,
+          userId: item.userId || null
+        };
+        
+        const setRes = await setcurrentMsg(msgData);
+        if (setRes.code !== 200) {
+          uni.hideLoading();
+          uni.showToast({ title: setRes.msg || '设置当前消息失败', icon: 'none' });
+          return;
+        }
+        
+        // 2. 调用 invoke/service 接口发送指令
+        // contentType: 1=文本传0, 2=音频传1
+        const msgVoiceValue = String(item.contentType) === '2' ? 1 : 0;
+        const invokeRes = await resetDeviceNetwork({
+          ack: 1,
+          address: null,
+          deviceKey: item.deviceKey || this.queryParams.deviceKey,
+          function: 'msgVoice',
+          productKey: item.productKey || this.queryParams.productKey,
+          propertyValue: { msgVoice: msgVoiceValue },
+          type: null
+        });
+        
+        uni.hideLoading();
+        if (invokeRes.code === 200) {
+          uni.showToast({ title: '发送成功', icon: 'success' });
+          // 刷新列表
+          this.queryParams.pageNum = 1;
+          this.isEnd = false;
+          this.loadData();
+        } else {
+          uni.showToast({ title: invokeRes.msg || '发送失败', icon: 'none' });
+        }
+      } catch (e) {
+        console.error('再次发送失败', e);
+        uni.hideLoading();
+        uni.showToast({ title: '发送失败', icon: 'none' });
+      }
+    },
+
     // 删除条目
-    handleDelete(item) {
+    handleDelete(item, event) {
+      // 确保阻止事件冒泡
+      if (event) {
+        event.stopPropagation();
+      }
       uni.showModal({
         title: '提示',
         content: '确定要删除这条记录吗？',
@@ -857,101 +1147,157 @@ export default {
   min-height: 100vh;
   background-color: #f5f6f7;
   padding-bottom: 120rpx;
+  position: relative;
+}
+
+.top-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 400rpx;
+  background: linear-gradient(180deg, #dcfce7 0%, #f5f6f7 100%);
+  background: linear-gradient(180deg, #e0f7f5 0%, #f5f6f7 100%); /* 使用主题色系的淡色 */
+  z-index: 0;
 }
 
 /* 顶部 Tabs */
 .tabs-header {
   display: flex;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.03);
   
   .tab-item {
     flex: 1;
-    height: 88rpx;
+    height: 96rpx; /* 稍微增高 */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: 28rpx;
-    color: #666;
+    color: #606266;
     position: relative;
+    transition: all 0.3s;
     
     &.active {
       color: #3ec6c6;
       font-weight: bold;
-      font-size: 30rpx;
+      font-size: 32rpx;
+      transform: scale(1.02);
     }
     
     .active-line {
-      width: 40rpx;
-      height: 4rpx;
-      background-color: #3ec6c6;
-      border-radius: 2rpx;
+      width: 48rpx;
+      height: 6rpx;
+      background: linear-gradient(90deg, #3ec6c6, #2bb5b5);
+      border-radius: 4rpx;
       position: absolute;
-      bottom: 10rpx;
+      bottom: 12rpx;
+      box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.3);
     }
   }
 }
 
 /* 内容区域 */
 .content-area {
-  padding: 20rpx;
+  padding: 24rpx;
+  position: relative;
+  z-index: 1;
 }
 
 .list-item {
   background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
+  border-radius: 24rpx;
+  padding: 32rpx;
   margin-bottom: 24rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.04);
-  border: 1rpx solid rgba(0,0,0,0.02);
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.04), 0 2rpx 8rpx rgba(0,0,0,0.02);
+  border: none;
+  transition: transform 0.1s ease;
+  animation: slideIn 0.4s ease-out backwards;
+  
+  /* 列表项依次进场动画延迟 */
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.99);
+    background-color: #fafafa;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(30rpx);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   
   .item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20rpx;
-    padding-bottom: 20rpx;
-    border-bottom: 1rpx solid #f8f8f8;
+    margin-bottom: 24rpx;
+    padding-bottom: 24rpx;
+    border-bottom: 1rpx solid #f5f7fa;
     
     .header-left {
       flex: 1;
       
       .item-time {
-        font-size: 24rpx;
+        font-size: 26rpx;
         color: #999;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       }
     }
     
     .header-right {
-      margin-right: 10rpx;
+      margin-right: 12rpx;
       
       .item-user {
-        font-size: 24rpx;
+        font-size: 22rpx;
         color: #3ec6c6;
-        background-color: rgba(62, 198, 198, 0.1);
-        padding: 6rpx 16rpx;
+        background-color: rgba(62, 198, 198, 0.08);
+        padding: 8rpx 20rpx;
         border-radius: 30rpx;
-        font-weight: 500;
+        font-weight: 600;
+        letter-spacing: 1rpx;
       }
     }
     
     .delete-icon {
-      padding: 10rpx;
-      margin: -10rpx;
+      padding: 16rpx;
+      margin: -16rpx -16rpx -16rpx 6rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.2s;
+      
+      &:active {
+        opacity: 1;
+        transform: scale(0.9);
+      }
     }
   }
   
   .item-content {
-    padding-top: 10rpx;
+    padding-top: 4rpx;
 
     .msg-text-row {
       display: flex;
       align-items: flex-start;
-      margin-bottom: 16rpx;
+      margin-bottom: 20rpx;
       
       .msg-label {
         font-size: 28rpx;
@@ -965,16 +1311,15 @@ export default {
 
     .content-text {
       font-size: 30rpx;
-      color: #303133;
+      color: #333;
       font-weight: 500;
       line-height: 1.6;
       word-break: break-all;
-      /* margin-bottom: 16rpx; 移除这里的 margin，由 row 控制 */
       
       &.empty-text {
         color: #c0c4cc;
         font-weight: normal;
-        font-style: normal;
+        font-style: italic;
         font-size: 28rpx;
       }
     }
@@ -983,18 +1328,19 @@ export default {
     .demand-row {
       display: flex;
       align-items: flex-start;
-      margin-bottom: 10rpx;
+      margin-bottom: 16rpx;
       
       .demand-tag {
-        background-color: #e0f7f5;
-        color: #3ec6c6;
-        font-size: 22rpx;
-        padding: 2rpx 12rpx;
-        border-radius: 8rpx;
+        background: linear-gradient(135deg, #3ec6c6, #2bb5b5);
+        color: #fff;
+        font-size: 20rpx;
+        padding: 4rpx 16rpx;
+        border-radius: 20rpx;
         margin-right: 16rpx;
-        margin-top: 4rpx;
-        font-weight: bold;
+        margin-top: 6rpx;
+        font-weight: 600;
         flex-shrink: 0;
+        box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.25);
       }
       
       .demand-text {
@@ -1007,31 +1353,43 @@ export default {
     
     /* 音频播放器样式 */
     .audio-player {
-      margin-top: 16rpx;
-      margin-bottom: 16rpx;
-      background: linear-gradient(to right, #e6fbfb, #f4fcfc);
-      border-radius: 12rpx;
-      padding: 16rpx 24rpx;
+      margin-top: 20rpx;
+      margin-bottom: 20rpx;
+      background: #f8fcfc;
+      border-radius: 50rpx; /* 更圆润的形状 */
+      padding: 12rpx 20rpx;
       display: flex;
       align-items: center;
-      border-left: 6rpx solid #3ec6c6;
-      max-width: 100%;
+      border: 1rpx solid #e0f2f2;
+      max-width: 85%; /* 限制宽度更像气泡 */
       box-sizing: border-box;
+      transition: all 0.3s;
+      
+      &:active {
+        background-color: #eef9f9;
+        transform: scale(0.98);
+      }
       
       .play-icon-box {
-        width: 64rpx;
-        height: 64rpx;
+        width: 70rpx;
+        height: 70rpx;
         background-color: #fff;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 24rpx;
+        margin-right: 20rpx;
         flex-shrink: 0;
-        box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.2);
+        box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.15);
+        transition: all 0.3s;
+        
+        &.playing {
+          background-color: #3ec6c6;
+          box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.4);
+        }
         
         uni-icons {
-           margin-left: 4rpx; /* 视觉修正播放图标位置 */
+           margin-left: 0; 
         }
       }
       
@@ -1043,9 +1401,9 @@ export default {
         justify-content: center;
         
         .audio-name {
-          font-size: 26rpx;
+          font-size: 28rpx;
           color: #333;
-          margin-bottom: 6rpx;
+          margin-bottom: 4rpx;
           font-weight: 500;
           white-space: nowrap;
           overflow: hidden;
@@ -1053,10 +1411,35 @@ export default {
         }
         
         .audio-status {
-          font-size: 22rpx;
-          color: #3ec6c6;
+          font-size: 20rpx;
+          color: #999;
         }
       }
+      
+      .audio-wave {
+        display: flex;
+        align-items: center;
+        margin-left: 20rpx;
+        height: 24rpx;
+        margin-right: 10rpx;
+        
+        .bar {
+          width: 4rpx;
+          background-color: #3ec6c6;
+          margin: 0 2rpx;
+          border-radius: 2rpx;
+          animation: wave 1s infinite ease-in-out;
+          
+          &.bar1 { animation-delay: 0s; height: 12rpx; }
+          &.bar2 { animation-delay: 0.2s; height: 20rpx; }
+          &.bar3 { animation-delay: 0.4s; height: 16rpx; }
+        }
+      }
+    }
+    
+    @keyframes wave {
+      0%, 100% { transform: scaleY(1); opacity: 0.8; }
+      50% { transform: scaleY(1.5); opacity: 1; }
     }
     
     .file-info {
@@ -1081,21 +1464,52 @@ export default {
     .address-info {
       display: flex;
       align-items: flex-start;
-      margin-top: 20rpx;
-      background-color: #f2fcfb;
+      margin-top: 24rpx;
+      background-color: #f7f8fa;
       padding: 16rpx 20rpx;
       border-radius: 12rpx;
+      border: 1rpx solid #f0f0f0;
       
       uni-icons {
-        margin-top: 4rpx;
+        margin-top: 2rpx;
+        margin-right: 8rpx;
       }
       
       .address-text {
         font-size: 24rpx;
-        color: #606266;
-        margin-left: 12rpx;
+        color: #909399;
         flex: 1;
         line-height: 1.5;
+        text-align: justify;
+      }
+    }
+  }
+  
+  .item-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24rpx;
+    padding-top: 20rpx;
+    border-top: 1rpx solid #f5f7fa;
+    
+    .resend-btn {
+      display: flex;
+      align-items: center;
+      padding: 12rpx 24rpx;
+      background-color: rgba(62, 198, 198, 0.08);
+      border-radius: 30rpx;
+      transition: all 0.2s;
+      
+      &:active {
+        background-color: rgba(62, 198, 198, 0.15);
+        transform: scale(0.96);
+      }
+      
+      text {
+        font-size: 24rpx;
+        color: #3ec6c6;
+        margin-left: 8rpx;
+        font-weight: 500;
       }
     }
   }
@@ -1106,7 +1520,33 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: 100rpx;
+  padding: 120rpx 60rpx;
+  min-height: 500rpx;
+  
+  .empty-icon-wrapper {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32rpx;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+  }
+  
+  .empty-title {
+    font-size: 32rpx;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 16rpx;
+  }
+  
+  .empty-subtitle {
+    font-size: 26rpx;
+    color: #999;
+    line-height: 1.6;
+  }
   
   .empty-text {
     font-size: 28rpx;
@@ -1167,6 +1607,7 @@ export default {
     align-items: center;
     border-bottom: 1rpx solid #eee;
     position: relative;
+    flex-shrink: 0;
     
     .popup-title {
       font-size: 32rpx;
@@ -1363,15 +1804,16 @@ export default {
 
 /* 详情弹窗样式 */
 .detail-popup-box {
-  height: 70vh;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
   
   .detail-body {
-    flex: 1;
+    flex: 1 1 auto;
     padding: 30rpx;
     box-sizing: border-box;
     overflow-y: auto;
+    max-height: none;
     
     .detail-item {
       margin-bottom: 24rpx;
@@ -1395,6 +1837,29 @@ export default {
         line-height: 1.5;
         display: block;
         word-break: break-all;
+        
+        &.highlight-current {
+          color: #3ec6c6;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  
+  .popup-footer {
+    padding: 20rpx 30rpx;
+    border-top: 1rpx solid #eee;
+    flex-shrink: 0;
+    
+    .btn {
+      width: 100%;
+      height: 80rpx;
+      line-height: 80rpx;
+      border-radius: 8rpx;
+      
+      &.confirm {
+        background-color: #3ec6c6;
+        color: #fff;
       }
     }
   }

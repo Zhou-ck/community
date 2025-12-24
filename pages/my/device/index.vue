@@ -95,9 +95,25 @@
       
       <!-- 空状态 -->
       <view v-if="deviceList.length === 0 && !loading" class="empty-box">
-        <text class="iconfontA icon-shebeiguanli empty-icon"></text>
+        <view class="empty-icon-wrapper">
+          <uni-icons type="gear" size="80" color="#3ec6c6"></uni-icons>
+        </view>
         <text class="empty-text">还没有添加设备</text>
-        <text class="empty-tip">点击下方按钮添加设备</text>
+        <text class="empty-tip">点击下方按钮添加您的第一台智能设备</text>
+        <view class="empty-features">
+          <view class="feature-item">
+            <uni-icons type="checkmarkempty" size="16" color="#3ec6c6"></uni-icons>
+            <text>实时监控设备状态</text>
+          </view>
+          <view class="feature-item">
+            <uni-icons type="checkmarkempty" size="16" color="#3ec6c6"></uni-icons>
+            <text>远程控制管理</text>
+          </view>
+          <view class="feature-item">
+            <uni-icons type="checkmarkempty" size="16" color="#3ec6c6"></uni-icons>
+            <text>异常告警通知</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -339,15 +355,16 @@ export default {
       const type = String(deviceType)
       try {
         const iconMap = {
-          '1': require('@/pages/my/static/breath.png'),
-          '2': require('@/pages/my/static/tumble.png'),
-          '3': require('@/pages/my/static/yangan.png'),
-          '4': require('@/pages/my/static/keranqiti.png'),
-          '5': require('@/pages/my/static/shuijin.png'),
-          '6': require('@/pages/my/static/menci.png'),
-          '7': require('@/pages/my/static/hongwai.png'),
-          '8': require('@/pages/my/static/wenshidu.png'),
-          '9': require('@/pages/my/static/yiyanghuatan.png')
+          '1': require('@/pages/my/static/breath.png'),      // 呼吸睡眠 Ld
+          '2': require('@/pages/my/static/tumble.png'),      // 跌倒监测 Ed
+          '4': require('@/pages/my/static/breath.png'),      // 呼吸睡眠-L2 La
+          '13': require('@/pages/my/static/shuijin.png'),    // 水浸 Sd
+          '14': require('@/pages/my/static/menci.png'),      // 门磁 Md
+          '15': require('@/pages/my/static/yangan.png'),     // 烟感 Yd
+          '16': require('@/pages/my/static/keranqiti.png'),  // 可燃气体 Rd
+          '17': require('@/pages/my/static/hongwai.png'),    // 红外 Hd
+          '18': require('@/pages/my/static/wenshidu.png'),   // 温湿度 Wd
+          '19': require('@/pages/my/static/yiyanghuatan.png') // 一氧化碳 Td
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -1066,31 +1083,76 @@ export default {
 
 /* 空状态 */
 .empty-box {
-  grid-column: 1 / -1; /* 跨越所有列 */
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 0;
+  padding: 80rpx 40rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.03);
 
-  .empty-icon {
-    font-size: 160rpx;
-    color: #ddd;
-    margin-bottom: 32rpx;
-    filter: grayscale(100%);
-    opacity: 0.8;
+  .empty-icon-wrapper {
+    width: 180rpx;
+    height: 180rpx;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(62, 198, 198, 0.1) 0%, rgba(62, 198, 198, 0.05) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40rpx;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      width: 220rpx;
+      height: 220rpx;
+      border-radius: 50%;
+      border: 2rpx dashed rgba(62, 198, 198, 0.3);
+      animation: rotate 20s linear infinite;
+    }
   }
 
   .empty-text {
-    font-size: 28rpx;
-    color: #999;
-    margin-bottom: 12rpx;
+    font-size: 34rpx;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 16rpx;
   }
 
   .empty-tip {
-    font-size: 24rpx;
-    color: #ccc;
+    font-size: 26rpx;
+    color: #999;
+    margin-bottom: 40rpx;
   }
+  
+  .empty-features {
+    display: flex;
+    flex-direction: column;
+    gap: 20rpx;
+    padding: 32rpx 50rpx;
+    background: #f8fdfd;
+    border-radius: 16rpx;
+    align-self: center;
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 16rpx;
+      
+      text {
+        font-size: 26rpx;
+        color: #666;
+      }
+    }
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 底部添加按钮 */

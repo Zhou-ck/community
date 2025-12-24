@@ -1,15 +1,5 @@
 <template>
   <view class="notice-detail-page">
-    <!-- 自定义导航栏 -->
-    <view class="navbar-wrapper" :style="{ paddingTop: statusBarHeight + 'px' }">
-      <view class="navbar">
-        <view class="navbar-left" @click="goBack">
-          <uni-icons type="back" size="24" color="#333"></uni-icons>
-        </view>
-        <view class="navbar-title">公告详情</view>
-        <view class="navbar-right"></view>
-      </view>
-    </view>
 
     <view class="content-wrapper">
       <view class="detail-card" v-if="notice">
@@ -58,9 +48,7 @@ export default {
     }
   },
   methods: {
-    goBack() {
-      uni.navigateBack()
-    }
+
   }
 }
 </script>
@@ -69,42 +57,6 @@ export default {
 .notice-detail-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0f4f7 0%, #f8f9fa 100%);
-}
-
-/* 导航栏 */
-.navbar-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  z-index: 999;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.03);
-}
-
-.navbar {
-  height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24rpx;
-}
-
-.navbar-left,
-.navbar-right {
-  width: 80rpx;
-  display: flex;
-  align-items: center;
-}
-
-.navbar-title {
-  flex: 1;
-  text-align: center;
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #333;
-  letter-spacing: 1rpx;
 }
 
 .content-wrapper {

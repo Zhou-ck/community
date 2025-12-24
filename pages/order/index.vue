@@ -1,12 +1,5 @@
 <template>
 	<view class="order-container">
-		<!-- 新订单提示横幅 -->
-		<view class="new-order-banner" v-if="showNewOrderBadge" @click="scrollToTop">
-			<uni-icons type="sound" size="18" color="#ff9900"></uni-icons>
-			<text class="banner-text">您有 {{ newOrderCount }} 条新订单，点击查看</text>
-			<uni-icons type="right" size="14" color="#ff9900"></uni-icons>
-		</view>
-
 		<!-- 订单状态切换栏 -->
 		<view class="order-tabs">
 			<view
@@ -71,7 +64,10 @@
 
 			<view v-else class="order-item" v-for="(order, index) in orderList" :key="index">
 				<view class="order-header">
-					<text class="order-time">{{ order.createTime }}</text>
+					<view class="order-info">
+						<text class="order-time">{{ order.createTime }}</text>
+						<text class="order-no">订单号：{{ order.id }}</text>
+					</view>
 					<text class="order-status" :class="order.statusClass">{{ order.statusText }}</text>
 				</view>
 
@@ -84,7 +80,13 @@
 							mode="aspectFill"
 						></image>
 						<view class="service-info">
-							<view class="service-name">{{ order.serviceName || '服务项目' }}</view>
+							<view class="service-name-row">
+								<text class="service-name">{{ order.serviceName || '服务项目' }}</text>
+								<view class="voice-badge" v-if="order.remark && parseVoiceRemark(order.remark)">
+									<uni-icons type="sound" size="12" color="#fff"></uni-icons>
+									<text>语音下单</text>
+								</view>
+							</view>
 							<view class="service-detail">
 								<view class="detail-item">
 									<uni-icons type="person" size="14" color="#999"></uni-icons>
@@ -102,7 +104,26 @@
 									<uni-icons type="location" size="14" color="#999"></uni-icons>
 									<text class="detail-text">服务地址：{{ order.serviceAddress }}</text>
 								</view>
+								<!-- 用户备注（非语音下单、非关闭状态时显示） -->
+								<view class="detail-item" v-if="order.remark && order.status !== 'closed' && !parseVoiceRemark(order.remark)">
+									<uni-icons type="chat" size="14" color="#999"></uni-icons>
+									<text class="detail-text remark-text">备注：{{ order.remark }}</text>
+								</view>
 							</view>
+						</view>
+					</view>
+				</view>
+
+				<!-- 语音下单备注提示 -->
+				<view class="voice-order-remark" v-if="order.remark && parseVoiceRemark(order.remark)">
+					<view class="remark-detail">
+						<view class="remark-item" v-if="parseVoiceRemark(order.remark).userRequest">
+							<uni-icons type="person" size="14" color="#3ec6c6"></uni-icons>
+							<text class="remark-value highlight">"{{ parseVoiceRemark(order.remark).userRequest }}"</text>
+						</view>
+						<view class="remark-item" v-if="parseVoiceRemark(order.remark).matchReason">
+							<uni-icons type="compose" size="14" color="#999"></uni-icons>
+							<text class="remark-value">{{ parseVoiceRemark(order.remark).matchReason }}</text>
 						</view>
 					</view>
 				</view>
@@ -274,8 +295,6 @@
 				
 				// WebSocket 相关
 				wsStatus: '', // WebSocket 连接状态: pending, connecting, connected, reconnecting, error, failed, closed
-				showNewOrderBadge: false, // 显示新订单提示
-				newOrderCount: 0, // 新订单数量
 				unsubscribeList: [], // 取消订阅函数列表
 				isPageUnloaded: false // 页面是否已卸载，防止卸载后继续处理消息
 			}
@@ -294,6 +313,9 @@
 
 			// 连接 WebSocket
 			this.connectWebSocket()
+			
+			// 监听打开评价弹窗事件
+			uni.$on('openReviewModal', this.handleOpenReviewModal)
 		},
 
 		onShow() {
@@ -328,8 +350,38 @@
 				clearTimeout(this.searchTimer)
 				this.searchTimer = null
 			}
+			
+			// 移除事件监听
+			uni.$off('openReviewModal', this.handleOpenReviewModal)
 		},
 		methods: {
+			// 解析语音下单备注
+			parseVoiceRemark(remark) {
+				if (!remark || !remark.includes('|')) return null
+				
+				try {
+					// 格式: 智能匹配服务|用户原始需求:xxx|匹配原因:xxx
+					const parts = remark.split('|')
+					let userRequest = ''
+					let matchReason = ''
+					
+					for (const part of parts) {
+						if (part.includes('用户原始需求:')) {
+							userRequest = part.replace('用户原始需求:', '').trim()
+						} else if (part.includes('匹配原因:')) {
+							matchReason = part.replace('匹配原因:', '').trim()
+						}
+					}
+					
+					if (userRequest || matchReason) {
+						return { userRequest, matchReason }
+					}
+				} catch (e) {
+					console.error('解析备注失败', e)
+				}
+				return null
+			},
+
 			// 切换标签
 			switchTab(index) {
 				if (this.currentTab === index) return
@@ -561,6 +613,13 @@
 						title: '刷新失败',
 						icon: 'none'
 					})
+				}
+			},
+
+			// 处理从详情页打开评价弹窗的事件
+			handleOpenReviewModal(data) {
+				if (data && data.orderId) {
+					this.goToReview(data.orderId)
 				}
 			},
 
@@ -977,24 +1036,12 @@
 						this.allOrders.unshift(newOrder)
 					}
 
-					// 显示新订单提示
-					this.newOrderCount++
-					this.showNewOrderBadge = true
-					
-					// 播放提示音（可选）
-					// uni.vibrateShort()
-					
 					// 显示通知
 					uni.showToast({
 						title: '收到新的服务订单',
 						icon: 'none',
 						duration: 2000
 					})
-
-					// 5秒后自动隐藏角标
-					setTimeout(() => {
-						this.showNewOrderBadge = false
-					}, 5000)
 				}
 			},
 
@@ -1164,18 +1211,6 @@
 				return order.status === expectedStatus
 			},
 
-			/**
-			 * 点击新订单提示，跳转到订单顶部
-			 */
-			scrollToTop() {
-				this.showNewOrderBadge = false
-				this.newOrderCount = 0
-				// 滚动到顶部
-				uni.pageScrollTo({
-					scrollTop: 0,
-					duration: 300
-				})
-			}
 		}
 	}
 </script>
@@ -1187,42 +1222,6 @@
 		flex-direction: column;
 		height: 100vh;
 		overflow: hidden;
-	}
-
-	// 新订单提示横幅
-	.new-order-banner {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 16rpx 32rpx;
-		background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
-		border-bottom: 1rpx solid #ffd591;
-		flex-shrink: 0;
-		z-index: 100;
-		cursor: pointer;
-		animation: slideDown 0.3s ease-out;
-
-		&:active {
-			background: linear-gradient(135deg, #ffe7ba 0%, #ffd591 100%);
-		}
-
-		.banner-text {
-			font-size: 26rpx;
-			color: #d48806;
-			font-weight: 500;
-			margin: 0 12rpx;
-		}
-
-		@keyframes slideDown {
-			from {
-				transform: translateY(-100%);
-				opacity: 0;
-			}
-			to {
-				transform: translateY(0);
-				opacity: 1;
-			}
-		}
 	}
 
 	.order-tabs {
@@ -1421,12 +1420,23 @@
 			margin-bottom: 0; 
 			border-bottom: none; /* 去掉分割线，用间距代替 */
 
+			.order-info {
+				display: flex;
+				align-items: center;
+				gap: 16rpx;
+			}
+
 			.order-time {
 				font-size: 24rpx;
 				color: #999;
 				background: #f8f9fa;
 				padding: 6rpx 16rpx;
 				border-radius: 8rpx;
+			}
+
+			.order-no {
+				font-size: 22rpx;
+				color: #999;
 			}
 
 			.order-status {
@@ -1505,12 +1515,36 @@
 					justify-content: space-between;
 					padding: 4rpx 0;
 					
-					.service-name {
-						font-size: 30rpx;
-						font-weight: 600;
-						color: #333;
+					.service-name-row {
+						display: flex;
+						align-items: center;
+						flex-wrap: wrap;
+						gap: 12rpx;
 						margin-bottom: 12rpx;
-						line-height: 1.4;
+						
+						.service-name {
+							font-size: 30rpx;
+							font-weight: 600;
+							color: #333;
+							line-height: 1.4;
+						}
+						
+						.voice-badge {
+							display: inline-flex;
+							align-items: center;
+							gap: 6rpx;
+							background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
+							color: #fff;
+							font-size: 20rpx;
+							padding: 6rpx 14rpx;
+							border-radius: 100rpx;
+							font-weight: 500;
+							box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.3);
+							
+							text {
+								line-height: 1;
+							}
+						}
 					}
 					
 					.service-detail {
@@ -1530,6 +1564,46 @@
 								line-height: 1.4;
 								flex: 1;
 							}
+						}
+					}
+				}
+			}
+		}
+
+		// 语音下单备注提示框
+		.voice-order-remark {
+			margin: 0 0 16rpx 0;
+			padding: 16rpx 20rpx;
+			background: #f8fcfc;
+			border-radius: 12rpx;
+			
+			.remark-detail {
+				.remark-item {
+					display: flex;
+					align-items: flex-start;
+					margin-bottom: 8rpx;
+					gap: 8rpx;
+					
+					&:last-child {
+						margin-bottom: 0;
+					}
+					
+					uni-icons {
+						flex-shrink: 0;
+						margin-top: 4rpx;
+					}
+					
+					.remark-value {
+						font-size: 24rpx;
+						color: #666;
+						line-height: 1.5;
+						word-break: break-all;
+						flex: 1;
+						
+						&.highlight {
+							color: #3ec6c6;
+							font-weight: 500;
+							font-size: 26rpx;
 						}
 					}
 				}

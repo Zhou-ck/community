@@ -17,7 +17,8 @@ const user = {
     avatar: storage.get(constant.avatar),
     roles: storage.get(constant.roles),
     permissions: storage.get(constant.permissions),
-    joinedCommunity: uni.getStorageSync('joined_community') || null
+    joinedCommunity: uni.getStorageSync('joined_community') || null,
+    sleepReportItem: null // 添加睡眠报告数据存储
   },
 
   mutations: {
@@ -51,6 +52,9 @@ const user = {
       } else {
         uni.removeStorageSync('joined_community')
       }
+    },
+    SET_SLEEP_REPORT_ITEM: (state, sleepReportItem) => {
+      state.sleepReportItem = sleepReportItem
     }
   },
 
@@ -124,14 +128,13 @@ const user = {
           // 清除社区信息
           uni.removeStorageSync('joined_community')
           
-          // 恢复保存的用户名和密码（必须同时存在才恢复，确保数据一致性）
-          if (savedUsername && savedPassword) {
+          // 恢复保存的用户名（始终保留，方便下次登录）
+          if (savedUsername) {
             uni.setStorageSync('user_username', savedUsername)
+          }
+          // 恢复保存的密码（如果存在）
+          if (savedPassword) {
             uni.setStorageSync('user_password_cache', savedPassword)
-          } else {
-            // 如果数据不完整，清除所有缓存凭据
-            uni.removeStorageSync('user_username')
-            uni.removeStorageSync('user_password_cache')
           }
         })
       })

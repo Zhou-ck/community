@@ -2,7 +2,7 @@
   <view class="login-container">
     <!-- 头部logo区域 -->
     <view class="logo-content">
-      <image class="logo-image" :src="globalConfig.appInfo.logo" mode="widthFix"></image>
+      <image class="logo-image" :src="globalConfig.appInfo.logo200" mode="widthFix"></image>
       <text class="title">安特社区六助登录页</text>
     </view>
 
@@ -200,18 +200,14 @@
           const savedUsername = uni.getStorageSync('user_username')
           const savedPassword = uni.getStorageSync('user_password_cache')
           
-          // 只有当用户名和密码都存在时才加载，确保数据一致性
-          if (savedUsername && savedPassword) {
+          // 加载保存的用户名（始终加载）
+          if (savedUsername) {
             this.loginForm.username = savedUsername
-            this.loginForm.password = savedPassword
             console.log('已加载保存的用户名:', savedUsername)
-          } else {
-            // 如果数据不完整，清除所有缓存凭据
-            if (savedUsername || savedPassword) {
-              uni.removeStorageSync('user_username')
-              uni.removeStorageSync('user_password_cache')
-              console.log('检测到缓存数据不完整，已清除')
-            }
+          }
+          // 加载保存的密码（如果存在）
+          if (savedPassword) {
+            this.loginForm.password = savedPassword
           }
         } catch (e) {
           console.error('加载保存的凭据失败:', e)

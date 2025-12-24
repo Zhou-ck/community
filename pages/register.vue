@@ -2,7 +2,7 @@
   <view class="register-container">
     <!-- 头部logo区域 -->
     <view class="logo-content">
-      <image class="logo-image" :src="globalConfig.appInfo.logo" mode="widthFix"></image>
+      <image class="logo-image" :src="globalConfig.appInfo.logo200" mode="widthFix"></image>
       <text class="title">安特社区六助注册页</text>
     </view>
 

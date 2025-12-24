@@ -22,6 +22,7 @@
 								<text class="relation-tag" v-if="record.relationship">{{ record.relationship }}</text>
 							</view>
 							<text class="update-time">最近体检: {{ record.lastCheckupTime || '未记录' }}</text>
+							<text class="update-time" v-if="record.nextCheckupTime">下次体检: {{ record.nextCheckupTime }}</text>
 						</view>
 					</view>
 					<view class="header-right">
@@ -247,6 +248,23 @@
 								<view class="picker-view">
 									<text :class="formData.lastCheckupTime ? 'value' : 'placeholder'">
 										{{ formData.lastCheckupTime || '请选择日期' }}
+									</text>
+									<uni-icons type="calendar" size="16" color="#ccc"></uni-icons>
+								</view>
+							</picker>
+						</view>
+						<view class="form-item">
+							<text class="label">下次体检</text>
+							<picker
+								mode="date"
+								:value="formData.nextCheckupTime"
+								:start="today"
+								@change="onNextCheckupTimeChange"
+								class="picker-flex"
+							>
+								<view class="picker-view">
+									<text :class="formData.nextCheckupTime ? 'value' : 'placeholder'">
+										{{ formData.nextCheckupTime || '请选择日期' }}
 									</text>
 									<uni-icons type="calendar" size="16" color="#ccc"></uni-icons>
 								</view>

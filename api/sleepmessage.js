@@ -42,3 +42,12 @@ export function delSleepmessage(demandId) {
     method: 'delete'
   })
 }
+
+// 设置为当前消息
+export function setcurrentMsg(data) {
+  return request({
+    url: '/devices/sleepmessage/setcurrent',
+    method: 'post',
+    data: data
+  })
+}

@@ -149,13 +149,24 @@
       </view>   
 
       <!-- 需求消息 -->
-      <view class="function-card" @click="handleSleepDemandClick" v-if="showSleepReport">
+      <view class="function-card" @click="handleSleepDemandClick" v-if="showDemandMessage">
         <view class="card-content">
           <text class="card-title">需求消息</text>
           <text class="card-subtitle">查看需求消息列表</text>
         </view>
         <view class="card-icon cyan-bg">
           <uni-icons type="chat" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+
+      <!-- 内容设置 -->
+      <view class="function-card" @click="handleContentSettingClick" v-if="showContentSetting">
+        <view class="card-content">
+          <text class="card-title">内容设置</text>
+          <text class="card-subtitle">设置设备显示内容</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="images" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>
 
@@ -191,65 +202,85 @@
         </view>
         
         <!-- 设置内容 -->
-        <view v-if="popupType === 'alarm'" class="setting-list">
-          <view v-for="alarm in alarmSwitches" :key="alarm.identifier" class="setting-item">
-            <view class="setting-info">
-              <text class="setting-label">{{ alarm.name }}</text>
-              <text class="setting-desc">{{ alarm.desc }}</text>
+        <scroll-view v-if="popupType === 'alarm'" 
+                     class="setting-scroll" 
+                     scroll-y="true"
+                     :style="'max-height: ' + scrollViewHeight + 'px;'">
+          <view class="setting-list">
+            <view v-for="alarm in alarmSwitches" :key="alarm.identifier" class="setting-item">
+              <view class="setting-info">
+                <text class="setting-label">{{ alarm.name }}</text>
+                <text class="setting-desc">{{ alarm.desc }}</text>
+              </view>
+              <switch 
+                :checked="alarm.open" 
+                @change="toggleAlarm(alarm)"
+                color="#3ec6c6"
+                class="setting-switch"
+              />
             </view>
-            <switch 
-              :checked="alarm.open" 
-              @change="toggleAlarm(alarm)"
-              color="#3ec6c6"
-              class="setting-switch"
-            />
+            
+            <!-- 如果没有数据，显示提示 -->
+            <view v-if="alarmSwitches.length === 0" style="padding: 40rpx; text-align: center; color: #999;">
+              <text>暂无报警设置数据</text>
+            </view>
           </view>
-          
-          <!-- 如果没有数据，显示提示 -->
-          <view v-if="alarmSwitches.length === 0" style="padding: 40rpx; text-align: center; color: #999;">
-            <text>暂无报警设置数据</text>
-          </view>
-        </view>
+        </scroll-view>
         
         <!-- 参数设置内容 -->
-        <view v-if="popupType === 'param'" class="param-setting-list">
-          <view v-for="prop in paramProps" :key="prop.identifier" class="param-setting-item">
-            <view class="param-info">
-              <view class="param-name-container">
-                <text class="param-name">{{ prop.name }}</text>
-                <text v-if="prop.unit" class="param-unit">({{ prop.unit }})</text>
-              </view>
-              <view class="param-value-container">
-                <!-- 布尔开关 -->
-                <switch v-if="prop.uiType === 'bool'"
-                  :checked="!!prop.tempValue"
-                  @change="onParamSwitchChange(prop, $event)"
-                  color="#3ec6c6"
-                  class="param-switch"
-                />
-                <!-- 数值输入 -->
-                <input v-else-if="prop.uiType === 'number'"
-                  class="param-value-input"
-                  type="number"
-                  v-model="prop.tempValue"
-                  placeholder="请输入数值" />
-                <!-- 枚举选择 -->
-                <picker v-else-if="prop.uiType === 'enum'" mode="selector" :range="prop.enumLabels" @change="onParamPickerChange(prop, $event)">
-                  <view class="param-value-picker">{{ prop.tempEnumDisplay || '请选择' }}</view>
-                </picker>
-                <!-- 字符串输入（兜底） -->
-                <input v-else
-                  class="param-value-input"
-                  type="text"
-                  v-model="prop.tempValue"
-                  placeholder="请输入" />
-                
-                <!-- 设置按钮（开关类型不显示） -->
-                <button v-if="prop.uiType !== 'bool'" class="param-set-btn" @click="applyParamSetting(prop)">设置</button>
+        <scroll-view v-if="popupType === 'param'" 
+                     class="param-setting-scroll" 
+                     scroll-y="true"
+                     :style="'max-height: ' + scrollViewHeight + 'px;'">
+          <view class="param-setting-list">
+            <view v-for="prop in paramProps" :key="prop.identifier" class="param-setting-item">
+              <view class="param-info">
+                <view class="param-name-container">
+                  <text class="param-name">{{ prop.name }}</text>
+                  <text v-if="prop.unit" class="param-unit">({{ prop.unit }})</text>
+                </view>
+                <view class="param-value-container">
+                  <!-- 布尔开关 -->
+                  <switch v-if="prop.uiType === 'bool'"
+                    :checked="!!prop.tempValue"
+                    @change="onParamSwitchChange(prop, $event)"
+                    color="#3ec6c6"
+                    class="param-switch"
+                  />
+                  <!-- 数值输入 -->
+                  <input v-else-if="prop.uiType === 'number'"
+                    class="param-value-input"
+                    type="number"
+                    v-model="prop.tempValue"
+                    placeholder="请输入数值" />
+                  <!-- 枚举选择 -->
+                  <picker v-else-if="prop.uiType === 'enum'" mode="selector" :range="prop.enumLabels" @change="onParamPickerChange(prop, $event)">
+                    <view class="param-value-picker">{{ prop.tempEnumDisplay || '请选择' }}</view>
+                  </picker>
+                  <!-- 步进器（加减按钮） -->
+                  <view v-else-if="prop.uiType === 'stepper'" class="stepper-container">
+                    <view class="stepper-btn minus" :class="{ disabled: prop.tempValue <= prop.stepperMin }" @click="onStepperChange(prop, -1)">
+                      <text>-</text>
+                    </view>
+                    <text class="stepper-value">{{ prop.tempValue }}</text>
+                    <view class="stepper-btn plus" :class="{ disabled: prop.tempValue >= prop.stepperMax }" @click="onStepperChange(prop, 1)">
+                      <text>+</text>
+                    </view>
+                  </view>
+                  <!-- 字符串输入（兜底） -->
+                  <input v-else
+                    class="param-value-input"
+                    type="text"
+                    v-model="prop.tempValue"
+                    placeholder="请输入" />
+                  
+                  <!-- 设置按钮（开关类型和步进器不显示） -->
+                  <button v-if="prop.uiType !== 'bool' && prop.uiType !== 'stepper'" class="param-set-btn" @click="applyParamSetting(prop)">设置</button>
+                </view>
               </view>
             </view>
           </view>
-        </view>
+        </scroll-view>
       </view>
     </uni-popup>
 
@@ -323,7 +354,8 @@ export default {
       loading: false,
       dictData: {
         dev_device_type: [],
-        dev_online_status: []
+        dev_online_status: [],
+        dev_property_lamp: []
       },
       // 报警开关设置
       alarmSwitches: [],
@@ -353,7 +385,9 @@ export default {
       // 绑定的家人列表
       boundFamilyMembers: [],
       // 绑定的接警人列表
-      boundReceivers: []
+      boundReceivers: [],
+      // 参数设置弹窗滚动区域高度
+      scrollViewHeight: 400
     }
   },
   
@@ -376,6 +410,20 @@ export default {
       // 1: 呼吸睡眠
       const type = String(this.deviceInfo.deviceType)
       return type === '1'
+    },
+    // 是否显示需求消息模块（仅呼吸睡眠-L2设备）
+    showDemandMessage() {
+      if (!this.deviceInfo) return false
+      // 4: 呼吸睡眠-L2 (根据 parseDevNumber.js 中 'La' → '4' 映射)
+      const type = String(this.deviceInfo.deviceType)
+      return type === '4'
+    },
+    // 是否显示内容设置模块（仅呼吸睡眠-L2设备）
+    showContentSetting() {
+      if (!this.deviceInfo) return false
+      // 4: 呼吸睡眠-L2 (第二代睡眠雷达)
+      const type = String(this.deviceInfo.deviceType)
+      return type === '4'
     }
   },
   
@@ -386,6 +434,9 @@ export default {
     if (options.deviceKey) {
       this.deviceKey = options.deviceKey
     }
+    
+    // 计算滚动区域高度
+    this.calculateScrollHeight()
     
     this.loadDictData()
     this.loadDeviceDetail()
@@ -399,6 +450,32 @@ export default {
   },
   
   methods: {
+    // 计算参数设置弹窗滚动区域高度
+    calculateScrollHeight() {
+      try {
+        const systemInfo = uni.getSystemInfoSync()
+        const windowHeight = systemInfo.windowHeight
+        
+        // 弹窗标题高度约80rpx，底部安全区域约40rpx，其他边距约60rpx（减少边距预留）
+        // 转换为px：rpx转px的系数约为 windowWidth / 750
+        const rpxToPx = systemInfo.windowWidth / 750
+        const headerHeight = 80 * rpxToPx
+        const bottomHeight = 40 * rpxToPx
+        const otherPadding = 60 * rpxToPx  // 减少边距预留
+        
+        // 可用高度 = 窗口高度的75% - 标题高度 - 底部高度 - 其他边距（提升比例到75%）
+        this.scrollViewHeight = Math.floor(windowHeight * 0.75 - headerHeight - bottomHeight - otherPadding)
+        
+        // 确保最小高度
+        if (this.scrollViewHeight < 300) {
+          this.scrollViewHeight = 300
+        }
+      } catch (e) {
+        // 异常时使用默认高度
+        this.scrollViewHeight = 500
+      }
+    },
+    
     // 加载已绑定的家人数量
     async loadBoundFamilyMembers() {
       try {
@@ -426,9 +503,10 @@ export default {
     // 加载字典数据
     async loadDictData() {
       try {
-        const [deviceType, onlineStatus] = await Promise.all([
+        const [deviceType, onlineStatus, lampProperty] = await Promise.all([
           getDicts('dev_device_type'),
-          getDicts('dev_online_status')
+          getDicts('dev_online_status'),
+          getDicts('dev_property_lamp')
         ])
         
         if (deviceType.code === 200 && deviceType.data) {
@@ -437,6 +515,10 @@ export default {
         
         if (onlineStatus.code === 200 && onlineStatus.data) {
           this.dictData.dev_online_status = onlineStatus.data
+        }
+        
+        if (lampProperty.code === 200 && lampProperty.data) {
+          this.dictData.dev_property_lamp = lampProperty.data
         }
         
       } catch (error) {
@@ -549,15 +631,17 @@ export default {
       const type = String(deviceType)
       try {
         const iconMap = {
-          '1': require('@/pages/my/static/breath.png'),
-          '2': require('@/pages/my/static/tumble.png'),
-          '3': require('@/pages/my/static/yangan.png'),
-          '4': require('@/pages/my/static/keranqiti.png'),
-          '5': require('@/pages/my/static/shuijin.png'),
-          '6': require('@/pages/my/static/menci.png'),
-          '7': require('@/pages/my/static/hongwai.png'),
-          '8': require('@/pages/my/static/wenshidu.png'),
-          '9': require('@/pages/my/static/yiyanghuatan.png')
+          '1': require('@/pages/my/static/breath.png'),        // 呼吸睡眠(Ld)
+          '2': require('@/pages/my/static/tumble.png'),        // 跌倒监测(Ed)
+          '4': require('@/pages/my/static/keranqiti.png'),     // 呼吸睡眠-L2(La)
+          '13': require('@/pages/my/static/shuijin.png'),      // 水浸(Sd)
+          '14': require('@/pages/my/static/menci.png'),        // 门磁(Md)
+          '15': require('@/pages/my/static/yangan.png'),       // 烟感(Yd)
+          '16': require('@/pages/my/static/keranqiti.png'),    // 可燃气体(Rd)
+          '17': require('@/pages/my/static/hongwai.png'),      // 红外(Hd)
+          '18': require('@/pages/my/static/wenshidu.png'),     // 温湿度(Wd)
+          '19': require('@/pages/my/static/yiyanghuatan.png'), // 一氧化碳(Td)
+          '20': require('@/pages/my/static/breath.png')        // 其它设备(Od)，暂用呼吸图标
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -692,6 +776,15 @@ export default {
       })
     },
     
+    // 处理内容设置点击事件
+    handleContentSettingClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/content/index?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}`
+      })
+    },
+    
     // 处理绑定家人点击事件
     handleBindFamilyClick() {
       uni.navigateTo({
@@ -727,8 +820,21 @@ export default {
               deviceKey: this.deviceInfo.deviceKey
             }
             const query = Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&')
+            
+            // 根据设备类型决定跳转页面
+            const deviceType = String(this.deviceInfo.deviceType)
+            let targetUrl = ''
+            
+            if (deviceType === '4') {
+              // 呼吸睡眠-L2设备，跳转到蓝牙配网页面
+              targetUrl = '/pages/my/network/bluetooth?' + query
+            } else {
+              // 其他设备类型，跳转到普通网络配置页面
+              targetUrl = '/pages/my/network/index?' + query
+            }
+            
             uni.navigateTo({
-              url: '/pages/my/network/index?' + query
+              url: targetUrl
             })
           }
         }
@@ -789,6 +895,61 @@ export default {
       const newValue = !!e.detail.value
       prop.tempValue = newValue
       
+      // 对于布尔类型的参数，需要转换为数字格式发送给设备
+      let deviceValue = newValue
+      if (prop.uiType === 'bool' || typeof newValue === 'boolean') {
+        deviceValue = newValue ? 1 : 0
+      }
+      
+      try {
+        uni.showLoading({ title: '设置中...' })
+        const res = await sendOneCommand({
+          ack: 0,
+          address: null,
+          deviceId: this.deviceInfo.deviceId,
+          deviceKey: this.deviceInfo.deviceKey,
+          productKey: this.deviceInfo.productKey,
+          propertyValue: {
+            [prop.identifier]: deviceValue
+          },
+          type: null
+        })
+        
+        if (res.code === 200) {
+          prop.value = newValue
+          uni.showToast({ title: '设置成功', icon: 'success' })
+        } else {
+          // 设置失败，恢复原值
+          prop.tempValue = prop.value
+          uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
+        }
+      } catch (err) {
+        // 出错，恢复原值
+        prop.tempValue = prop.value
+        console.error('设置参数失败:', err)
+        uni.showToast({ title: '网络错误', icon: 'none' })
+      } finally {
+        uni.hideLoading()
+      }
+    },
+
+    // 步进器值变更（点击加减按钮）
+    async onStepperChange(prop, direction) {
+      const step = prop.stepperStep || 1
+      const min = prop.stepperMin || 0
+      const max = prop.stepperMax || 100
+      let newValue = Number(prop.tempValue) + (direction * step)
+      
+      // 边界检查
+      if (newValue < min) newValue = min
+      if (newValue > max) newValue = max
+      
+      // 如果值没变化，不执行
+      if (newValue === Number(prop.tempValue)) return
+      
+      prop.tempValue = newValue
+      
+      // 立即发送设置命令
       try {
         uni.showLoading({ title: '设置中...' })
         const res = await sendOneCommand({
@@ -812,7 +973,6 @@ export default {
           uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
         }
       } catch (err) {
-        // 出错，恢复原值
         prop.tempValue = prop.value
         console.error('设置参数失败:', err)
         uni.showToast({ title: '网络错误', icon: 'none' })
@@ -844,6 +1004,11 @@ export default {
             uni.showToast({ title: '请输入有效数字', icon: 'none' })
             return
           }
+        }
+        
+        // 对于布尔类型和灯属性枚举，确保发送数字格式
+        if (prop.uiType === 'bool' || (prop.identifier === 'lamp' && prop.uiType === 'enum')) {
+          value = typeof value === 'boolean' ? (value ? 1 : 0) : Number(value)
         }
         
         uni.showLoading({ title: '设置中...' })
@@ -978,20 +1143,32 @@ export default {
         const mapped = writables.map(p => {
           const type = p?.dataType?.type || 'string'
           const specs = p?.dataType?.specs || {}
-          const uiType = type === 'bool' || type === 'boolean' ? 'bool'
+          let uiType = type === 'bool' || type === 'boolean' ? 'bool'
                          : type === 'int' || type === 'float' || type === 'double' || type === 'long' || type === 'number' ? 'number'
                          : type === 'enum' ? 'enum' : 'string'
           let enumLabels = []
           let enumValues = []
           let enumDisplay = ''
           if (uiType === 'enum') {
-            // specs 可能是对象映射或数组
-            if (Array.isArray(specs)) {
-              enumValues = specs.map(i => i.value)
-              enumLabels = specs.map(i => i.text || i.name || String(i.value))
-            } else if (specs && typeof specs === 'object') {
-              enumValues = Object.keys(specs)
-              enumLabels = Object.values(specs).map(v => typeof v === 'string' ? v : (v?.text || ''))
+            // 特殊处理灯属性，使用字典数据
+            if (p.identifier === 'lamp') {
+              if (this.dictData.dev_property_lamp && this.dictData.dev_property_lamp.length > 0) {
+                enumValues = this.dictData.dev_property_lamp.map(item => item.dictValue)
+                enumLabels = this.dictData.dev_property_lamp.map(item => item.dictLabel)
+              } else {
+                // 备用方案，使用默认的开关选项
+                enumValues = ['0', '1']
+                enumLabels = ['关闭', '打开']
+              }
+            } else {
+              // specs 可能是对象映射或数组
+              if (Array.isArray(specs)) {
+                enumValues = specs.map(i => i.value)
+                enumLabels = specs.map(i => i.text || i.name || String(i.value))
+              } else if (specs && typeof specs === 'object') {
+                enumValues = Object.keys(specs)
+                enumLabels = Object.values(specs).map(v => typeof v === 'string' ? v : (v?.text || ''))
+              }
             }
           }
           
@@ -1050,6 +1227,31 @@ export default {
             realTimeValue = realTimeValue === 1 || realTimeValue === '1' || realTimeValue === true
           }
           
+          // 对于灯属性，使用布尔开关类型
+          if (p.identifier === 'lamp') {
+            uiType = 'bool'
+            // 将 0/1 转换为 false/true
+            if (realTimeValue !== undefined) {
+              realTimeValue = realTimeValue === 1 || realTimeValue === '1' || realTimeValue === true
+            }
+          }
+          
+          // 声音调节：0-100，每次增加10，使用步进器
+          if (p.identifier === 'volume' || p.name === '声音调节') {
+            uiType = 'stepper'
+            if (realTimeValue !== undefined) {
+              realTimeValue = Number(realTimeValue)
+            }
+          }
+          
+          // 屏幕亮度调节：0-5，每次增加1，使用步进器
+          if (p.identifier === 'brightness' || p.identifier === 'screenBrightness' || p.name === '屏幕亮度调节') {
+            uiType = 'stepper'
+            if (realTimeValue !== undefined) {
+              realTimeValue = Number(realTimeValue)
+            }
+          }
+          
           const initVal = realTimeValue !== undefined ? realTimeValue 
                          : p.value !== undefined ? p.value 
                          : (uiType === 'bool' ? false : (uiType === 'number' ? '' : ''))
@@ -1062,6 +1264,14 @@ export default {
           // 提取单位信息
           const unit = specs?.unit || ''
           
+          // 步进器配置
+          let stepperConfig = { min: 0, max: 100, step: 1 }
+          if (p.identifier === 'volume' || p.name === '声音调节') {
+            stepperConfig = { min: 0, max: 100, step: 10 }
+          } else if (p.identifier === 'brightness' || p.identifier === 'screenBrightness' || p.name === '屏幕亮度调节') {
+            stepperConfig = { min: 0, max: 4, step: 1 }
+          }
+          
           return {
             identifier: p.identifier,
             name: p.name || p.identifier,
@@ -1073,7 +1283,11 @@ export default {
             enumLabels,
             enumValues,
             enumDisplay: uiType === 'enum' ? enumDisplay : '',
-            tempEnumDisplay: uiType === 'enum' ? enumDisplay : '' // 临时枚举显示值
+            tempEnumDisplay: uiType === 'enum' ? enumDisplay : '', // 临时枚举显示值
+            // 步进器配置
+            stepperMin: stepperConfig.min,
+            stepperMax: stepperConfig.max,
+            stepperStep: stepperConfig.step
           }
         })
         this.$set(this, 'paramProps', mapped)
@@ -1554,6 +1768,10 @@ export default {
   padding-left: 48rpx;
 }
 
+.setting-scroll {
+  width: 100%;
+}
+
 .setting-list {
   padding-top: 16rpx;
   display: flex;
@@ -1590,7 +1808,16 @@ export default {
   transform: scale(0.9);
 }
 
+/* Setting List Styles */
+.setting-scroll {
+  width: 100%;
+}
+
 /* Param Settings Styles */
+.param-setting-scroll {
+  width: 100%;
+}
+
 .param-setting-list {
   display: flex;
   flex-direction: column;
@@ -1664,6 +1891,60 @@ export default {
 
 .param-switch {
   transform: scale(1.1);
+}
+
+/* 步进器样式 */
+.stepper-container {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  overflow: hidden;
+  
+  .stepper-btn {
+    width: 64rpx;
+    height: 64rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    
+    text {
+      font-size: 36rpx;
+      color: #333;
+      font-weight: bold;
+    }
+    
+    &.minus {
+      border-right: 2rpx solid #e0e0e0;
+    }
+    
+    &.plus {
+      border-left: 2rpx solid #e0e0e0;
+    }
+    
+    &.disabled {
+      opacity: 0.4;
+      
+      text {
+        color: #999;
+      }
+    }
+    
+    &:active:not(.disabled) {
+      background: #e8e8e8;
+    }
+  }
+  
+  .stepper-value {
+    min-width: 80rpx;
+    text-align: center;
+    font-size: 28rpx;
+    color: #333;
+    font-weight: 500;
+    padding: 0 16rpx;
+  }
 }
 
 .param-set-btn {

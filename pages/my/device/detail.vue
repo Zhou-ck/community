@@ -84,8 +84,8 @@
         </view>
       </view>
       
-      <!-- 参数设置 -->
-      <view class="function-card" @click="handleParamSettingsClick">
+      <!-- 参数设置 - 门磁(14)、水浸(13)、红外(17) 没有参数设置模块 -->
+      <view class="function-card" @click="handleParamSettingsClick" v-if="showParamsSetting">
         <view class="card-content">
           <text class="card-title">参数设置</text>
           <text class="card-subtitle">调整设备运行参数</text>
@@ -95,8 +95,8 @@
         </view>
       </view>
       
-      <!-- 绑定家人 -->
-      <view class="function-card" @click="handleBindFamilyClick">
+      <!-- 绑定家人 - 只有KAT设备显示 -->
+      <view class="function-card" @click="handleBindFamilyClick" v-if="!isAepDevice">
         <view class="card-content">
           <text class="card-title">绑定家人</text>
           <text class="card-subtitle">已绑定 {{ boundFamilyMembers.length }} 人</text>
@@ -117,8 +117,8 @@
         </view>
       </view>
 
-      <!-- 配置网络 -->
-      <view class="function-card" @click="handleConfigNetwork">
+      <!-- 配置网络 - 只有呼吸睡眠(1)、跌倒监测(2)、呼吸睡眠-L2(4) 需要配网 -->
+      <view class="function-card" @click="handleConfigNetwork" v-if="showNetworkConfig">
         <view class="card-content">
           <text class="card-title">配置网络</text>
           <text class="card-subtitle">设备网络配置</text>
@@ -319,6 +319,16 @@
           </view>
           
           <view class="form-item">
+            <text class="form-label">安装位置</text>
+            <input 
+              class="form-input" 
+              v-model="editForm.installAddress" 
+              placeholder="请输入安装位置（选填）"
+              maxlength="100"
+            />
+          </view>
+          
+          <view class="form-item">
             <text class="form-label">备注</text>
             <textarea 
               class="form-textarea" 
@@ -340,10 +350,12 @@
 </template>
 
 <script>
-import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData } from '@/api/device'
+import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile } from '@/api/device'
+import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId } from '@/api/familyMemberDevice'
 import { getAlarmReceiverIdsByDeviceId } from '@/api/devicereceiver'
+import { needsNetworkConfig, hasParamsSetting, isAepDevice } from '@/utils/parseDevNumber'
 
 export default {
   data() {
@@ -352,6 +364,9 @@ export default {
       deviceKey: '',
       deviceInfo: null,
       loading: false,
+      // AEP设备信息
+      aepDeviceId: '',
+      aepProductId: '',
       dictData: {
         dev_device_type: [],
         dev_online_status: [],
@@ -368,20 +383,17 @@ export default {
         deviceId: '',
         deviceKey: '',
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       },
       // 保存原始的编辑表单数据用于对比
       originalEditForm: {
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       },
       // 提交状态
       submitting: false,
-      // 旧的示例参数保留占位
-      // 参数设置
-      settingParams: {
-        detectMode: false // false: 实时模式, true: 睡眠模式
-      },
       // 绑定的家人列表
       boundFamilyMembers: [],
       // 绑定的接警人列表
@@ -424,6 +436,21 @@ export default {
       // 4: 呼吸睡眠-L2 (第二代睡眠雷达)
       const type = String(this.deviceInfo.deviceType)
       return type === '4'
+    },
+    // 是否显示配置网络模块 - 只有呼吸睡眠(1)、跌倒监测(2)、呼吸睡眠-L2(4) 需要配网
+    showNetworkConfig() {
+      if (!this.deviceInfo) return false
+      return needsNetworkConfig(String(this.deviceInfo.deviceType))
+    },
+    // 是否显示参数设置模块 - 门磁(14)、水浸(13)、红外(17) 没有参数设置
+    showParamsSetting() {
+      if (!this.deviceInfo) return false
+      return hasParamsSetting(String(this.deviceInfo.deviceType))
+    },
+    // 是否为AEP设备 - 烟感(15)、可燃气体(16)、一氧化碳(19)
+    isAepDevice() {
+      if (!this.deviceInfo) return false
+      return isAepDevice(String(this.deviceInfo.deviceType))
     }
   },
   
@@ -486,7 +513,7 @@ export default {
         }
       } catch (e) {
         // 忽略错误，保持现有显示
-      }
+      } 
     },
     // 加载已绑定的接警人数量
     async loadBoundReceivers() {
@@ -857,7 +884,14 @@ export default {
         } else if (type === 'param') {
           // 加载参数设置数据（异步等待）
           uni.showLoading({ title: '加载参数中...' })
-          await this.loadParamSettings()
+          
+          // 根据设备类型选择不同的加载方式
+          if (this.isAepDevice) {
+            await this.loadAepParamSettings()
+          } else {
+            await this.loadParamSettings()
+          }
+          
           uni.hideLoading()
         }
         
@@ -885,43 +919,85 @@ export default {
       this.popupType = ''
     },
 
-    // 参数值变更（布尔开关）- 旧方法保留备用
-    onParamValueChange(prop, e) {
-      prop.tempValue = !!e.detail.value
-    },
-
     // 开关切换并立即保存
     async onParamSwitchChange(prop, e) {
       const newValue = !!e.detail.value
       prop.tempValue = newValue
       
       // 对于布尔类型的参数，需要转换为数字格式发送给设备
-      let deviceValue = newValue
-      if (prop.uiType === 'bool' || typeof newValue === 'boolean') {
-        deviceValue = newValue ? 1 : 0
-      }
+      let deviceValue = newValue ? 1 : 0
       
       try {
         uni.showLoading({ title: '设置中...' })
-        const res = await sendOneCommand({
-          ack: 0,
-          address: null,
-          deviceId: this.deviceInfo.deviceId,
-          deviceKey: this.deviceInfo.deviceKey,
-          productKey: this.deviceInfo.productKey,
-          propertyValue: {
-            [prop.identifier]: deviceValue
-          },
-          type: null
-        })
         
-        if (res.code === 200) {
-          prop.value = newValue
-          uni.showToast({ title: '设置成功', icon: 'success' })
+        let res
+        // AEP设备使用专门的接口下发指令
+        if (this.isAepDevice) {
+          // 指令名称
+          const commandName = `${prop.name}${newValue ? prop.specs['1'] : prop.specs['0']}`
+          
+          const setParams = {
+            productId: this.aepProductId,
+            deviceId: this.aepDeviceId,
+            imei: this.deviceInfo.imei,
+            deviceVersion: `${this.deviceInfo.deviceVersion || ''}`,
+            dpId: prop.dpId,
+            dpValType: prop.dpType || 'int',
+            dpVal: `${deviceValue}`,
+            masterKey: this.deviceInfo.apiKey || ''
+          }
+          
+          // 下发指令
+          res = await deviceCommandLwm2mProfile(setParams)
+          
+          if (res.code === 200) {
+            // 保存指令记录
+            const saveParams = {
+              command: res.data.command,
+              commandId: res.data.commandId,
+              commandStatus: res.data.commandStatus,
+              createBy: res.data.createBy,
+              createTime: res.data.createTime,
+              deviceId: res.data.deviceId,
+              imei: res.data.imei,
+              productId: res.data.productId,
+              ttl: res.data.ttl,
+              deviceVersion: `${this.deviceInfo.deviceVersion || ''}`,
+              dpId: prop.dpId,
+              dpType: prop.dpType || 'int',
+              dpVal: `${deviceValue}`,
+              apiKey: this.deviceInfo.apiKey || '',
+              commandName: commandName
+            }
+            await saveAepCommandLog(saveParams)
+            
+            prop.value = newValue
+            uni.showToast({ title: '设置成功', icon: 'success' })
+          } else {
+            prop.tempValue = prop.value
+            uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
+          }
         } else {
-          // 设置失败，恢复原值
-          prop.tempValue = prop.value
-          uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
+          // 普通设备使用 sendOneCommand
+          res = await sendOneCommand({
+            ack: 0,
+            address: null,
+            deviceId: this.deviceInfo.deviceId,
+            deviceKey: this.deviceInfo.deviceKey,
+            productKey: this.deviceInfo.productKey,
+            propertyValue: {
+              [prop.identifier]: deviceValue
+            },
+            type: null
+          })
+          
+          if (res.code === 200) {
+            prop.value = newValue
+            uni.showToast({ title: '设置成功', icon: 'success' })
+          } else {
+            prop.tempValue = prop.value
+            uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
+          }
         }
       } catch (err) {
         // 出错，恢复原值
@@ -1012,17 +1088,31 @@ export default {
         }
         
         uni.showLoading({ title: '设置中...' })
-        const res = await sendOneCommand({
-          ack: 0,
-          address: null,
-          deviceId: this.deviceInfo.deviceId,
-          deviceKey: this.deviceInfo.deviceKey,
-          productKey: this.deviceInfo.productKey,
-          propertyValue: {
-            [prop.identifier]: value
-          },
-          type: null
-        })
+        
+        let res
+        // 根据设备类型选择不同的设置方式
+        if (this.isAepDevice) {
+          // AEP设备使用专门的接口，需要传递dpId
+          res = await deviceCommandLwm2mProfile({
+            deviceId: this.aepDeviceId,
+            productId: this.aepProductId,
+            dpId: prop.dpId,
+            value: value
+          })
+        } else {
+          // KAT设备使用原有接口
+          res = await sendOneCommand({
+            ack: 0,
+            address: null,
+            deviceId: this.deviceInfo.deviceId,
+            deviceKey: this.deviceInfo.deviceKey,
+            productKey: this.deviceInfo.productKey,
+            propertyValue: {
+              [prop.identifier]: value
+            },
+            type: null
+          })
+        }
         
         if (res.code === 200) {
           // 更新实际值
@@ -1296,6 +1386,90 @@ export default {
       }
     },
     
+    // 加载AEP设备参数设置
+    async loadAepParamSettings() {
+      try {
+        // 1. 先获取AEP设备信息
+        const aepRes = await getAepDeviceInfo({
+          productKey: this.deviceInfo.productKey,
+          deviceKey: this.deviceInfo.deviceKey,
+          imei: this.deviceInfo.imei
+        })
+        
+        if (aepRes.code !== 200 || !aepRes.data) {
+          this.$set(this, 'paramProps', [])
+          return
+        }
+        
+        this.aepDeviceId = aepRes.data.deviceId
+        this.aepProductId = aepRes.data.productId
+        
+        // 2. 根据设备类型定义参数配置（参考 ParamAepSetDialog.vue）
+        const deviceType = String(this.deviceInfo.deviceType)
+        let paramConfigs = []
+        
+        // AEP设备参数配置（bool开关类型）
+        if (deviceType === '15') {
+          // 烟感设备参数
+          paramConfigs = [
+            { dpId: 1006, identifier: '报警消音', name: '报警消音', dpType: 'int', specs: { '0': '关闭', '1': '打开' } },
+            { dpId: 1020, identifier: 'LED灯状态', name: 'LED灯状态', dpType: 'int', specs: { '0': '关闭', '1': '打开' } }
+          ]
+        } else if (deviceType === '16') {
+          // 可燃气体设备参数
+          paramConfigs = [
+            { dpId: 1005, identifier: '报警', name: '报警', dpType: 'int', specs: { '0': '关', '1': '开' } },
+            { dpId: 1006, identifier: '消音', name: '消音', dpType: 'int', specs: { '0': '关', '1': '开' } }
+          ]
+        } else if (deviceType === '19') {
+          // 一氧化碳设备参数
+          paramConfigs = [
+            { dpId: 1005, identifier: '报警', name: '报警', dpType: 'int', specs: { '0': '关', '1': '开' } },
+            { dpId: 1006, identifier: '消音', name: '消音', dpType: 'int', specs: { '0': '关', '1': '开' } }
+          ]
+        }
+        
+        // 3. 查询每个参数的当前值
+        const paramList = []
+        for (const config of paramConfigs) {
+          let currentValue = false
+          
+          try {
+            // 查询参数当前状态（指令已完成的）
+            const statusRes = await queryParamsStatusByDpIdAndImei({
+              dpId: config.dpId,
+              imei: this.deviceInfo.imei,
+              commandStatus: '指令已完成'
+            })
+            
+            if (statusRes.code === 200 && statusRes.data) {
+              // dpVal 为 1 表示开启
+              currentValue = statusRes.data.dpVal == 1
+            }
+          } catch (err) {
+            console.warn(`查询参数${config.identifier}失败:`, err)
+          }
+          
+          paramList.push({
+            identifier: config.identifier,
+            dpId: config.dpId,
+            name: config.name,
+            desc: `${config.name}功能开关`,
+            uiType: 'bool',
+            dpType: config.dpType,
+            specs: config.specs,
+            value: currentValue,
+            tempValue: currentValue
+          })
+        }
+        
+        this.$set(this, 'paramProps', paramList)
+      } catch (e) {
+        console.error('加载AEP设备参数失败:', e)
+        this.$set(this, 'paramProps', [])
+      }
+    },
+    
     // 切换报警设置
     toggleAlarm(alarm) {
       alarm.open = !alarm.open
@@ -1338,28 +1512,20 @@ export default {
       }
     },
     
-    // 改变探测模式
-    changeDetectMode() {
-      this.settingParams.detectMode = !this.settingParams.detectMode
-      uni.showToast({
-        title: `已切换到${this.settingParams.detectMode ? '睡眠模式' : '实时模式'}`,
-        icon: 'success'
-      })
-    },
-    
-    
-     // 编辑设备
+    // 编辑设备
     editDevice(device) {
       // 填充编辑表单数据
       this.editForm = {
         deviceId: device.deviceId,
         deviceKey: device.deviceKey,
         deviceAlias: device.deviceAlias || '',
+        installAddress: device.installAddress || '',
         remark: device.remark || ''
       }
       // 保存原始数据用于对比
       this.originalEditForm = {
         deviceAlias: device.deviceAlias || '',
+        installAddress: device.installAddress || '',
         remark: device.remark || ''
       }
       // 打开编辑弹窗
@@ -1372,6 +1538,7 @@ export default {
         deviceId: '',
         deviceKey: '',
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       }
     },
@@ -1394,11 +1561,13 @@ export default {
       
       // 对比数据是否发生变化
       const currentAlias = this.editForm.deviceAlias.trim()
+      const currentAddress = this.editForm.installAddress.trim()
       const currentRemark = this.editForm.remark.trim()
       const originalAlias = this.originalEditForm.deviceAlias.trim()
+      const originalAddress = this.originalEditForm.installAddress.trim()
       const originalRemark = this.originalEditForm.remark.trim()
       
-      if (currentAlias === originalAlias && currentRemark === originalRemark) {
+      if (currentAlias === originalAlias && currentAddress === originalAddress && currentRemark === originalRemark) {
         uni.showToast({
           title: '数据未发生变化,无需提交',
           icon: 'none',
@@ -1414,6 +1583,7 @@ export default {
           deviceId: this.editForm.deviceId,
           deviceKey: this.editForm.deviceKey,
           deviceAlias: currentAlias,
+          installAddress: currentAddress,
           remark: currentRemark
         })
         

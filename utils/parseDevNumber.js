@@ -57,3 +57,88 @@ export function parseDeviceNumber(deviceNumBering) {
     
     return resDeviceNumber;
 }
+
+/** 解析设备编号判断是否为imei  deviceNumber格式：15位纯数字 
+ * 如果是imei号返回true，代表是aep设备
+ * 如果不是imei号返回false，代表是kat设备
+ * 
+*/
+export function parseDeviceNumberIsImei(deviceNumBering) {
+    // 检查是否为15位纯数字
+    const imeiRegex = /^\d{15}$/;
+    return imeiRegex.test(deviceNumBering);
+}
+
+/** 判断设备是否需要配网模块
+ * 只有 '1'(呼吸睡眠), '2'(跌倒监测), '4'(呼吸睡眠-L2) 需要配网
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean} - 是否需要配网
+ */
+export function needsNetworkConfig(deviceType) {
+    return ['1', '2', '4'].includes(deviceType);
+}
+
+
+/**
+ * 设备类型常量定义
+ * 
+ * KAT设备（有参数设置，使用KAT接口）:
+ *   - 1: 呼吸睡眠
+ *   - 2: 跌倒监测
+ *   - 4: 呼吸睡眠-L2
+ * 
+ * AEP设备-有参数设置（使用AEP接口）:
+ *   - 15: 烟感
+ *   - 16: 可燃气体
+ *   - 19: 一氧化碳
+ * 
+ * AEP设备-无参数设置:
+ *   - 13: 水浸
+ *   - 14: 门磁
+ *   - 17: 红外
+ *   - 18: 温湿度
+ */
+const DEVICE_TYPES = {
+    // KAT设备（有参数设置）
+    KAT: ['1', '2', '4'],
+    // AEP设备-有参数设置
+    AEP_WITH_PARAMS: ['15', '16', '19'],
+    // AEP设备-无参数设置
+    AEP_NO_PARAMS: ['13', '14', '17', '18']
+};
+
+/**
+ * 判断是否为KAT设备
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function isKatDevice(deviceType) {
+    return DEVICE_TYPES.KAT.includes(deviceType);
+}
+
+/**
+ * 判断是否为AEP设备
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function isAepDevice(deviceType) {
+    return !isKatDevice(deviceType);
+}
+
+/**
+ * 判断设备是否有参数设置模块
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function hasParamsSetting(deviceType) {
+    return !DEVICE_TYPES.AEP_NO_PARAMS.includes(deviceType);
+}
+
+/**
+ * 判断是否为有参数设置的AEP设备
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function isAepWithParams(deviceType) {
+    return DEVICE_TYPES.AEP_WITH_PARAMS.includes(deviceType);
+}

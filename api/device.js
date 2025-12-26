@@ -72,3 +72,57 @@ export function resetDeviceNetwork(data) {
     data: data
   })
 }
+
+// 查询设备管理列表 参数:imei
+export function getAepDevice(query) {
+  return request({
+    url: '/aep/device/queryone',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询设备管理列表 参数:productKey、deviceKey、imei
+export function getAepDeviceInfo(query) {
+  return request({
+    url: '/aep/device/queryinfo',
+    method: 'get',
+    params: query
+  })
+}
+
+// 精华隆Aep设备在线属性调试
+export function deviceCommandLwm2mProfile(data) {
+  return request({
+    url: '/api/command/operat/command/lwm2m/profile',
+    method: 'post',
+    params: data
+  })
+}
+
+// 精华隆Aep设备获取单个设备详情
+export function queryCommandLwm2mProfile(data) {
+  return request({
+    url: '/api/command/operat/command/lwm2m/profile/query',
+    method: 'post',
+    params: data
+  })
+}
+
+// 精华隆Aep设备取消设备下所有未发送指令
+export function cancelAllCommandLwm2mProfile(data) {
+  return request({
+    url: '/api/command/operat/command/lwm2m/profile/cancelall',
+    method: 'post',
+    params: data
+  })
+}
+
+// 精华隆Aep设备取消单个指令
+export function cancelOneCommandLwm2mProfile(data) {
+  return request({
+    url: '/api/command/operat/command/lwm2m/profile/cancelone',
+    method: 'post',
+    params: data
+  })
+}

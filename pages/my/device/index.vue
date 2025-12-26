@@ -218,6 +218,16 @@
               maxlength="50"
             />
           </view>
+
+          <view class="form-item">
+            <text class="form-label">安装位置</text>
+            <input 
+              class="form-input" 
+              v-model="editForm.installAddress" 
+              placeholder="请输入安装位置（选填）"
+              maxlength="100"
+            />
+          </view>
           
           <view class="form-item">
             <text class="form-label">备注</text>
@@ -247,7 +257,7 @@
 </template>
 
 <script>
-import { listDevice, delDevice, addDevice, updateDevice } from '@/api/device'
+import { listDevice, delDevice, addDevice, updateDevice, getAepDevice } from '@/api/device'
 import { getDicts } from '@/api/system/dict/data'
 import { parseDeviceNumber } from '@/utils/parseDevNumber'
 
@@ -267,11 +277,13 @@ export default {
         deviceId: '',
         deviceKey: '',
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       },
       // 保存原始的编辑表单数据用于对比
       originalEditForm: {
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       },
       // 字典数据
@@ -554,22 +566,73 @@ export default {
       try {
         const deviceNumBering = this.addForm.deviceKey.trim()
         
-        // 使用工具类解析设备编号
-        const parseResult = parseDeviceNumber(deviceNumBering)
+        // 判断是否是IMEI（纯数字且长度为15位）
+        const isImei = /^\d{15}$/.test(deviceNumBering)
         
-        if (parseResult === -1) {
-          uni.showToast({
-            title: '设备编号格式有误',
-            icon: 'none'
-          })
-          return
+        let productKey, deviceKey, deviceType
+        
+        if (isImei) {
+          // 是IMEI，先查询获取产品key和设备key
+          const aepRes = await getAepDevice({ imei: deviceNumBering })
+          
+          if (aepRes.code !== 200 || !aepRes.data) {
+            uni.showToast({
+              title: aepRes.msg || '查询设备信息失败',
+              icon: 'none'
+            })
+            return
+          }
+          
+          productKey = aepRes.data.productKey
+          deviceKey = aepRes.data.deviceKey
+          
+          if (!productKey || !deviceKey) {
+            uni.showToast({
+              title: '未找到对应的设备信息',
+              icon: 'none'
+            })
+            return
+          }
+          
+          // 根据deviceKey前缀判断设备类型
+          const deviceKeyPrefix = deviceKey.match(/^[A-Za-z]{2}/)?.[0] || ''
+          const deviceTypeMap = {
+            'Ed': '2',   // 跌倒监测
+            'Ld': '1',   // 呼吸睡眠
+            'La': '4',   // 呼吸睡眠-L2
+            'Sd': '13',  // 水浸
+            'Md': '14',  // 门磁
+            'Yd': '15',  // 烟感
+            'Rd': '16',  // 可燃气体
+            'Hd': '17',  // 红外
+            'Wd': '18',  // 温湿度
+            'Td': '19',  // 一氧化碳
+            'Od': '20'   // 其它
+          }
+          deviceType = deviceTypeMap[deviceKeyPrefix] || aepRes.data.deviceType
+        } else {
+          // 不是IMEI，使用工具类解析设备编号
+          const parseResult = parseDeviceNumber(deviceNumBering)
+          
+          if (parseResult === -1) {
+            uni.showToast({
+              title: '设备编号格式有误',
+              icon: 'none'
+            })
+            return
+          }
+          
+          productKey = parseResult.productKey
+          deviceKey = parseResult.deviceKey
+          deviceType = parseResult.deviceType
         }
         
         const response = await addDevice({
-          deviceNumBering: deviceNumBering,
-          productKey: parseResult.productKey,
-          deviceKey: parseResult.deviceKey,
-          deviceType: parseResult.deviceType,
+          deviceNumBering: isImei ? (productKey + deviceKey) : deviceNumBering,
+          productKey: productKey,
+          deviceKey: deviceKey,
+          deviceType: deviceType,
+          imei: isImei ? deviceNumBering : null,
           deviceAlias: this.addForm.deviceAlias.trim(),
           installAddress: this.addForm.installAddress.trim() || null,
           remark: this.addForm.remark.trim() || null
@@ -578,31 +641,53 @@ export default {
         if (response.code === 200) {
           this.closeAddDevice()
           
-          // 弹窗提示并询问是否配置网络
-          uni.showModal({
-            title: '添加成功',
-            content: '设备添加成功，是否立即配置设备网络？',
-            confirmText: '立即配置',
-            cancelText: '稍后配置',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                // 跳转到配网页面
-                const deviceInfo = response.data || response.rows || {}
-                const params = {
-                  deviceId: deviceInfo.deviceId || '',
-                  productKey: parseResult.productKey,
-                  deviceKey: parseResult.deviceKey
+          // 只有KAT设备才需要配网（呼吸睡眠1、跌倒监测2、呼吸睡眠-L2 4）
+          const katDeviceTypes = ['1', '2', '4']
+          if (katDeviceTypes.includes(deviceType)) {
+            // 弹窗提示并询问是否配置网络
+            uni.showModal({
+              title: '添加成功',
+              content: '设备添加成功，是否立即配置设备网络？',
+              confirmText: '立即配置',
+              cancelText: '稍后配置',
+              success: (modalRes) => {
+                if (modalRes.confirm) {
+                  // 跳转到配网页面
+                  const deviceInfo = response.data || response.rows || {}
+                  const params = {
+                    deviceId: deviceInfo.deviceId || '',
+                    productKey: productKey,
+                    deviceKey: deviceKey
+                  }
+                  const query = Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&')
+                  
+                  // 根据设备类型决定跳转页面
+                  let targetUrl = ''
+                  if (deviceType === '4') {
+                    // 呼吸睡眠-L2设备，跳转到蓝牙配网页面
+                    targetUrl = '/pages/my/network/bluetooth?' + query
+                  } else {
+                    // 其他KAT设备，跳转到普通网络配置页面
+                    targetUrl = '/pages/my/network/index?' + query
+                  }
+                  
+                  uni.navigateTo({
+                    url: targetUrl
+                  })
+                } else {
+                  // 用户选择稍后配置，刷新设备列表
+                  this.loadDeviceList()
                 }
-                const query = Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`).join('&')
-                uni.navigateTo({
-                  url: '/pages/my/network/index?' + query
-                })
-              } else {
-                // 用户选择稍后配置，刷新设备列表
-                this.loadDeviceList()
               }
-            }
-          })
+            })
+          } else {
+            // AEP设备不需要配网，直接提示成功并刷新列表
+            uni.showToast({
+              title: '添加成功',
+              icon: 'success'
+            })
+            this.loadDeviceList()
+          }
         } else {
           uni.showToast({
             title: response.msg || '添加失败',
@@ -624,11 +709,13 @@ export default {
         deviceId: device.deviceId,
         deviceKey: device.deviceKey,
         deviceAlias: device.deviceAlias || '',
+        installAddress: device.installAddress || '',
         remark: device.remark || ''
       }
       // 保存原始数据用于对比
       this.originalEditForm = {
         deviceAlias: device.deviceAlias || '',
+        installAddress: device.installAddress || '',
         remark: device.remark || ''
       }
       // 打开编辑弹窗
@@ -641,6 +728,7 @@ export default {
         deviceId: '',
         deviceKey: '',
         deviceAlias: '',
+        installAddress: '',
         remark: ''
       }
     },
@@ -663,11 +751,13 @@ export default {
       
       // 对比数据是否发生变化
       const currentAlias = this.editForm.deviceAlias.trim()
+      const currentAddress = this.editForm.installAddress.trim()
       const currentRemark = this.editForm.remark.trim()
       const originalAlias = this.originalEditForm.deviceAlias.trim()
+      const originalAddress = this.originalEditForm.installAddress.trim()
       const originalRemark = this.originalEditForm.remark.trim()
       
-      if (currentAlias === originalAlias && currentRemark === originalRemark) {
+      if (currentAlias === originalAlias && currentAddress === originalAddress && currentRemark === originalRemark) {
         uni.showToast({
           title: '数据未发生变化,无需提交',
           icon: 'none',
@@ -683,6 +773,7 @@ export default {
           deviceId: this.editForm.deviceId,
           deviceKey: this.editForm.deviceKey,
           deviceAlias: currentAlias,
+          installAddress: currentAddress,
           remark: currentRemark
         })
         

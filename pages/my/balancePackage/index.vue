@@ -42,7 +42,7 @@
 							
 							<view class="feature-item">
 								<text class="feature-label">有效期:</text>
-								<text class="feature-val">{{ pkg.validityDays }}天</text>
+								<text class="feature-val">{{ pkg.validityDays ? pkg.validityDays + '天' : '长期有效' }}</text>
 							</view>
 						</view>
 					</view>
@@ -131,7 +131,14 @@
 							</view>
 							<view class="stat-divider"></view>
 							<view class="stat-item">
-								<view class="stat-value">{{ record.validityDays || '-' }}<text class="stat-unit">天</text></view>
+								<view class="stat-value" :class="{ 'long-term': !record.validityDays }">
+									<template v-if="record.validityDays">
+										{{ record.validityDays }}<text class="stat-unit">天</text>
+									</template>
+									<template v-else>
+										<text class="long-term-text">长期有效</text>
+									</template>
+								</view>
 								<view class="stat-label">有效期</view>
 							</view>
 						</view>
@@ -153,20 +160,27 @@
 		<!-- 自定义购买确认弹窗 -->
 		<view class="custom-modal" v-if="showConfirmModal" @click="closeModal">
 			<view class="modal-content" @click.stop>
-				<view class="modal-title">套餐确认提示</view>
+				<view class="modal-header">
+					<view class="modal-icon">🛒</view>
+					<view class="modal-title">套餐确认</view>
+				</view>
 				<view class="modal-body">
-					<view class="modal-text">您选择的<text class="bold">{{ selectedPackage.packageName }}</text>包含：</view>
-					<view class="modal-text" v-if="selectedPackage.phoneCount > 0">
-						电话：<text class="highlight">{{ selectedPackage.phoneCount }}</text>分钟
+					<view class="package-summary">
+						<text class="package-name-text">{{ selectedPackage.packageName }}</text>
 					</view>
-					<view class="modal-text" v-if="selectedPackage.smsCount > 0">
-						短信：<text class="highlight">{{ selectedPackage.smsCount }}</text>条
-					</view>
-					<view class="modal-text">
-						价格：<text class="highlight">{{ ((selectedPackage.salePrice || selectedPackage.originalPrice) / 100).toFixed(2) }}</text>元
-					</view>
-					<view class="modal-note">
-						注：电话语音通知服务的分钟数计算规则为：<text class="note-formula">(实际接通秒数 % 60 + 1)分钟</text>。
+					<view class="package-detail-list">
+						<view class="detail-row" v-if="selectedPackage.phoneCount > 0">
+							<text class="detail-label">电话</text>
+							<text class="detail-value">{{ selectedPackage.phoneCount }}分钟</text>
+						</view>
+						<view class="detail-row" v-if="selectedPackage.smsCount > 0">
+							<text class="detail-label">短信</text>
+							<text class="detail-value">{{ selectedPackage.smsCount }}条</text>
+						</view>
+						<view class="detail-row price-row">
+							<text class="detail-label">支付金额</text>
+							<text class="detail-value price-value">¥{{ ((selectedPackage.salePrice || selectedPackage.originalPrice) / 100).toFixed(2) }}</text>
+						</view>
 					</view>
 				</view>
 				<view class="modal-footer">
@@ -1029,82 +1043,117 @@ export default {
 
 .modal-content {
 	width: 80%;
-	max-width: 400px;
+	max-width: 340px;
 	background-color: #fff;
-	border-radius: 12px;
+	border-radius: 16px;
 	overflow: hidden;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+	padding: 24px 20px 16px;
+	text-align: center;
+	background: linear-gradient(135deg, #f8fffe 0%, #f0faf8 100%);
+}
+
+.modal-icon {
+	font-size: 40px;
+	margin-bottom: 12px;
 }
 
 .modal-title {
 	font-size: 18px;
 	font-weight: 600;
 	color: #303133;
-	text-align: center;
-	padding: 20px;
-	border-bottom: 1px solid #EBEEF5;
 }
 
 .modal-body {
-	padding: 20px;
-	line-height: 1.8;
+	padding: 20px 24px;
 }
 
-.modal-text {
-	font-size: 15px;
-	color: #606266;
-	margin-bottom: 8px;
+.package-summary {
+	text-align: center;
+	margin-bottom: 20px;
+	padding-bottom: 16px;
+	border-bottom: 1px dashed #EBEEF5;
 }
 
-.modal-text .bold {
+.package-name-text {
+	font-size: 17px;
 	font-weight: 600;
 	color: #303133;
 }
 
-.modal-text .highlight {
-	color: #409EFF;
+.package-detail-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 12px;
+	background-color: #F9FAFC;
+	border-radius: 8px;
+}
+
+.detail-label {
+	font-size: 14px;
+	color: #909399;
+}
+
+.detail-value {
+	font-size: 15px;
 	font-weight: 600;
+	color: #303133;
 }
 
-.modal-note {
-	margin-top: 15px;
-	padding: 10px;
-	background-color: #FFF4E6;
-	border-radius: 6px;
-	font-size: 13px;
-	color: #E6A23C;
-	line-height: 1.6;
+.price-row {
+	background: linear-gradient(135deg, rgba(93, 213, 192, 0.1) 0%, rgba(78, 201, 176, 0.15) 100%);
+	margin-top: 4px;
 }
 
-.modal-note .note-formula {
-	color: #F56C6C;
-	font-weight: 500;
+.price-value {
+	font-size: 18px;
+	color: #5DD5C0;
 }
 
 .modal-footer {
 	display: flex;
-	border-top: 1px solid #EBEEF5;
+	padding: 16px 20px;
+	gap: 12px;
 }
 
 .modal-btn {
 	flex: 1;
 	text-align: center;
-	padding: 15px;
-	font-size: 16px;
+	padding: 12px 0;
+	font-size: 15px;
 	font-weight: 500;
+	border-radius: 24px;
+	transition: all 0.2s;
 }
 
 .cancel-btn {
-	color: #909399;
-	border-right: 1px solid #EBEEF5;
+	color: #606266;
+	background-color: #F5F7FA;
+}
+
+.cancel-btn:active {
+	background-color: #EBEEF5;
 }
 
 .confirm-btn {
-	color: #409EFF;
-	font-weight: 600;
+	color: #fff;
+	background: linear-gradient(135deg, #5DD5C0 0%, #4EC9B0 100%);
+	box-shadow: 0 4px 12px rgba(78, 201, 176, 0.3);
 }
 
-.modal-btn:active {
-	background-color: #F5F7FA;
+.confirm-btn:active {
+	transform: scale(0.98);
+	opacity: 0.9;
 }
 
 /* 订单详情弹窗 */

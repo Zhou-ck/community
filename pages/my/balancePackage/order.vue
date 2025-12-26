@@ -47,7 +47,7 @@
 						<view class="package-details">
 							<text v-if="order.phoneCount > 0" class="detail-item">电话 {{ order.phoneCount }}分钟</text>
 							<text v-if="order.smsCount > 0" class="detail-item">短信 {{ order.smsCount }}条</text>
-							<text v-if="order.validityDays" class="detail-item">{{ order.validityDays }}天</text>
+							<text class="detail-item">{{ order.validityDays ? order.validityDays + '天' : '长期有效' }}</text>
 						</view>
 					</view>
 					<view class="package-price">
@@ -110,9 +110,9 @@
 							<text class="info-label">短信数量：</text>
 							<text class="info-value">{{ selectedOrder.smsCount }}条</text>
 						</view>
-						<view class="detail-info-item" v-if="selectedOrder.validityDays">
+						<view class="detail-info-item">
 							<text class="info-label">有效期：</text>
-							<text class="info-value">{{ selectedOrder.validityDays }}天</text>
+							<text class="info-value">{{ selectedOrder.validityDays ? selectedOrder.validityDays + '天' : '长期有效' }}</text>
 						</view>
 					</view>
 
@@ -281,24 +281,6 @@ export default {
 			}
 			// 再判断支付状态
 			return this.getPayStatusText(order.payStatus)
-		},
-
-		// 获取状态样式类
-		getStatusClass(order) {
-			// 优先判断订单状态
-			if (order.orderStatus === '2' || order.orderStatus === 2) {
-				return 'status-canceled'
-			}
-			if (order.orderStatus === '3' || order.orderStatus === 3) {
-				return 'status-refund'
-			}
-			// 再判断支付状态
-			const classMap = {
-				'0': 'status-pending',
-				'1': 'status-paid',
-				'2': 'status-refund'
-			}
-			return classMap[String(order.payStatus)] || ''
 		},
 
 		// 显示订单详情

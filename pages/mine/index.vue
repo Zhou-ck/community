@@ -118,24 +118,19 @@
 <script>
   export default {
     data() {
-      return {
-        name: this.$store.state.user.name
-      }
+      return {}
     },
     computed: {
-      avatar() {
-        return this.$store.state.user.avatar
+      name() {
+        return this.$store.state.user.name
       },
-      windowHeight() {
-        return uni.getSystemInfoSync().windowHeight - 50
+      avatar() {
+        return this.$store.getters.avatar
       }
     },
     methods: {
       handleToInfo() {
         this.$tab.navigateTo('/pages/my/info/index')
-      },
-      handleToEditInfo() {
-        this.$tab.navigateTo('/pages/my/info/edit')
       },
       handleToSetting() {
         this.$tab.navigateTo('/pages/my/setting/index')
@@ -229,7 +224,7 @@ page {
   margin-right: 30rpx;
 }
 
-.default-avatar, .user-avatar {
+.default-avatar {
   width: 120rpx;
   height: 120rpx;
   border-radius: 60rpx;
@@ -241,6 +236,11 @@ page {
 }
 
 .user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
   border: 6rpx solid rgba(255, 255, 255, 0.3);
 }
 
@@ -300,36 +300,7 @@ page {
   z-index: 3;
 }
 
-/* 统计卡片 */
-.stats-container {
-  display: flex;
-  gap: 20rpx;
-  margin-bottom: 30rpx;
-}
-
-.stats-card {
-  flex: 1;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx 20rpx;
-  text-align: center;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-}
-
-.stats-number {
-  display: block;
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 8rpx;
-}
-
-.stats-label {
-  font-size: 24rpx;
-  color: #666;
-}
-
-/* 新快捷操作样式 */
+/* 快捷操作 */
 .quick-actions-new {
   background: #fff;
   border-radius: 20rpx;
@@ -380,39 +351,9 @@ page {
 .text-small{
   margin-top: 7rpx;
 }
-/* 保留原有快捷操作样式以防需要 */
-.quick-actions {
-  display: flex;
-  justify-content: space-between;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 40rpx 20rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-}
 
-.action-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-
-.action-icon {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-}
-
-.action-text {
-  font-size: 24rpx;
-  color: #666;
-  text-align: center;
+.text-small-2 {
+  margin-top: 3rpx;
 }
 
 /* 菜单容器 */

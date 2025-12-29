@@ -119,7 +119,7 @@
 					<view class="remark-detail">
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).userRequest">
 							<uni-icons type="person" size="14" color="#3ec6c6"></uni-icons>
-							<text class="remark-value highlight">"{{ parseVoiceRemark(order.remark).userRequest }}"</text>
+							<text class="remark-value highlight">{{ parseVoiceRemark(order.remark).userRequest }}</text>
 						</view>
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).matchReason">
 							<uni-icons type="compose" size="14" color="#999"></uni-icons>
@@ -374,7 +374,10 @@
 					}
 					
 					if (userRequest || matchReason) {
-						return { userRequest, matchReason }
+						return { 
+							userRequest: userRequest ? '"' + userRequest + '"' : '', 
+							matchReason 
+						}
 					}
 				} catch (e) {
 					console.error('解析备注失败', e)

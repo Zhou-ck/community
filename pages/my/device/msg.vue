@@ -197,7 +197,8 @@
             
             <!-- 录制完成状态：显示试听和重录 -->
             <view v-else class="record-actions">
-               <button class="action-btn play-btn" @click="playTempAudio">
+               <!-- iOS 不支持试听，只显示重录按钮 -->
+               <button v-if="!isIOS" class="action-btn play-btn" @click="playTempAudio">
                  <uni-icons :type="isPlayingTemp ? 'videocam-filled' : 'videocam'" size="20" color="#3ec6c6"></uni-icons>
                  <text>{{ isPlayingTemp ? '停止播放' : '试听录音' }} ({{ recordDuration }}s)</text>
                </button>
@@ -255,7 +256,7 @@
 </template>
 
 <script>
-import { listSleepmessage, getSleepmessage, addSleepmessage, delSleepmessage, setcurrentMsg } from '@/api/sleepmessage.js'
+import { listSleepmessage, addSleepmessage, delSleepmessage, setcurrentMsg } from '@/api/sleepmessage.js'
 import { resetDeviceNetwork } from '@/api/device.js'
 import { listSleepdemand, addSleepdemand, delSleepdemand } from '@/api/sleepdemand.js'
 import { getDicts } from '@/api/system/dict/data'
@@ -300,6 +301,7 @@ export default {
       audioTempPath: '',
       recordTimer: null,
       isPlayingTemp: false, // 试听播放状态
+      isIOS: false, // 是否是 iOS 系统
       
       // 详情
       currentDetail: {},
@@ -356,6 +358,10 @@ export default {
     if (options.deviceId) this.queryParams.deviceId = options.deviceId;
     if (options.deviceKey) this.queryParams.deviceKey = options.deviceKey;
     if (options.productKey) this.queryParams.productKey = options.productKey;
+    
+    // 判断是否是 iOS 系统
+    const systemInfo = uni.getSystemInfoSync();
+    this.isIOS = systemInfo.platform === 'ios';
     
     this.loadDictData();
     this.loadData();
@@ -473,6 +479,12 @@ export default {
             errorMsg = '网络错误，请检查连接';
           }
         }
+        // iOS 静音开关提示
+        // #ifdef APP-IOS || MP-WEIXIN
+        if (this.isIOS) {
+          errorMsg += '，请检查静音开关是否关闭';
+        }
+        // #endif
         uni.showToast({ title: errorMsg, icon: 'none' });
       });
     },
@@ -488,69 +500,26 @@ export default {
     async playAudio(item) {
       if (this.currentPlayingItem === item) {
         // 暂停/停止
-        this.innerAudioContext.stop();
+        if (this.innerAudioContext) {
+          this.innerAudioContext.stop();
+        }
         this.currentPlayingItem = null;
         return;
       }
       
       // 构造 URL
       let url = '';
-      let audioData = item.audioData;
       
-      // 如果是音频类型但 audioData 为空，需要先获取详情
-      if (this.isAudio(item) && !audioData && item.messageId) {
-        uni.showLoading({ title: '加载音频...' });
-        try {
-          const res = await getSleepmessage(item.messageId);
-          if (res.code === 200 && res.data && res.data.audioData) {
-            audioData = res.data.audioData;
-            // 缓存到列表项中，避免重复请求
-            item.audioData = audioData;
-            item.audioMime = res.data.audioMime || item.audioMime;
-          }
-        } catch (e) {
-          console.error('获取音频详情失败', e);
-        } finally {
-          uni.hideLoading();
-        }
+      // 需求列表的音频（有 demandId），直接用 filename 拼接 URL，不调用接口
+      console.log('playAudio item:', item.demandId, item.messageId, item.filename);
+      if (item.demandId && item.filename) {
+        url = config.baseUrl + (item.baseUrl || '/api/demand/audio') + '/' + item.filename;
+        console.log('需求音频URL:', url);
       }
-      
-      if (audioData) {
-        // 检查是否已经是完整的 data URI 或 http(s) URL
-        if (audioData.startsWith('data:') || audioData.startsWith('http://') || audioData.startsWith('https://')) {
-          url = audioData;
-        } else {
-          // 纯 base64 字符串，需要添加 data URI 前缀
-          const mimeType = item.audioMime || 'audio/mpeg';
-          url = `data:${mimeType};base64,${audioData}`;
-          console.log('转换 base64 为 data URI，MIME类型:', mimeType);
-        }
-      } else if (item.filename) {
-        // 检查是否是临时文件路径或自定义文件名（无实际文件）
-        if (item.filename.startsWith('wxfile://')) {
-          // #ifdef H5
-          uni.showToast({ 
-            title: '浏览器环境无法试听，请在小程序中使用', 
-            icon: 'none',
-            duration: 3000 
-          });
-          console.warn('H5环境无法播放微信临时文件');
-          return;
-          // #endif
-          // #ifndef H5
-          url = item.filename;
-          // #endif
-        } else if (item.filename.startsWith('audio_')) {
-          // 自定义文件名格式，但没有 audioData，说明音频数据未存储
-          uni.showToast({ title: '音频数据未存储，无法播放', icon: 'none' });
-          console.warn('音频数据为空，filename:', item.filename);
-          return;
-        } else if (item.filename.startsWith('http')) {
-          url = item.filename;
-        } else {
-          // 使用 config.baseUrl 拼接
-          url = config.baseUrl + '/profile/upload/' + item.filename;
-        }
+      // 消息列表：使用 URL 方式播放
+      else if (this.isAudio(item) && item.filename) {
+        url = config.baseUrl + (item.baseUrl || '/api/sleepmessage/audio') + '/' + item.filename;
+        console.log('消息音频URL:', url);
       }
       
       if (!url) {
@@ -561,6 +530,10 @@ export default {
       console.log('准备播放音频，URL长度:', url.length, 'URL前50个字符:', url.substring(0, 50));
       
       try {
+        // 确保音频实例存在
+        if (!this.innerAudioContext) {
+          this.initAudio();
+        }
         this.innerAudioContext.stop();
         this.innerAudioContext.src = url;
         this.innerAudioContext.play();

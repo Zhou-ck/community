@@ -16,7 +16,14 @@
     </view>
 
     <!-- 列表区域 -->
-    <view class="content-area">
+    <scroll-view 
+      class="content-area"
+      scroll-y
+      refresher-enabled
+      :refresher-triggered="refreshing"
+      @refresherrefresh="onRefresh"
+      @scrolltolower="onLoadMore"
+    >
       <!-- 消息列表 -->
       <view v-if="currentTab === 0">
         <view class="list-item" v-for="item in msgList" :key="item._key" @click="showDetail(item)">
@@ -142,7 +149,7 @@
       <view class="no-more" v-if="!loading && isEnd && ((currentTab === 0 && msgList.length > 0) || (currentTab === 1 && demandList.length > 0))">
         <text>没有更多数据了</text>
       </view>
-    </view>
+    </scroll-view>
 
     <!-- 悬浮添加按钮 -->
     <view class="fab-btn" v-if="currentTab === 0" @click="openAddPopup">
@@ -276,6 +283,7 @@ export default {
       msgList: [],
       demandList: [],
       loading: false,
+      refreshing: false, // 下拉刷新状态
       isEnd: false, // 是否加载完所有数据
       total: 0,
       
@@ -412,6 +420,24 @@ export default {
     }
   },
   methods: {
+    // 下拉刷新
+    onRefresh() {
+      this.refreshing = true;
+      this.queryParams.pageNum = 1;
+      this.isEnd = false;
+      this.loadData(() => {
+        this.refreshing = false;
+      });
+    },
+    
+    // 上拉加载更多
+    onLoadMore() {
+      if (!this.isEnd && !this.loading) {
+        this.queryParams.pageNum++;
+        this.loadData();
+      }
+    },
+    
     // 初始化录音管理器
     initRecorder() {
       this.recorderManager = uni.getRecorderManager();

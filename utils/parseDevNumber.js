@@ -53,6 +53,12 @@ export function parseDeviceNumber(deviceNumBering) {
         resDeviceNumber.deviceType = '19';
     } else if (deviceTypeStr === 'Od') {//其它
         resDeviceNumber.deviceType = '20';
+    } else if (deviceTypeStr === 'Za') {//手表(AA型)
+        resDeviceNumber.deviceType = '21';
+    } else if (deviceTypeStr === 'Zb') {//手表(AB型)
+        resDeviceNumber.deviceType = '22';
+    } else if (deviceTypeStr === 'Zc') {//手表(AC型)
+        resDeviceNumber.deviceType = '23';
     }
     
     return resDeviceNumber;
@@ -97,6 +103,11 @@ export function needsNetworkConfig(deviceType) {
  *   - 14: 门磁
  *   - 17: 红外
  *   - 18: 温湿度
+ * 
+ * 手表设备-无参数设置（使用iwown接口）:
+ *   - 21: 手表(H102C)
+ *   - 22: 手表(AB型)
+ *   - 23: 手表(AC型)
  */
 const DEVICE_TYPES = {
     // KAT设备（有参数设置）
@@ -104,7 +115,9 @@ const DEVICE_TYPES = {
     // AEP设备-有参数设置
     AEP_WITH_PARAMS: ['15', '16', '19'],
     // AEP设备-无参数设置
-    AEP_NO_PARAMS: ['13', '14', '17', '18']
+    AEP_NO_PARAMS: ['13', '14', '17', '18'],
+    // 手表设备-无参数设置
+    WATCH_NO_PARAMS: ['21', '22', '23']
 };
 
 /**
@@ -131,7 +144,7 @@ export function isAepDevice(deviceType) {
  * @returns {boolean}
  */
 export function hasParamsSetting(deviceType) {
-    return !DEVICE_TYPES.AEP_NO_PARAMS.includes(deviceType);
+    return !DEVICE_TYPES.AEP_NO_PARAMS.includes(deviceType) && !DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
 }
 
 /**

@@ -479,7 +479,22 @@ export default {
         }
 
         if (res.code === 200) {
-          uni.showToast({ title: '保存成功', icon: 'success' })
+          // 调用 invoke/service 接口通知设备卡片信息已更新
+          try {
+            await resetDeviceNetwork({
+              ack: 1,
+              address: null,
+              deviceKey: this.deviceKey,
+              function: 'needUpdate',
+              productKey: this.productKey,
+              propertyValue: { needUpdate: 1 },
+              type: null
+            })
+            uni.showToast({ title: '保存成功', icon: 'success' })
+          } catch (invokeErr) {
+            console.error('调用服务接口失败', invokeErr)
+            uni.showToast({ title: '已保存，设备通知失败', icon: 'none' })
+          }
           this.loadProfileData() // 重新加载以获取最新状态（如ID）
         } else {
           uni.showToast({ title: res.msg || '保存失败', icon: 'none' })

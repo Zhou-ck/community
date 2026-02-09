@@ -1,6 +1,6 @@
 <template>
 	<view class="notice-page">
-		<!-- 搜索栏 -->
+		<!-- 搜索栏（固定） -->
 		<view class="search-container">
 			<view class="search-box">
 				<uni-icons type="search" size="18" color="#999"></uni-icons>
@@ -21,8 +21,14 @@
 			</view>
 		</view>
 
-		<!-- 公告列表 -->
-		<view class="notice-list">
+		<!-- 公告列表（可滚动+下拉刷新） -->
+		<scroll-view 
+			class="notice-list" 
+			scroll-y
+			refresher-enabled
+			:refresher-triggered="isRefreshing"
+			@refresherrefresh="onRefresh"
+		>
 			<view 
 				class="notice-card" 
 				v-for="(item, index) in filteredNoticeList" 
@@ -35,7 +41,7 @@
 					</view>
 					<view class="notice-title">{{ item.title }}</view>
 				</view>
-				<view class="notice-content">{{ item.content }}</view>
+				<view class="notice-content">{{ formatContent(item.content) }}</view>
 				<view class="notice-footer">
 					<text class="notice-time">{{ item.time }}</text>
 					<view class="notice-tag" :class="{ important: item.important }">
@@ -45,18 +51,20 @@
 			</view>
 
 			<!-- 空状态 -->
-			<view v-if="filteredNoticeList.length === 0" class="empty-state">
+			<view v-if="filteredNoticeList.length === 0 && !loading" class="empty-state">
 				<text class="iconfontB icon-yonghupingjia empty-icon"></text>
 				<text class="empty-text">{{ searchKeyword ? '未找到相关公告' : '暂无公告通知' }}</text>
 			</view>
-		</view>
-
-		<!-- 公告详情弹窗 -->
-		<!-- 已改为跳转详情页 -->
+			
+			<!-- 底部占位 -->
+			<view style="height: 40rpx;"></view>
+		</scroll-view>
 	</view>
 </template>
 
 <script>
+	import { listNotice } from '@/api/notice.js'
+	
 	export default {
 		data() {
 			return {
@@ -65,64 +73,13 @@
 				showDetailModal: false,
 				currentNotice: null,
 				searchTimer: null,
-				noticeList: [
-					{
-						id: 1,
-						title: '社区养老服务中心新增康复理疗项目',
-						content: '为更好地服务社区老年人，我中心新增康复理疗项目，包括推拿、艾灸、理疗等服务，欢迎广大居民咨询预约。服务时间：周一至周五 9:00-17:00。',
-						time: '2024-11-20 10:30',
-						important: true
-					},
-					{
-						id: 2,
-						title: '关于开展社区健康体检活动的通知',
-						content: '为关爱社区居民身体健康，将于12月1日-12月15日开展免费健康体检活动，请符合条件的居民携带身份证到社区服务中心登记预约。',
-						time: '2024-11-18 14:20',
-						important: true
-					},
-					{
-						id: 3,
-						title: '助餐服务时间调整通知',
-						content: '因厨房设备升级改造，助餐服务时间临时调整为11:00-13:00，17:00-19:00，给您带来的不便敬请谅解。',
-						time: '2024-11-15 09:15',
-						important: false
-					},
-					{
-						id: 4,
-						title: '社区图书室新书上架通知',
-						content: '社区图书室近期新增图书200余册，涵盖文学、历史、养生等多个类别，欢迎居民前来借阅。借阅时间：周一至周日 8:00-20:00。',
-						time: '2024-11-12 16:45',
-						important: false
-					},
-					{
-						id: 5,
-						title: '冬季用电用气安全提醒',
-						content: '冬季来临，请注意用电用气安全：1.定期检查电线、插座；2.使用合格的电热设备；3.保持室内通风；4.燃气使用后及时关闭阀门。',
-						time: '2024-11-10 11:00',
-						important: true
-					},
-					{
-						id: 6,
-						title: '社区文化活动中心开放时间调整',
-						content: '自11月1日起，社区文化活动中心开放时间调整为：周一至周日 8:00-21:00，节假日照常开放。',
-						time: '2024-10-28 10:00',
-						important: false
-					},
-					{
-						id: 7,
-						title: '关于更换智能门禁系统的通知',
-						content: '为提升社区安全管理水平，将于12月中旬更换智能门禁系统，届时需要居民重新录入人脸信息，具体时间另行通知。',
-						time: '2024-10-25 15:30',
-						important: false
-					},
-					{
-						id: 8,
-						title: '社区志愿者招募通知',
-						content: '社区现招募志愿者若干名，主要协助开展社区活动、帮扶困难群众等工作，有意者请到社区服务中心报名。',
-						time: '2024-10-20 09:00',
-						important: false
-					}
-				]
+				noticeList: [],
+				loading: false,
+				isRefreshing: false,
+				queryParams: {
+					pageNum: 1,
+					pageSize: 20
+				}
 			}
 		},
 		computed: {
@@ -141,8 +98,40 @@
 			// 获取系统状态栏高度
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 0
+			this.getNoticeList()
 		},
 		methods: {
+			// 获取公告列表
+			async getNoticeList() {
+				this.loading = true
+				try {
+					const res = await listNotice(this.queryParams)
+					if (res.code === 200) {
+						this.noticeList = (res.rows || []).map(item => ({
+							id: item.noticeId,
+							title: item.noticeTitle,
+							content: item.noticeContent,
+							time: item.createTime,
+							important: item.noticeType === '1' // 1-通知 2-公告，可根据实际调整
+						}))
+					}
+				} catch (e) {
+					console.error('获取公告列表失败:', e)
+					uni.showToast({
+						title: '获取公告失败',
+						icon: 'none'
+					})
+				} finally {
+					this.loading = false
+					this.isRefreshing = false
+				}
+			},
+
+			// 下拉刷新
+			async onRefresh() {
+				this.isRefreshing = true
+				await this.getNoticeList()
+			},
 
 			// 搜索输入
 			onSearchInput() {
@@ -164,6 +153,23 @@
 			// 清除搜索
 			clearSearch() {
 				this.searchKeyword = ''
+			},
+
+			// 格式化内容，去除HTML标签并处理换行
+			formatContent(content) {
+				if (!content) return ''
+				// 将<p>、<br>等标签转换为换行，然后去除其他HTML标签
+				return content
+					.replace(/<\/p>/gi, '\n')
+					.replace(/<p[^>]*>/gi, '')
+					.replace(/<br\s*\/?>/gi, '\n')
+					.replace(/<[^>]+>/g, '')
+					.replace(/&nbsp;/g, ' ')
+					.replace(/&lt;/g, '<')
+					.replace(/&gt;/g, '>')
+					.replace(/&amp;/g, '&')
+					.replace(/\n\s*\n/g, '\n')
+					.trim()
 			},
 
 			// 查看公告详情
@@ -199,7 +205,7 @@
 
 /* 搜索栏 */
 .search-container {
-	background: rgba(240, 244, 247, 0.95);
+	background: linear-gradient(180deg, #f0f4f7 0%, rgba(240, 244, 247, 0.95) 100%);
 	padding: 24rpx;
 }
 
@@ -233,8 +239,9 @@
 
 /* 公告列表 */
 .notice-list {
-	padding: 0 24rpx 40rpx;
-	min-height: calc(100vh - 180rpx);
+	height: calc(100vh - 128rpx);
+	padding: 0 24rpx;
+	box-sizing: border-box;
 }
 
 @keyframes slideUp {

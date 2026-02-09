@@ -1,5 +1,13 @@
 <template>
-  <view class="device-container">
+  <view class="page-wrapper">
+    <scroll-view 
+      class="device-container"
+      scroll-y
+      refresher-enabled
+      :refresher-triggered="isRefreshing"
+      @refresherrefresh="onRefresh"
+      @scrolltolower="onLoadMore"
+    >
     <!-- 顶部统计 -->
     <view class="stats-section">
       <view class="stat-card">
@@ -7,7 +15,7 @@
           <uni-icons type="home-filled" size="24" color="#3ec6c6"></uni-icons>
         </view>
         <view class="stat-info">
-          <text class="stat-value">{{ deviceList.length }}</text>
+          <text class="stat-value">{{ totalCount }}</text>
           <text class="stat-label">设备总数</text>
         </view>
       </view>
@@ -34,7 +42,7 @@
     <!-- 设备列表 -->
     <view class="device-grid">
       <view 
-        v-for="(device, index) in deviceList" 
+        v-for="device in deviceList" 
         :key="device.deviceId"
         class="device-card"
         @click="goToDeviceDetail(device)"
@@ -93,6 +101,13 @@
         </view>
       </view>
       
+      <!-- 加载更多提示 -->
+      <view v-if="deviceList.length > 0" class="load-more-tip">
+        <text v-if="loadingMore">加载中...</text>
+        <text v-else-if="!hasMore">没有更多设备了</text>
+        <text v-else>上拉加载更多</text>
+      </view>
+      
       <!-- 空状态 -->
       <view v-if="deviceList.length === 0 && !loading" class="empty-box">
         <view class="empty-icon-wrapper">
@@ -116,6 +131,8 @@
         </view>
       </view>
     </view>
+
+    </scroll-view>
 
     <!-- 添加设备按钮 -->
     <view class="add-btn-box">
@@ -249,7 +266,7 @@
     </uni-popup>
 
     <!-- 加载状态 -->
-    <view v-if="loading" class="loading-mask">
+    <view v-if="loading && !isRefreshing" class="loading-mask">
       <uni-icons type="spinner-cycle" size="40" color="#4CAF50"></uni-icons>
       <text class="loading-text">加载中...</text>
     </view>
@@ -257,7 +274,7 @@
 </template>
 
 <script>
-import { listDevice, delDevice, addDevice, updateDevice, getAepDevice } from '@/api/device'
+import { listDevice, delDevice, addDevice, updateDevice, getAepDevice, getIwownDeviceByImei } from '@/api/device'
 import { getDicts } from '@/api/system/dict/data'
 import { parseDeviceNumber } from '@/utils/parseDevNumber'
 
@@ -267,6 +284,15 @@ export default {
       deviceList: [],
       loading: false,
       submitting: false,
+      // 分页相关
+      pageNum: 1,
+      pageSize: 10,
+      totalCount: 0,
+      onlineCount: 0,
+      offlineCount: 0,
+      hasMore: true,
+      loadingMore: false,
+      isRefreshing: false,
       addForm: {
         deviceKey: '',
         deviceAlias: '',
@@ -295,21 +321,17 @@ export default {
   },
   
   computed: {
-    onlineCount() {
-      return this.deviceList.filter(d => d.onlineStatus === '1').length
-    },
-    offlineCount() {
-      return this.deviceList.filter(d => d.onlineStatus !== '1').length
-    }
+    // 移除原有的 onlineCount 和 offlineCount 计算属性，改为从接口获取
   },
   
   async onLoad() {
     await this.loadDictData()
-    this.loadDeviceList()
+    this.loadDeviceList(true)
   },
   
   onShow() {
-    this.loadDeviceList()
+    // onShow时刷新数据
+    this.refreshData()
   },
   
   methods: {
@@ -335,16 +357,48 @@ export default {
     },
     
     // 加载设备列表
-    async loadDeviceList() {
-      this.loading = true
+    async loadDeviceList(isInit = false) {
+      if (isInit) {
+        this.loading = true
+        this.pageNum = 1
+        this.deviceList = []
+        this.hasMore = true
+      }
+      
       try {
-        const response = await listDevice({
-          pageNum: 1,
-          pageSize: 100
-        })
+        // 构建请求
+        const requests = [
+          listDevice({
+            pageNum: this.pageNum,
+            pageSize: this.pageSize
+          })
+        ]
+        
+        // 初始化时额外请求在线数量
+        if (isInit) {
+          requests.push(listDevice({ onlineStatus: '1', pageNum: 1, pageSize: 1 }))
+        }
+        
+        const results = await Promise.all(requests)
+        const response = results[0]
         
         if (response.code === 200) {
-          this.deviceList = response.rows || []
+          const rows = response.rows || []
+          
+          // 更新总数
+          this.totalCount = response.total || 0
+          
+          if (isInit) {
+            this.deviceList = rows
+            // 在线数量从统计请求获取，离线 = 总数 - 在线
+            this.onlineCount = (results[1] && results[1].code === 200) ? (results[1].total || 0) : 0
+            this.offlineCount = this.totalCount - this.onlineCount
+          } else {
+            this.deviceList = [...this.deviceList, ...rows]
+          }
+          
+          // 判断是否还有更多数据
+          this.hasMore = this.deviceList.length < this.totalCount
         } else {
           uni.showToast({
             title: response.msg || '加载失败',
@@ -359,7 +413,29 @@ export default {
         })
       } finally {
         this.loading = false
+        this.loadingMore = false
+        this.isRefreshing = false
       }
+    },
+    
+    // 下拉刷新
+    async onRefresh() {
+      this.isRefreshing = true
+      await this.loadDeviceList(true)
+    },
+    
+    // 上拉加载更多
+    async onLoadMore() {
+      if (this.loadingMore || !this.hasMore || this.loading) return
+      
+      this.loadingMore = true
+      this.pageNum++
+      await this.loadDeviceList(false)
+    },
+    
+    // 刷新数据（用于onShow等场景）
+    refreshData() {
+      this.loadDeviceList(true)
     },
     
     // 获取设备图标
@@ -377,6 +453,9 @@ export default {
           '17': require('@/pages/my/static/hongwai.png'),    // 红外 Hd
           '18': require('@/pages/my/static/wenshidu.png'),   // 温湿度 Wd
           '19': require('@/pages/my/static/yiyanghuatan.png') // 一氧化碳 Td
+          // '21': require('@/pages/my/static/watch.png'),   // 手表(AA型) Za - 待添加图标
+          // '22': require('@/pages/my/static/watch.png'),   // 手表(AB型) Zb - 待添加图标
+          // '23': require('@/pages/my/static/watch.png')    // 手表(AC型) Zc - 待添加图标
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -428,7 +507,7 @@ export default {
             title: '解绑成功',
             icon: 'success'
           })
-          this.loadDeviceList()
+          this.refreshData()
         } else {
           uni.showToast({
             title: response.msg || '解绑失败',
@@ -570,46 +649,66 @@ export default {
         const isImei = /^\d{15}$/.test(deviceNumBering)
         
         let productKey, deviceKey, deviceType
+        let isWatchDevice = false // 标记是否为手表设备
         
         if (isImei) {
-          // 是IMEI，先查询获取产品key和设备key
-          const aepRes = await getAepDevice({ imei: deviceNumBering })
+          // 是IMEI，先尝试作为手表设备查询
+          const watchRes = await getIwownDeviceByImei(deviceNumBering)
           
-          if (aepRes.code !== 200 || !aepRes.data) {
-            uni.showToast({
-              title: aepRes.msg || '查询设备信息失败',
-              icon: 'none'
-            })
-            return
+          if (watchRes.code === 200 && watchRes.data) {
+            // 是手表设备
+            isWatchDevice = true
+            productKey = watchRes.data.productKey
+            deviceKey = watchRes.data.deviceKey
+            
+            // 根据deviceKey前缀判断手表类型
+            const deviceKeyPrefix = deviceKey.match(/^[A-Za-z]{2}/)?.[0] || ''
+            const watchTypeMap = {
+              'Za': '21',  // 手表(AA型)
+              'Zb': '22',  // 手表(AB型)
+              'Zc': '23'   // 手表(AC型)
+            }
+            deviceType = watchTypeMap[deviceKeyPrefix] || watchRes.data.deviceType
+          } else {
+            // 不是手表设备，尝试作为AEP设备查询
+            const aepRes = await getAepDevice({ imei: deviceNumBering })
+            
+            if (aepRes.code !== 200 || !aepRes.data) {
+              uni.showToast({
+                title: aepRes.msg || '查询设备信息失败',
+                icon: 'none'
+              })
+              return
+            }
+            
+            productKey = aepRes.data.productKey
+            deviceKey = aepRes.data.deviceKey
+            
+            if (!productKey || !deviceKey) {
+              uni.showToast({
+                title: '未找到对应的设备信息',
+                icon: 'none'
+              })
+              return
+            }
+            
+            // 根据deviceKey前缀判断设备类型
+            const deviceKeyPrefix = deviceKey.match(/^[A-Za-z]{2}/)?.[0] || ''
+            const deviceTypeMap = {
+              'Ed': '2',   // 跌倒监测
+              'Ld': '1',   // 呼吸睡眠
+              'La': '4',   // 呼吸睡眠-L2
+              'Sd': '13',  // 水浸
+              'Md': '14',  // 门磁
+              'Yd': '15',  // 烟感
+              'Rd': '16',  // 可燃气体
+              'Hd': '17',  // 红外
+              'Wd': '18',  // 温湿度
+              'Td': '19',  // 一氧化碳
+              'Od': '20'   // 其它
+            }
+            deviceType = deviceTypeMap[deviceKeyPrefix] || aepRes.data.deviceType
           }
-          
-          productKey = aepRes.data.productKey
-          deviceKey = aepRes.data.deviceKey
-          
-          if (!productKey || !deviceKey) {
-            uni.showToast({
-              title: '未找到对应的设备信息',
-              icon: 'none'
-            })
-            return
-          }
-          
-          // 根据deviceKey前缀判断设备类型
-          const deviceKeyPrefix = deviceKey.match(/^[A-Za-z]{2}/)?.[0] || ''
-          const deviceTypeMap = {
-            'Ed': '2',   // 跌倒监测
-            'Ld': '1',   // 呼吸睡眠
-            'La': '4',   // 呼吸睡眠-L2
-            'Sd': '13',  // 水浸
-            'Md': '14',  // 门磁
-            'Yd': '15',  // 烟感
-            'Rd': '16',  // 可燃气体
-            'Hd': '17',  // 红外
-            'Wd': '18',  // 温湿度
-            'Td': '19',  // 一氧化碳
-            'Od': '20'   // 其它
-          }
-          deviceType = deviceTypeMap[deviceKeyPrefix] || aepRes.data.deviceType
         } else {
           // 不是IMEI，使用工具类解析设备编号
           const parseResult = parseDeviceNumber(deviceNumBering)
@@ -676,7 +775,7 @@ export default {
                   })
                 } else {
                   // 用户选择稍后配置，刷新设备列表
-                  this.loadDeviceList()
+                  this.refreshData()
                 }
               }
             })
@@ -686,7 +785,7 @@ export default {
               title: '添加成功',
               icon: 'success'
             })
-            this.loadDeviceList()
+            this.refreshData()
           }
         } else {
           uni.showToast({
@@ -784,7 +883,7 @@ export default {
           })
           
           this.closeEditDevice()
-          this.loadDeviceList() // 重新加载设备列表
+          this.refreshData() // 重新加载设备列表
         } else {
           uni.showToast({
             title: response.msg || '修改失败',
@@ -806,10 +905,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.page-wrapper {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
 .device-container {
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
   background: #f5f5f5;
-  padding-bottom: 120rpx;
+}
+
+/* 加载更多提示 */
+.load-more-tip {
+  width: 100%;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 26rpx;
+  color: #999;
 }
 
 /* 统计卡片 */
@@ -872,6 +987,7 @@ export default {
 /* 设备网格布局 */
 .device-grid {
   padding: 24rpx;
+  padding-bottom: 140rpx; /* 为底部按钮留出空间 */
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;

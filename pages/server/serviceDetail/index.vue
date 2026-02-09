@@ -6,9 +6,10 @@
       <!-- 服务图片 -->
       <view class="service-banner">
         <image :src="getImageUrl(serviceData.icon)" class="banner-image" mode="aspectFill"></image>
+        <view class="banner-overlay"></view>
       </view>
 
-      <!-- 服务基本信息 -->
+      <!-- 服务基本信息卡片 -->
       <view class="service-info-card">
         <view class="service-header">
           <view class="service-name">{{ serviceData.serviceName }}</view>
@@ -21,31 +22,43 @@
 
         <!-- 服务标签 -->
         <view class="service-tags">
-          <view class="tag-item" v-if="serviceData.subsidySupport === '1'">
+          <view class="tag-item subsidy" v-if="serviceData.subsidySupport === '1'">
             <uni-icons type="checkmarkempty" size="12" color="#52c41a"></uni-icons>
             <text>可补贴</text>
           </view>
-          <view class="tag-item" v-if="serviceData.serviceDuration">
+          <view class="tag-item duration" v-if="serviceData.serviceDuration">
             <uni-icons type="clock" size="12" color="#1890ff"></uni-icons>
             <text>{{ serviceData.serviceDuration }}分钟</text>
+          </view>
+          <view class="tag-item quality">
+            <uni-icons type="star-filled" size="12" color="#faad14"></uni-icons>
+            <text>优质服务</text>
           </view>
         </view>
 
         <!-- 补贴信息 -->
         <view class="subsidy-info" v-if="serviceData.subsidySupport === '1' && serviceData.subsidyRate > 0">
           <view class="subsidy-icon">
-            <text class="iconfontA icon-butie"></text>
+            <uni-icons type="gift-filled" size="24" color="#fff"></uni-icons>
           </view>
           <view class="subsidy-text">
             <text class="subsidy-label">补贴优惠</text>
-            <text class="subsidy-rate">补贴{{ serviceData.subsidyRate }}%，实付¥{{ actualAmount }}</text>
+            <text class="subsidy-rate">补贴{{ serviceData.subsidyRate }}%，实付<text class="highlight">¥{{ actualAmount }}</text></text>
           </view>
+          <view class="subsidy-badge">省¥{{ (serviceData.price - actualAmount).toFixed(2) }}</view>
         </view>
       </view>
 
       <!-- 服务描述 -->
       <view class="detail-section" v-if="serviceData.description">
-        <view class="section-title">服务描述</view>
+        <view class="section-header">
+          <view class="section-title">
+            <view class="title-icon">
+              <uni-icons type="info-filled" size="18" color="#3ec6c6"></uni-icons>
+            </view>
+            <text>服务描述</text>
+          </view>
+        </view>
         <view class="section-content">
           <text class="description-text">{{ serviceData.description }}</text>
         </view>
@@ -53,31 +66,55 @@
 
       <!-- 服务内容 -->
       <view class="detail-section" v-if="serviceData.serviceContent">
-        <view class="section-title">服务内容</view>
+        <view class="section-header">
+          <view class="section-title">
+            <view class="title-icon">
+              <uni-icons type="list" size="18" color="#3ec6c6"></uni-icons>
+            </view>
+            <text>服务内容</text>
+          </view>
+        </view>
         <view class="section-content">
           <text class="content-text">{{ serviceData.serviceContent }}</text>
         </view>
       </view>
 
       <!-- 服务须知 -->
-      <view class="detail-section">
-        <view class="section-title">服务须知</view>
+      <view class="detail-section notice-section">
+        <view class="section-header">
+          <view class="section-title">
+            <view class="title-icon">
+              <uni-icons type="notification-filled" size="18" color="#3ec6c6"></uni-icons>
+            </view>
+            <text>服务须知</text>
+          </view>
+        </view>
         <view class="section-content">
-          <view class="notice-item">
-            <text class="notice-dot">•</text>
-            <text class="notice-text">请提前预约服务时间，我们会尽快安排服务人员</text>
-          </view>
-          <view class="notice-item">
-            <text class="notice-dot">•</text>
-            <text class="notice-text">如需取消或修改预约，请提前联系客服</text>
-          </view>
-          <view class="notice-item">
-            <text class="notice-dot">•</text>
-            <text class="notice-text">服务完成后请及时评价，帮助我们提升服务质量</text>
-          </view>
-          <view class="notice-item" v-if="serviceData.subsidySupport === '1'">
-            <text class="notice-dot">•</text>
-            <text class="notice-text">补贴金额将在订单完成后自动计算并抵扣</text>
+          <view class="notice-list">
+            <view class="notice-item">
+              <view class="notice-icon">
+                <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="notice-text">请提前预约服务时间，我们会尽快安排服务人员</text>
+            </view>
+            <view class="notice-item">
+              <view class="notice-icon">
+                <uni-icons type="phone" size="16" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="notice-text">如需取消或修改预约，请提前联系客服</text>
+            </view>
+            <view class="notice-item">
+              <view class="notice-icon">
+                <uni-icons type="star" size="16" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="notice-text">服务完成后请及时评价，帮助我们提升服务质量</text>
+            </view>
+            <view class="notice-item" v-if="serviceData.subsidySupport === '1'">
+              <view class="notice-icon">
+                <uni-icons type="wallet" size="16" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="notice-text">补贴金额将在订单完成后自动计算并抵扣</text>
+            </view>
           </view>
         </view>
       </view>
@@ -97,7 +134,8 @@
           </text>
         </view>
       </view>
-      <button class="booking-btn" @click="goToBooking">
+      <button class="booking-btn" @click="goToBooking" hover-class="booking-btn-hover">
+        <uni-icons type="calendar" size="18" color="#fff" style="margin-right: 8rpx;"></uni-icons>
         立即预约
       </button>
     </view>
@@ -224,12 +262,10 @@ export default {
 <style lang="scss" scoped>
 .service-detail-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #f5f7fa;
   display: flex;
   flex-direction: column;
 }
-
-
 
 /* 详情内容 */
 .detail-content {
@@ -240,20 +276,35 @@ export default {
 /* 服务图片 */
 .service-banner {
   width: 100%;
-  height: 500rpx;
+  height: 480rpx;
   background: #fff;
+  position: relative;
+  overflow: hidden;
 
   .banner-image {
     width: 100%;
     height: 100%;
+  }
+  
+  .banner-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120rpx;
+    background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
   }
 }
 
 /* 服务基本信息卡片 */
 .service-info-card {
   background: #fff;
-  margin-top: 20rpx;
+  margin: -40rpx 24rpx 0;
   padding: 32rpx;
+  border-radius: 24rpx;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
 
   .service-header {
     display: flex;
@@ -263,9 +314,9 @@ export default {
 
     .service-name {
       flex: 1;
-      font-size: 36rpx;
-      font-weight: 600;
-      color: #333;
+      font-size: 40rpx;
+      font-weight: 700;
+      color: #1a1a1a;
       line-height: 1.4;
       margin-right: 20rpx;
     }
@@ -274,85 +325,134 @@ export default {
       display: flex;
       align-items: baseline;
       flex-shrink: 0;
+      background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+      padding: 12rpx 20rpx;
+      border-radius: 12rpx;
 
       .price-symbol {
         font-size: 28rpx;
-        color: #ff5555;
+        color: #ff4d4f;
         font-weight: bold;
       }
 
       .price-amount {
-        font-size: 44rpx;
-        color: #ff5555;
+        font-size: 48rpx;
+        color: #ff4d4f;
         font-weight: bold;
         margin: 0 4rpx;
+        font-family: 'DIN', sans-serif;
       }
 
       .price-unit {
         font-size: 24rpx;
-        color: #999;
+        color: #ff7875;
       }
     }
   }
 
   .service-tags {
     display: flex;
+    flex-wrap: wrap;
     gap: 16rpx;
     margin-bottom: 24rpx;
 
     .tag-item {
       display: flex;
       align-items: center;
-      gap: 6rpx;
-      padding: 8rpx 16rpx;
-      background: #f8f9fa;
-      border-radius: 8rpx;
+      gap: 8rpx;
+      padding: 10rpx 20rpx;
+      border-radius: 20rpx;
       font-size: 24rpx;
-      color: #666;
+      font-weight: 500;
+      
+      &.subsidy {
+        background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+        color: #389e0d;
+        border: 1rpx solid #b7eb8f;
+      }
+      
+      &.duration {
+        background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+        color: #0958d9;
+        border: 1rpx solid #91caff;
+      }
+      
+      &.quality {
+        background: linear-gradient(135deg, #fffbe6 0%, #fff1b8 100%);
+        color: #d48806;
+        border: 1rpx solid #ffe58f;
+      }
     }
   }
 
   .subsidy-info {
     display: flex;
     align-items: center;
-    gap: 16rpx;
-    padding: 20rpx;
+    gap: 20rpx;
+    padding: 24rpx;
     background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
-    border-radius: 12rpx;
-    border: 1rpx solid #ffd591;
+    border-radius: 16rpx;
+    border: 2rpx solid #ffd591;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: -20rpx;
+      right: -20rpx;
+      width: 100rpx;
+      height: 100rpx;
+      background: rgba(255, 169, 64, 0.1);
+      border-radius: 50%;
+    }
 
     .subsidy-icon {
-      width: 60rpx;
-      height: 60rpx;
-      background: #ffa940;
+      width: 72rpx;
+      height: 72rpx;
+      background: linear-gradient(135deg, #ffa940 0%, #fa8c16 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-
-      .iconfontA {
-        font-size: 32rpx;
-        color: #fff;
-      }
+      box-shadow: 0 4rpx 12rpx rgba(250, 140, 22, 0.3);
     }
 
     .subsidy-text {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 6rpx;
+      gap: 8rpx;
 
       .subsidy-label {
-        font-size: 28rpx;
+        font-size: 30rpx;
         color: #d46b08;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       .subsidy-rate {
-        font-size: 24rpx;
+        font-size: 26rpx;
         color: #ad6800;
+        
+        .highlight {
+          color: #d46b08;
+          font-weight: 700;
+          font-size: 28rpx;
+        }
       }
+    }
+    
+    .subsidy-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: linear-gradient(135deg, #ff7a45 0%, #fa541c 100%);
+      color: #fff;
+      font-size: 22rpx;
+      font-weight: 600;
+      padding: 8rpx 16rpx;
+      border-radius: 0 16rpx 0 16rpx;
     }
   }
 }
@@ -360,16 +460,35 @@ export default {
 /* 详情区块 */
 .detail-section {
   background: #fff;
-  margin-top: 20rpx;
+  margin: 24rpx;
   padding: 32rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
 
-  .section-title {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: #333;
+  .section-header {
     margin-bottom: 24rpx;
-    padding-left: 16rpx;
-    border-left: 6rpx solid #3ec6c6;
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12rpx;
+      
+      .title-icon {
+        width: 40rpx;
+        height: 40rpx;
+        background: rgba(62, 198, 198, 0.1);
+        border-radius: 10rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      text {
+        font-size: 32rpx;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+    }
   }
 
   .section-content {
@@ -380,26 +499,43 @@ export default {
       line-height: 1.8;
       white-space: pre-wrap;
     }
+  }
+  
+  &.notice-section {
+    background: linear-gradient(135deg, #f8fdfd 0%, #f0fafa 100%);
+    border: 2rpx solid rgba(62, 198, 198, 0.1);
+    
+    .notice-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20rpx;
+    }
 
     .notice-item {
       display: flex;
-      margin-bottom: 16rpx;
+      align-items: flex-start;
+      gap: 16rpx;
+      padding: 16rpx 20rpx;
+      background: #fff;
+      border-radius: 12rpx;
+      transition: all 0.3s;
 
-      &:last-child {
-        margin-bottom: 0;
-      }
-
-      .notice-dot {
+      .notice-icon {
+        width: 36rpx;
+        height: 36rpx;
+        background: rgba(62, 198, 198, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
-        width: 32rpx;
-        font-size: 28rpx;
-        color: #3ec6c6;
+        margin-top: 4rpx;
       }
 
       .notice-text {
         flex: 1;
         font-size: 26rpx;
-        color: #666;
+        color: #555;
         line-height: 1.6;
       }
     }
@@ -408,7 +544,7 @@ export default {
 
 /* 底部占位 */
 .bottom-placeholder {
-  height: 40rpx;
+  height: 60rpx;
 }
 
 /* 底部操作栏 */
@@ -421,8 +557,9 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
   background: #fff;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.08);
   z-index: 100;
 
   .price-info {
@@ -442,33 +579,43 @@ export default {
       gap: 12rpx;
 
       .current-price {
-        font-size: 36rpx;
-        color: #ff5555;
+        font-size: 40rpx;
+        color: #ff4d4f;
         font-weight: bold;
+        font-family: 'DIN', sans-serif;
       }
 
       .actual-price {
         font-size: 24rpx;
         color: #52c41a;
+        font-weight: 500;
+        background: #f6ffed;
+        padding: 4rpx 12rpx;
+        border-radius: 8rpx;
       }
     }
   }
 
   .booking-btn {
-    width: 280rpx;
-    height: 80rpx;
-    line-height: 80rpx;
+    min-width: 280rpx;
+    height: 88rpx;
+    line-height: 88rpx;
     background: linear-gradient(135deg, #3ec6c6 0%, #2ab5b5 100%);
     color: #fff;
     font-size: 32rpx;
     font-weight: 600;
-    border-radius: 40rpx;
+    border-radius: 44rpx;
     border: none;
-    box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
-
-    &:active {
-      opacity: 0.9;
-    }
+    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+  
+  .booking-btn-hover {
+    transform: scale(0.96);
+    box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.4);
   }
 }
 </style>

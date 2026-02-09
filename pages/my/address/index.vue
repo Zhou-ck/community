@@ -1,7 +1,14 @@
 <template>
 	<view class="address-container">
 		<!-- 地址列表 -->
-		<scroll-view class="address-list" scroll-y :style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }">
+		<scroll-view 
+			class="address-list" 
+			scroll-y 
+			:style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }"
+			refresher-enabled
+			:refresher-triggered="isRefreshing"
+			@refresherrefresh="onRefresh"
+		>
 			<view v-if="addressList.length === 0" class="empty-address">
 				<image src="/static/images/empty-address.png" mode="aspectFit" class="empty-img" v-if="false"></image>
 				<view class="empty-icon-box">
@@ -152,6 +159,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				isEdit: false,
 				showPopup: false, // 控制弹窗显示
 				loading: false, // 加载状态
+				isRefreshing: false, // 下拉刷新状态
 				systemInfo: {}, // 系统信息
 				safeAreaBottom: 0, // 底部安全区域高度
 				addressForm: {
@@ -298,7 +306,14 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 					})
 				} finally {
 					this.loading = false
+					this.isRefreshing = false
 				}
+			},
+			
+			// 下拉刷新
+			async onRefresh() {
+				this.isRefreshing = true
+				await this.loadAddressList()
 			},
 			
 			// 通过索引选择地址

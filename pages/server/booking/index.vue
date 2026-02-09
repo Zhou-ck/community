@@ -3,26 +3,40 @@
     <!-- 服务信息卡片 -->
     <view class="service-info-card">
       <view class="service-header">
-        <image v-if="bookingData.icon" :src="getImageUrl(bookingData.icon)" class="service-icon" mode="aspectFill"></image>
+        <view class="icon-wrapper">
+          <image v-if="bookingData.icon" :src="getImageUrl(bookingData.icon)" class="service-icon" mode="aspectFill"></image>
+          <view v-else class="icon-placeholder">
+            <uni-icons type="shop" size="40" color="#3ec6c6"></uni-icons>
+          </view>
+        </view>
         <view class="service-title-area">
           <text class="service-name">{{ bookingData.serviceName || '服务名称' }}</text>
-          <text class="service-duration" v-if="bookingData.serviceDuration">时长: {{ bookingData.serviceDuration }}分钟</text>
+          <view class="service-tags">
+            <view class="duration-tag" v-if="bookingData.serviceDuration">
+              <uni-icons type="clock" size="14" color="#3ec6c6"></uni-icons>
+              <text>{{ bookingData.serviceDuration }}分钟</text>
+            </view>
+          </view>
         </view>
       </view>
       
       <!-- 价格信息 -->
       <view class="price-info">
-        <view class="price-row">
-          <text class="label">服务价格</text>
-          <text class="price">¥{{ bookingData.price || 0 }}</text>
+        <view class="price-item">
+          <text class="price-label">服务价格</text>
+          <text class="price-value-text">¥{{ bookingData.price || 0 }}</text>
         </view>
-        <view class="price-row subsidy" v-if="bookingData.useSubsidy === '1' && bookingData.subsidyAmount > 0">
-          <text class="label">补贴金额</text>
-          <text class="subsidy-amount">-¥{{ bookingData.subsidyAmount || 0 }}</text>
+        <view class="price-item discount" v-if="bookingData.useSubsidy === '1' && bookingData.subsidyAmount > 0">
+          <text class="price-label">补贴金额</text>
+          <text class="discount-value">-¥{{ bookingData.subsidyAmount || 0 }}</text>
         </view>
-        <view class="price-row total">
-          <text class="label">实付金额</text>
-          <text class="actual-price">¥{{ bookingData.actualAmount || 0 }}</text>
+        <view class="price-divider"></view>
+        <view class="price-item total">
+          <text class="price-label">实付金额</text>
+          <view class="total-price">
+            <text class="currency-sign">¥</text>
+            <text class="total-value">{{ bookingData.actualAmount || 0 }}</text>
+          </view>
         </view>
       </view>
     </view>
@@ -52,7 +66,7 @@
       
       <!-- 新增人员按钮 -->
       <view class="add-member-btn" @click="addNewMember">
-        <uni-icons type="person-filled" size="18" color="#1890ff"></uni-icons>
+        <uni-icons type="person-filled" size="18" color="#3ec6c6"></uni-icons>
         <text class="add-member-text">新增人员</text>
       </view>
       
@@ -70,7 +84,7 @@
       
       <!-- 新增地址按钮 -->
       <view class="add-address-btn" @click="addNewAddress">
-        <uni-icons type="plus-filled" size="20" color="#1890ff"></uni-icons>
+        <uni-icons type="plus-filled" size="20" color="#3ec6c6"></uni-icons>
         <text class="add-address-text">新增地址</text>
       </view>
       
@@ -119,11 +133,11 @@
         <view class="form-label">使用补贴</view>
         <radio-group @change="toggleSubsidy" class="radio-group">
           <label class="radio-label">
-            <radio value="1" :checked="bookingData.useSubsidy === '1'" color="#1890ff" />
+            <radio value="1" :checked="bookingData.useSubsidy === '1'" color="#3ec6c6" />
             <text class="radio-text">使用</text>
           </label>
           <label class="radio-label">
-            <radio value="0" :checked="bookingData.useSubsidy === '0'" color="#1890ff" />
+            <radio value="0" :checked="bookingData.useSubsidy === '0'" color="#3ec6c6" />
             <text class="radio-text">不使用</text>
           </label>
         </radio-group>
@@ -144,13 +158,17 @@
     <!-- 底部提交按钮 -->
     <view class="bottom-bar">
       <view class="price-summary">
-        <view class="price-row-bottom">
+        <view class="price-main">
           <text class="summary-label">实付金额</text>
-          <text class="summary-price">¥{{ bookingData.actualAmount || 0 }}</text>
+          <view class="price-value">
+            <text class="currency">¥</text>
+            <text class="summary-price">{{ bookingData.actualAmount || 0 }}</text>
+          </view>
         </view>
-        <text class="subsidy-tip used" v-if="bookingData.useSubsidy === '1' && bookingData.subsidyAmount > 0">
-          已补贴 ¥{{ bookingData.subsidyAmount }}
-        </text>
+        <view class="subsidy-info" v-if="bookingData.useSubsidy === '1' && bookingData.subsidyAmount > 0">
+          <view class="subsidy-tag">优惠</view>
+          <text class="subsidy-text">已补贴 ¥{{ bookingData.subsidyAmount }}</text>
+        </view>
         <text class="subsidy-tip unused" v-else-if="canUseSubsidy && bookingData.useSubsidy === '0'">
           未使用补贴
         </text>
@@ -814,124 +832,184 @@ export default {
 <style lang="scss" scoped>
 .booking-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
-  padding-bottom: 140rpx;
+  background: #f5f7fa;
+  padding-bottom: 160rpx;
 }
 
 /* 服务信息卡片 */
 .service-info-card {
-  background-color: #fff;
-  margin: 20rpx;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  background: #fff;
+  margin: 24rpx;
+  border-radius: 20rpx;
+  padding: 0;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .service-header {
   display: flex;
   align-items: center;
-  margin-bottom: 30rpx;
+  padding: 32rpx;
+  background: linear-gradient(135deg, #f0fafa 0%, #e8f8f8 100%);
+  border-bottom: 1rpx solid #e8f5f5;
+}
+
+.icon-wrapper {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 16rpx;
+  margin-right: 24rpx;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.15);
 }
 
 .service-icon {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 12rpx;
-  margin-right: 20rpx;
-  background-color: #f5f5f5;
+  width: 100%;
+  height: 100%;
+}
+
+.icon-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0fafa;
 }
 
 .service-title-area {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 12rpx;
 }
 
 .service-name {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 10rpx;
 }
 
-.service-duration {
-  font-size: 24rpx;
-  color: #999;
-}
-
-/* 价格信息 */
-.price-info {
-  background-color: #f8f9fa;
-  border-radius: 12rpx;
-  padding: 24rpx;
-}
-
-.price-row {
+.service-tags {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16rpx;
+  gap: 16rpx;
+}
+
+.duration-tag {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  background: rgba(62, 198, 198, 0.1);
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
   
-  &:last-child {
-    margin-bottom: 0;
-  }
-  
-  .label {
-    font-size: 28rpx;
-    color: #666;
-  }
-  
-  .price {
-    font-size: 28rpx;
-    color: #333;
+  text {
+    font-size: 24rpx;
+    color: #3ec6c6;
     font-weight: 500;
   }
 }
 
-.price-row.subsidy {
-  .subsidy-amount {
+/* 价格信息 */
+.price-info {
+  padding: 28rpx 32rpx;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.price-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.price-value-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.price-item.discount {
+  .discount-value {
     font-size: 28rpx;
     color: #52c41a;
     font-weight: 500;
   }
 }
 
-.price-row.total {
-  border-top: 1rpx solid #e8e8e8;
-  padding-top: 16rpx;
-  margin-top: 8rpx;
-  
-  .label {
+.price-divider {
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, #e8e8e8, transparent);
+  margin: 20rpx 0;
+}
+
+.price-item.total {
+  .price-label {
     font-size: 30rpx;
     color: #333;
     font-weight: 600;
   }
   
-  .actual-price {
-    font-size: 36rpx;
+  .total-price {
+    display: flex;
+    align-items: baseline;
+  }
+  
+  .currency-sign {
+    font-size: 28rpx;
     color: #ff4d4f;
     font-weight: 600;
+  }
+  
+  .total-value {
+    font-size: 40rpx;
+    color: #ff4d4f;
+    font-weight: 700;
   }
 }
 
 /* 表单区域 */
 .form-section {
-  background-color: #fff;
-  margin: 20rpx;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  background: #fff;
+  margin: 24rpx;
+  border-radius: 20rpx;
+  padding: 36rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
   font-size: 32rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 30rpx;
+  margin-bottom: 32rpx;
+  position: relative;
+  padding-left: 20rpx;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6rpx;
+    height: 28rpx;
+    background: #3ec6c6;
+    border-radius: 3rpx;
+  }
 }
 
 .form-item {
-  margin-bottom: 30rpx;
+  margin-bottom: 32rpx;
   
   &:last-child {
     margin-bottom: 0;
@@ -943,6 +1021,7 @@ export default {
   color: #333;
   margin-bottom: 16rpx;
   display: block;
+  font-weight: 500;
   
   &.required::before {
     content: '*';
@@ -952,12 +1031,12 @@ export default {
 }
 
 .form-input {
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
-  padding: 20rpx;
+  background: #f8f9fc;
+  border-radius: 10rpx;
+  padding: 22rpx;
   font-size: 28rpx;
   color: #333;
-  border: 1rpx solid #e8e8e8;
+  border: 1rpx solid #eee;
   width: 100%;
   box-sizing: border-box;
   height: auto;
@@ -968,78 +1047,30 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
-  padding: 20rpx;
+  background: #f8f9fc;
+  border-radius: 10rpx;
+  padding: 22rpx;
   font-size: 28rpx;
   color: #333;
-  border: 1rpx solid #e8e8e8;
-  min-height: 80rpx;
+  border: 1rpx solid #eee;
+  min-height: 84rpx;
   
   .placeholder {
-    color: #999;
+    color: #bbb;
   }
 }
 
 .form-textarea {
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
-  padding: 20rpx;
+  background: #f8f9fc;
+  border-radius: 10rpx;
+  padding: 22rpx;
   font-size: 28rpx;
   color: #333;
   min-height: 120rpx;
-  border: 1rpx solid #e8e8e8;
+  border: 1rpx solid #eee;
   width: 100%;
   box-sizing: border-box;
   line-height: 1.5;
-}
-
-/* 地址选择器 */
-.address-selector {
-  display: flex;
-  align-items: center;
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
-  padding: 20rpx;
-  border: 1rpx solid #e8e8e8;
-  min-height: 80rpx;
-  cursor: pointer;
-  
-  .address-text {
-    flex: 1;
-    font-size: 28rpx;
-    color: #333;
-    line-height: 1.5;
-    
-    &.placeholder {
-      color: #999;
-    }
-  }
-}
-
-/* 新增地址按钮 */
-.add-address-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10rpx;
-  padding: 24rpx;
-  margin: 20rpx 0;
-  background-color: #f0f9ff;
-  border: 1rpx dashed #1890ff;
-  border-radius: 8rpx;
-  cursor: pointer;
-  transition: all 0.3s;
-  
-  &:active {
-    background-color: #e6f7ff;
-  }
-  
-  .add-address-text {
-    font-size: 28rpx;
-    color: #1890ff;
-    font-weight: 500;
-  }
 }
 
 /* 单选框组 */
@@ -1055,7 +1086,7 @@ export default {
   gap: 8rpx;
   
   radio {
-    transform: scale(0.8);
+    transform: scale(0.85);
   }
   
   .radio-text {
@@ -1064,27 +1095,49 @@ export default {
   }
 }
 
-/* 新增家庭成员按钮 */
-.add-member-btn {
+/* 地址选择器 */
+.address-selector {
+  display: flex;
+  align-items: center;
+  background: #f8f9fc;
+  border-radius: 10rpx;
+  padding: 22rpx;
+  border: 1rpx solid #eee;
+  min-height: 84rpx;
+  
+  .address-text {
+    flex: 1;
+    font-size: 28rpx;
+    color: #333;
+    line-height: 1.5;
+    
+    &.placeholder {
+      color: #bbb;
+    }
+  }
+}
+
+/* 新增按钮样式 */
+.add-member-btn,
+.add-address-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10rpx;
   padding: 24rpx;
   margin: 20rpx 0;
-  background-color: #f0f9ff;
-  border: 1rpx dashed #1890ff;
-  border-radius: 8rpx;
-  cursor: pointer;
-  transition: all 0.3s;
+  background: #f0f9f9;
+  border: 1rpx dashed #3ec6c6;
+  border-radius: 10rpx;
   
   &:active {
-    background-color: #e6f7ff;
+    background: #e6f7f7;
   }
   
-  .add-member-text {
+  .add-member-text,
+  .add-address-text {
     font-size: 28rpx;
-    color: #1890ff;
+    color: #3ec6c6;
     font-weight: 500;
   }
 }
@@ -1096,8 +1149,8 @@ export default {
   justify-content: center;
   gap: 8rpx;
   padding: 40rpx 20rpx;
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
+  background: #f8f9fc;
+  border-radius: 10rpx;
   margin-top: 16rpx;
   
   .tip-text {
@@ -1116,27 +1169,25 @@ export default {
 
 .time-slot {
   flex: 0 0 calc(50% - 8rpx);
-  background-color: #f8f9fa;
-  border: 1rpx solid #e8e8e8;
-  border-radius: 8rpx;
+  background: #f8f9fc;
+  border: 1rpx solid #eee;
+  border-radius: 10rpx;
   padding: 20rpx;
   text-align: center;
   font-size: 26rpx;
   color: #666;
-  transition: all 0.3s;
   
   &.active {
-    background-color: #e6f7ff;
-    border-color: #1890ff;
-    color: #1890ff;
+    background: #e6f7f7;
+    border-color: #3ec6c6;
+    color: #3ec6c6;
     font-weight: 500;
   }
   
   &.disabled {
-    background-color: #f5f5f5;
+    background: #f5f5f5;
     border-color: #e0e0e0;
     color: #bbb;
-    cursor: not-allowed;
     opacity: 0.6;
   }
 }
@@ -1147,49 +1198,74 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #fff;
-  padding: 20rpx 30rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  border-top: 1rpx solid #e8e8e8;
+  background: #fff;
+  padding: 24rpx 30rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
 }
 
 .price-summary {
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 8rpx;
 }
 
-.price-row-bottom {
+.price-main {
   display: flex;
   align-items: baseline;
-  gap: 10rpx;
+  gap: 8rpx;
 }
 
 .summary-label {
   font-size: 26rpx;
-  color: #999;
-  white-space: nowrap;
+  color: #666;
+}
+
+.price-value {
+  display: flex;
+  align-items: baseline;
+}
+
+.currency {
+  font-size: 28rpx;
+  color: #ff4d4f;
+  font-weight: 600;
 }
 
 .summary-price {
-  font-size: 40rpx;
+  font-size: 44rpx;
   color: #ff4d4f;
   font-weight: 700;
   line-height: 1;
 }
 
+.subsidy-info {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.subsidy-tag {
+  font-size: 20rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+  font-weight: 500;
+}
+
+.subsidy-text {
+  font-size: 24rpx;
+  color: #52c41a;
+  font-weight: 500;
+}
+
 .subsidy-tip {
   font-size: 24rpx;
-  font-weight: 400;
   line-height: 1;
-  
-  &.used {
-    color: #52c41a;
-  }
   
   &.unused {
     color: #999;
@@ -1198,21 +1274,25 @@ export default {
 
 .submit-btn {
   flex: 1;
-  margin-left: 30rpx;
-  background-color: #1890ff;
+  max-width: 400rpx;
+  margin-left: 50rpx;
+  background: linear-gradient(135deg, #3ec6c6 0%, #2bb5b5 100%);
   color: #fff;
-  border-radius: 50rpx;
-  padding: 24rpx 60rpx;
-  font-size: 30rpx;
-  font-weight: 500;
+  border-radius: 48rpx;
+  padding: 15rpx 0;
+  font-size: 36rpx;
+  font-weight: 600;
   border: none;
+  box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.35);
   
   &:active {
-    background-color: #096dd9;
+    background: linear-gradient(135deg, #35b3b3 0%, #26a3a3 100%);
+    transform: scale(0.98);
   }
   
   &[disabled] {
-    background-color: #d9d9d9;
+    background: #d9d9d9;
+    box-shadow: none;
   }
 }
 </style>

@@ -5,7 +5,7 @@ const loginPage = "/pages/login"
   
 // 页面白名单
 const whiteList = [
-  '/pages/login', '/pages/register', '/pages/forget', '/pages/common/webview/index',
+  '/pages/login', '/pages/register', '/pages/forget',
   '/pages/common/privacy/index', '/pages/common/protocol/index'
 ]
 

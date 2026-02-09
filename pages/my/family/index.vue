@@ -7,7 +7,14 @@
 		</view>
 
 		<!-- 成员列表 -->
-		<scroll-view class="member-list" scroll-y :style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }">
+		<scroll-view 
+			class="member-list" 
+			scroll-y 
+			:style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }"
+			refresher-enabled
+			:refresher-triggered="isRefreshing"
+			@refresherrefresh="onRefresh"
+		>
 			<view v-if="memberList.length === 0" class="empty-state">
 				<view class="empty-icon-box">
 					<uni-icons type="staff-filled" size="60" color="#e0e0e0"></uni-icons>
@@ -224,6 +231,7 @@ export default {
 			deviceId: '', // 设备ID，从路由参数获取
 			boundMembers: [], // 已绑定的成员列表
 			selectedMembers: [], // 选中要绑定的成员列表
+			isRefreshing: false, // 下拉刷新状态
 			safeAreaBottom: 0, // 底部安全区域
 			formData: {
 				memberId: null,
@@ -286,7 +294,15 @@ export default {
 					title: '加载失败',
 					icon: 'none'
 				})
+			} finally {
+				this.isRefreshing = false
 			}
+		},
+
+		// 下拉刷新
+		async onRefresh() {
+			this.isRefreshing = true
+			await this.loadMembers()
 		},
 
 		// 添加成员

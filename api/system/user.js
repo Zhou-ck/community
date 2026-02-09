@@ -1,16 +1,36 @@
 import upload from '@/utils/upload'
 import request from '@/utils/request'
 
-// 用户密码重置
-export function updateUserPwd(oldPassword, newPassword) {
-  const data = {
-    oldPassword,
-    newPassword
-  }
+// 发送忘记密码验证码
+export function sendForgetCode(userName, phonenumber) {
   return request({
-    url: '/system/user/profile/updatePwd',
-    method: 'put',
+    url: '/forget/sendCode',
+    headers: {
+      isToken: false
+    },
+    method: 'post',
+    data: { userName, phonenumber }
+  })
+}
+
+// 重置密码
+export function resetPassword(data) {
+  return request({
+    url: '/forget/resetPassword',
+    headers: {
+      isToken: false
+    },
+    method: 'post',
     data: data
+  })
+}
+
+// 注销账号
+export function cancelAccount(password) {
+  return request({
+    url: '/system/user/profile/cancel',
+    method: 'delete',
+    data: { password }
   })
 }
 

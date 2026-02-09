@@ -159,6 +159,17 @@
         </view>
       </view>
 
+      <!-- 计划管理 -->
+      <view class="function-card" @click="handlePlanManagementClick" v-if="showPlanManagement">
+        <view class="card-content">
+          <text class="card-title">查看计划</text>
+          <text class="card-subtitle">查看设备运行计划</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+
       <!-- 内容设置 -->
       <view class="function-card" @click="handleContentSettingClick" v-if="showContentSetting">
         <view class="card-content">
@@ -432,6 +443,13 @@ export default {
     },
     // 是否显示内容设置模块（仅呼吸睡眠-L2设备）
     showContentSetting() {
+      if (!this.deviceInfo) return false
+      // 4: 呼吸睡眠-L2 (第二代睡眠雷达)
+      const type = String(this.deviceInfo.deviceType)
+      return type === '4'
+    },
+    // 是否显示计划管理模块（仅呼吸睡眠-L2设备）
+    showPlanManagement() {
       if (!this.deviceInfo) return false
       // 4: 呼吸睡眠-L2 (第二代睡眠雷达)
       const type = String(this.deviceInfo.deviceType)
@@ -809,6 +827,15 @@ export default {
       
       uni.navigateTo({
         url: `/pages/my/content/index?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}`
+      })
+    },
+    
+    // 处理计划管理点击事件
+    handlePlanManagementClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/plan/detail?productKey=${this.deviceInfo.productKey}&device=${this.deviceInfo.deviceKey}&deviceId=${this.deviceId}`
       })
     },
     

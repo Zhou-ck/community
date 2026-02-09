@@ -126,3 +126,12 @@ export function cancelOneCommandLwm2mProfile(data) {
     params: data
   })
 }
+
+// 查询iwown设备 参数:imei
+export function getIwownDeviceByImei(imei) {
+  return request({
+    url: '/iwown/device/queryone',
+    method: 'get',
+    params: { imei }
+  })
+}

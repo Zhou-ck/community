@@ -1,7 +1,16 @@
 <template>
 	<view class="receiver-container">
 		<!-- 列表区域 -->
-		<scroll-view class="receiver-list" scroll-y :style="{ height: 'calc(100vh - ' + (140 + safeAreaBottom) + 'rpx)' }">
+		<scroll-view 
+			class="receiver-list" 
+			scroll-y 
+			:style="{ height: 'calc(100vh - ' + (140 + safeAreaBottom) + 'rpx)' }"
+			refresher-enabled
+			:refresher-triggered="isRefreshing"
+			@refresherrefresh="onRefresh"
+			@scrolltolower="onLoadMore"
+		>
+
 			<view class="tip-bar" v-if="deviceId">
 				<uni-icons type="info" size="14" color="#3ec6c6"></uni-icons>
 				<text>请选择要绑定到设备的接警人</text>
@@ -86,6 +95,13 @@
 						<text class="value">{{ item.remark }}</text>
 					</view>
 				</view>
+			</view>
+			
+			<!-- 加载更多提示 -->
+			<view v-if="receiverList.length > 0" class="load-more-tip">
+				<text v-if="loadingMore">加载中...</text>
+				<text v-else-if="!hasMore">没有更多了</text>
+				<text v-else>上拉加载更多</text>
 			</view>
 			
 			<!-- 底部占位 -->
@@ -199,6 +215,13 @@
 				isEdit: false,
 				submitting: false,
 				safeAreaBottom: 0,
+				// 分页相关
+				pageNum: 1,
+				pageSize: 10,
+				totalCount: 0,
+				hasMore: true,
+				loadingMore: false,
+				isRefreshing: false,
 				// 已绑定到当前设备的接警人
 				boundReceivers: [],
 				// 当前选中准备绑定的接警人
@@ -233,9 +256,11 @@
 				}
 			}
 		},
-		onLoad(options) {
+		created() {
+			// 在created钩子中初始化，确保在渲染前就有值
 			this.getSystemInfo()
-			
+		},
+		onLoad(options) {
 			if (options && options.deviceId) {
 				this.deviceId = options.deviceId
 			}
@@ -245,7 +270,7 @@
 			if (options && options.productKey) {
 				this.productKey = decodeURIComponent(options.productKey)
 			}
-			this.loadReceivers()
+			this.loadReceivers(true)
 		},
 		methods: {
 			getSystemInfo() {
@@ -257,13 +282,32 @@
 				}
 			},
 			
-			async loadReceivers() {
+			async loadReceivers(isInit = false) {
+				if (isInit) {
+					this.pageNum = 1
+					this.receiverList = []
+					this.hasMore = true
+				}
+				
 				try {
-					const res = await listAlarmreceiver()
+					const res = await listAlarmreceiver({
+						pageNum: this.pageNum,
+						pageSize: this.pageSize
+					})
 					if (res.code === 200) {
-						this.receiverList = res.rows || []
+						const rows = res.rows || []
+						
+						if (isInit) {
+							this.receiverList = rows
+						} else {
+							this.receiverList = [...this.receiverList, ...rows]
+						}
+						
+						this.totalCount = res.total || 0
+						this.hasMore = this.receiverList.length < this.totalCount
+						
 						// 如果有设备ID，加载绑定状态
-						if (this.deviceId) {
+						if (this.deviceId && isInit) {
 							this.loadBoundReceivers()
 						}
 					} else {
@@ -277,7 +321,25 @@
 						title: '网络错误',
 						icon: 'none'
 					})
+				} finally {
+					this.loadingMore = false
+					this.isRefreshing = false
 				}
+			},
+			
+			// 下拉刷新
+			async onRefresh() {
+				this.isRefreshing = true
+				await this.loadReceivers(true)
+			},
+			
+			// 上拉加载更多
+			async onLoadMore() {
+				if (this.loadingMore || !this.hasMore) return
+				
+				this.loadingMore = true
+				this.pageNum++
+				await this.loadReceivers(false)
 			},
 			// 加载已绑定的接警人列表
 			async loadBoundReceivers() {
@@ -448,7 +510,7 @@
 							icon: 'success'
 						})
 						this.showModal = false
-						this.loadReceivers()
+						this.loadReceivers(true)
 					} else {
 						uni.showToast({
 							title: res.msg || '保存失败',
@@ -481,7 +543,7 @@
 										title: '已删除',
 										icon: 'success'
 									})
-									this.loadReceivers()
+									this.loadReceivers(true)
 								} else {
 									uni.showToast({
 										title: res.msg || '删除失败',
@@ -654,7 +716,16 @@
 	/* 列表样式 */
 	.receiver-list {
 		padding: 24rpx;
+		padding-top: 32rpx;
 		box-sizing: border-box;
+	}
+	
+	/* 加载更多提示 */
+	.load-more-tip {
+		text-align: center;
+		padding: 30rpx 0;
+		font-size: 26rpx;
+		color: #ccc;
 	}
 	
 	.tip-bar {

@@ -116,6 +116,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { listNotice } from '@/api/notice.js'
 
 export default {
   data() {
@@ -130,26 +131,7 @@ export default {
           image: 'https://www.aigather.katlot.cn/sourcePic/photo/4.png',
         }
       ],
-      noticeList: [
-        {
-          id: 1,
-          title: '社区养老服务中心新增康复理疗项目，欢迎咨询预约',
-          content: '详细内容...',
-          time: '2024-10-31'
-        },
-        {
-          id: 2,
-          title: '本周六将举办老年人健康知识讲座，免费参加',
-          content: '详细内容...',
-          time: '2024-10-30'
-        },
-        {
-          id: 3,
-          title: '社区食堂推出营养配餐服务，为老年人提供健康饮食',
-          content: '详细内容...',
-          time: '2024-10-29'
-        }
-      ],
+      noticeList: [],
       serviceList: [
         {
           id: 1,
@@ -178,7 +160,7 @@ export default {
         },
         {
           id: 4,
-          name: '助浴服务',
+          name: '护理服务',
           icon: 'icon-icon-test',
           bgColor: '#FFF3E0',
           iconColor: '#FF9800',
@@ -229,7 +211,7 @@ export default {
         },
         {
           id: 2,
-          name: '助浴服务',
+          name: '护理服务',
           image: 'https://www.aigather.katlot.cn/sourcePic/photo/7.jpg',
           count: '86人预约'
         },
@@ -258,6 +240,8 @@ export default {
   onLoad() {
     // 获取定位信息
     this.getLocation()
+    // 获取公告列表
+    this.getNoticeList()
   },
   onShow() {
     // 页面显示时更新社区信息（从Vuex状态获取）
@@ -297,12 +281,27 @@ export default {
     
     // 点击公告
     handleNoticeClick(notice) {
-      console.log('点击公告:', notice)
-      uni.showModal({
-        title: '公告详情',
-        content: notice.title,
-        showCancel: false
+      uni.navigateTo({
+        url: `/pages/server/notice/detail?item=${encodeURIComponent(JSON.stringify(notice))}`
       })
+    },
+    
+    // 获取公告列表
+    async getNoticeList() {
+      try {
+        const res = await listNotice({ pageNum: 1, pageSize: 5 })
+        if (res.code === 200 && res.rows) {
+          this.noticeList = res.rows.map(item => ({
+            id: item.noticeId,
+            title: item.noticeTitle,
+            content: item.noticeContent,
+            time: item.createTime,
+            important: item.noticeType === '1'
+          }))
+        }
+      } catch (e) {
+        console.error('获取公告列表失败:', e)
+      }
     },
     
     // 查看更多公告
@@ -345,7 +344,7 @@ export default {
           '助洁服务': '助洁服务',
           '助行服务': '助行服务', 
           '助医服务': '助医服务',
-          '助浴服务': '助浴服务',
+          '护理服务': '助浴服务',
           '助餐服务': '助餐服务',
           '紧急求助': '助急服务'
         };
@@ -411,7 +410,7 @@ export default {
       // 服务名称与分类的映射关系
       const serviceTypeMap = {
         '助洁服务': '助洁服务',
-        '助浴服务': '助浴服务',
+        '护理服务': '助浴服务',
         '助餐服务': '助餐服务'
       }
       

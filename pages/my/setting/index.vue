@@ -1,5 +1,47 @@
 <template>
   <view class="page-container">
+    <!-- 自定义确认弹窗 -->
+    <view class="modal-mask" v-if="showConfirmModal" @click="closeConfirmModal">
+      <view class="modal-container" @click.stop>
+        <view class="modal-header">
+          <text class="modal-title">注销账号</text>
+        </view>
+        <view class="modal-body confirm-body">
+          <text class="confirm-text">确定要注销账号吗？</text>
+          <text class="confirm-warning">注销后账号将无法恢复，所有数据将被清除！</text>
+        </view>
+        <view class="modal-footer">
+          <view class="modal-btn cancel-btn" @click="closeConfirmModal">取消</view>
+          <view class="modal-btn confirm-btn danger-btn" @click="confirmCancelAction">确定</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 自定义密码输入弹窗 -->
+    <view class="modal-mask" v-if="showPasswordModal" @click="closePasswordModal">
+      <view class="modal-container" @click.stop>
+        <view class="modal-header">
+          <text class="modal-title">身份验证</text>
+          <text class="modal-subtitle">请输入登录密码以确认注销</text>
+        </view>
+        <view class="modal-body">
+          <view class="input-wrapper">
+            <input 
+              class="password-input" 
+              type="password" 
+              v-model="inputPassword" 
+              placeholder="请输入密码"
+              placeholder-class="input-placeholder"
+            />
+          </view>
+        </view>
+        <view class="modal-footer">
+          <view class="modal-btn cancel-btn" @click="closePasswordModal">取消</view>
+          <view class="modal-btn confirm-btn" @click="submitPassword">确定</view>
+        </view>
+      </view>
+    </view>
+
     <!-- 内容区域 -->
     <view class="content-section">
       <!-- 设置卡片列表 -->
@@ -18,20 +60,6 @@
           </view>
         </view>
 
-        <!-- 检查更新 -->
-        <view class="setting-card clickable-card" @click="handleToUpgrade">
-          <view class="card-icon update-icon">
-            <uni-icons type="refresh-filled" size="24" color="#fff"></uni-icons>
-          </view>
-          <view class="card-content">
-            <text class="card-label">应用管理</text>
-            <text class="card-value">检查更新</text>
-          </view>
-          <view class="card-arrow">
-            <uni-icons type="arrowright" size="16" color="#ccc"></uni-icons>
-          </view>
-        </view>
-
         <!-- 清理缓存 -->
         <view class="setting-card clickable-card" @click="handleCleanTmp">
           <view class="card-icon clean-icon">
@@ -40,6 +68,20 @@
           <view class="card-content">
             <text class="card-label">存储管理</text>
             <text class="card-value">清理缓存</text>
+          </view>
+          <view class="card-arrow">
+            <uni-icons type="arrowright" size="16" color="#ccc"></uni-icons>
+          </view>
+        </view>
+
+        <!-- 注销账号 -->
+        <view class="setting-card clickable-card" @click="handleCancelAccount">
+          <view class="card-icon cancel-icon">
+            <uni-icons type="minus-filled" size="24" color="#fff"></uni-icons>
+          </view>
+          <view class="card-content">
+            <text class="card-label">账号管理</text>
+            <text class="card-value">注销账号</text>
           </view>
           <view class="card-arrow">
             <uni-icons type="arrowright" size="16" color="#ccc"></uni-icons>
@@ -60,16 +102,19 @@
 </template>
 
 <script>
+  import { cancelAccount } from '@/api/system/user'
+  
   export default {
     data() {
-      return {}
+      return {
+        showConfirmModal: false,
+        showPasswordModal: false,
+        inputPassword: ''
+      }
     },
     methods: {
       handleToPwd() {
         this.$tab.navigateTo('/pages/my/pwd/index')
-      },
-      handleToUpgrade() {
-        this.$modal.showToast('模块建设中~')
       },
       handleCleanTmp() {
         this.$modal.confirm('确定要清理缓存吗？\n将保留登录信息，清理其他临时数据').then(() => {
@@ -137,6 +182,60 @@
           this.$store.dispatch('LogOut').then(() => {}).finally(()=>{
             this.$tab.reLaunch('/pages/index')
           })
+        })
+      },
+      
+      // 注销账号
+      handleCancelAccount() {
+        this.showConfirmModal = true
+      },
+      
+      // 关闭确认弹窗
+      closeConfirmModal() {
+        this.showConfirmModal = false
+      },
+      
+      // 确认注销操作
+      confirmCancelAction() {
+        this.showConfirmModal = false
+        this.showPasswordInput()
+      },
+      
+      // 显示密码输入框
+      showPasswordInput() {
+        this.inputPassword = ''
+        this.showPasswordModal = true
+      },
+      
+      // 关闭密码弹窗
+      closePasswordModal() {
+        this.showPasswordModal = false
+        this.inputPassword = ''
+      },
+      
+      // 提交密码
+      submitPassword() {
+        if (!this.inputPassword) {
+          this.$modal.msgError('请输入密码')
+          return
+        }
+        const password = this.inputPassword
+        this.closePasswordModal()
+        this.confirmCancelAccount(password)
+      },
+      
+      // 确认注销账号
+      confirmCancelAccount(password) {
+        this.$modal.loading('正在注销账号...')
+        cancelAccount(password).then(() => {
+          this.$modal.closeLoading()
+          this.$modal.msgSuccess('账号已注销')
+          // 清除所有缓存并跳转到登录页
+          uni.clearStorageSync()
+          this.$tab.reLaunch('/pages/login')
+        }).catch((err) => {
+          this.$modal.closeLoading()
+          this.$modal.msgError(err.msg || '注销失败，请检查密码是否正确')
         })
       }
     }
@@ -254,11 +353,166 @@ page {
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
 }
 
-.update-icon {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
 .clean-icon {
   background: linear-gradient(135deg, #A8E6CF 0%, #88D8A3 100%);
+}
+
+.cancel-icon {
+  background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%);
+}
+
+/* 自定义弹窗样式 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-container {
+  width: 600rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  padding: 40rpx 30rpx 30rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20rpx;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.modal-subtitle {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.modal-body {
+  padding: 20rpx 40rpx 40rpx;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f5f6f7;
+  border-radius: 16rpx;
+  padding: 24rpx 30rpx;
+  border: 2rpx solid #eee;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within {
+  border-color: #ffa502;
+  background: #fff;
+}
+
+.password-input {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.input-placeholder {
+  color: #ccc;
+}
+
+.modal-footer {
+  display: flex;
+  border-top: 1rpx solid #eee;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  transition: all 0.3s ease;
+}
+
+.modal-btn:active {
+  background: #f5f5f5;
+}
+
+.cancel-btn {
+  color: #666;
+  border-right: 1rpx solid #eee;
+}
+
+.confirm-btn {
+  color: #ffa502;
+  font-weight: 500;
+}
+
+.danger-btn {
+  color: #ff4757;
+}
+
+.warning-icon {
+  background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%);
+}
+
+.confirm-body {
+  text-align: center;
+}
+
+.confirm-text {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.confirm-warning {
+  display: block;
+  font-size: 30rpx;
+  color: #ff4757;
+  line-height: 1.5;
+}
+
+.warning-icon {
+  background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%);
+}
+
+.danger-btn {
+  color: #ff4757;
 }
 </style>

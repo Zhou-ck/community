@@ -256,15 +256,7 @@
         register(this.registerForm).then(res => {
           this.$modal.closeLoading()
           
-          // 注册成功后保存用户名和密码到缓存，以便登录页面显示
-          try {
-            uni.setStorageSync('user_username', this.registerForm.username)
-            uni.setStorageSync('user_password_cache', this.registerForm.password)
-            console.log('已保存新注册的用户名和密码到缓存')
-          } catch (e) {
-            console.error('保存用户名和密码失败:', e)
-          }
-          
+          // 注册成功后跳转到登录页面
           uni.showModal({
           	title: "系统提示",
           	content: "恭喜你，您的账号 " + this.registerForm.username + " 注册成功！",

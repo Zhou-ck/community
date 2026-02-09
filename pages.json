@@ -162,6 +162,15 @@
 					"navigationBarTitleText" : "需求消息"
 				}
 			},
+				{
+				"path" : "plan/detail",
+				"style" : 
+				{
+					"navigationBarTitleText" : "查看计划",
+					"enablePullDownRefresh": true,
+					"backgroundTextStyle": "dark"
+				}
+			},
 			{
 				"path" : "alarmreceiver/index",
 				"style" : 

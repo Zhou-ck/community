@@ -1,7 +1,14 @@
 <template>
 	<view class="health-page">
 		<!-- 档案列表 -->
-		<scroll-view class="record-list" scroll-y :style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }">
+		<scroll-view 
+			class="record-list" 
+			scroll-y 
+			:style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }"
+			refresher-enabled
+			:refresher-triggered="isRefreshing"
+			@refresherrefresh="onRefresh"
+		>
 			<view v-if="recordList.length === 0" class="empty-state">
 				<view class="empty-icon-box">
 					<uni-icons type="heart-filled" size="60" color="#e0e0e0"></uni-icons>
@@ -332,6 +339,7 @@ export default {
 			availableFamilyMembers: [],
 			existingMemberIds: [],
 			safeAreaBottom: 0,
+			isRefreshing: false,
 			
 			showModal: false,
 			isEdit: false,
@@ -486,7 +494,16 @@ export default {
 					title: '加载失败',
 					icon: 'none'
 				})
+			} finally {
+				this.isRefreshing = false
 			}
+		},
+		
+		// 下拉刷新
+		async onRefresh() {
+			this.isRefreshing = true
+			await this.loadFamilyMembers()
+			await this.loadRecords()
 		},
 		
 		// 更新可选的家庭成员列表（排除已建档的）

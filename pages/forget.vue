@@ -72,7 +72,7 @@
 </template>
 
 <script>
-	import { getCode, updatePassword } from '@/api/login'
+	import { sendForgetCode, resetPassword as resetPasswordApi } from '@/api/system/user'
 	import { setUserName, removePassWord } from '@/utils/auth'
 
 	export default {
@@ -171,8 +171,8 @@
 				const smsCode = this.resetForm.smsCode;
 				if (!smsCode) {
 					this.errors.smsCode = '请输入短信验证码';
-				} else if (smsCode.length !== 4) {
-					this.errors.smsCode = '请输入4位验证码';
+				} else if (smsCode.length !== 6) {
+					this.errors.smsCode = '请输入6位验证码';
 				} else {
 					this.errors.smsCode = '';
 				}
@@ -237,13 +237,16 @@
 				}
 
 				try {
-					// 调用login.js中的getCode API，传递username和phone参数
-					const response = await getCode({
-						userName: this.resetForm.username,
-						phonenumber: this.resetForm.phone
-					})
+					// 调用sendForgetCode API，传递userName和phonenumber参数
+					const response = await sendForgetCode(this.resetForm.username, this.resetForm.phone)
 
 					console.log('验证码API响应:', response)
+
+					// 检查响应状态
+					if (response.code !== 200) {
+						this.showError('发送失败', response.msg || '发送验证码失败，请重试')
+						return
+					}
 
 					uni.showToast({
 						title: '验证码已发送',
@@ -254,7 +257,9 @@
 					this.startCountdown()
 				} catch (error) {
 					console.error('发送短信验证码失败:', error)
-					this.showError('发送验证码失败', '发送短信验证码失败，请检查手机号是否为注册时的手机号')
+					// 显示后端返回的错误信息
+					const errorMsg = error.msg || error.message || error
+					this.showError('发送失败', typeof errorMsg === 'string' ? errorMsg : '发送验证码失败，请重试')
 				}
 			},
 
@@ -279,15 +284,21 @@
 
 				this.loading = true
 				try {
-					// 调用updatePassword API，传递captcha（验证码）和password（新密码）参数
-					const response = await updatePassword({
-						captcha: this.resetForm.smsCode,
-						password: this.resetForm.newPassword,
+					// 调用resetPasswordApi，传递userName、phonenumber、code、password参数
+					const response = await resetPasswordApi({
 						userName: this.resetForm.username,
-						phonenumber: this.resetForm.phone
+						phonenumber: this.resetForm.phone,
+						code: this.resetForm.smsCode,
+						password: this.resetForm.newPassword
 					})
 
 					console.log('重置密码API响应:', response)
+
+					// 检查响应状态
+					if (response.code !== 200) {
+						this.showError('重置失败', response.msg || '密码重置失败，请重试')
+						return
+					}
 
 					// 更新缓存：保存用户名，清除密码
 					this.updateCacheAfterReset()
@@ -305,7 +316,9 @@
 
 				} catch (error) {
 					console.error('重置密码失败:', error)
-					this.showError('重置失败', '密码重置失败，请检查验证码是否正确或重新获取验证码后重试')
+					// 显示后端返回的错误信息
+					const errorMsg = error.msg || error.message || error
+					this.showError('重置失败', typeof errorMsg === 'string' ? errorMsg : '密码重置失败，请重试')
 				} finally {
 					this.loading = false
 				}

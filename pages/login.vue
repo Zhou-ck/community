@@ -8,6 +8,14 @@
 
     <!-- 登录表单 -->
     <view class="login-form">
+      <!-- 手机号输入 -->
+      <view class="input-wrapper">
+        <view class="input-item" :class="{ 'error': errors.phone }">
+          <uni-icons type="phone" size="20" color="#999" class="input-icon"></uni-icons>
+          <input v-model="loginForm.phone" @input="clearPhoneError" @blur="validatePhone" type="number" class="input" placeholder="请输入手机号" maxlength="11" />
+        </view>
+        <view v-if="errors.phone" class="error-message">{{ errors.phone }}</view>
+      </view>
       <!-- 账号输入 -->
       <view class="input-wrapper">
         <view class="input-item" :class="{ 'error': errors.username }">
@@ -16,7 +24,6 @@
         </view>
         <view v-if="errors.username" class="error-message">{{ errors.username }}</view>
       </view>
-
       <!-- 密码输入 -->
       <view class="input-wrapper">
         <view class="input-item" :class="{ 'error': errors.password }">
@@ -101,6 +108,7 @@
         globalConfig: getApp().globalData.config,
         loginForm: {
           username: "",
+          phone: "",
           password: "",
           code: "",
           uuid: ""
@@ -127,6 +135,7 @@
         // 错误状态
         errors: {
           username: '',
+          phone: '',
           password: '',
           code: ''
         }
@@ -150,6 +159,11 @@
         this.errors.username = '';
       },
 
+      // 清除手机号错误状态
+      clearPhoneError() {
+        this.errors.phone = '';
+      },
+
       // 清除密码错误状态
       clearPasswordError() {
         this.errors.password = '';
@@ -169,6 +183,19 @@
           this.errors.username = '账号长度不能少于2位';
         } else {
           this.errors.username = '';
+        }
+      },
+
+      // 验证手机号
+      validatePhone() {
+        const phone = this.loginForm.phone;
+        const phoneReg = /^1[3-9]\d{9}$/;
+        if (!phone) {
+          this.errors.phone = '请输入手机号';
+        } else if (!phoneReg.test(phone)) {
+          this.errors.phone = '请输入正确的手机号';
+        } else {
+          this.errors.phone = '';
         }
       },
 
@@ -194,18 +221,24 @@
         }
       },
 
-      // 加载已保存的用户名和密码
+      // 加载已保存的用户名、手机号和密码
       loadSavedCredentials() {
         try {
           const savedUsername = uni.getStorageSync('user_username')
+          const savedPhone = uni.getStorageSync('user_phone')
           const savedPassword = uni.getStorageSync('user_password_cache')
           
-          // 加载保存的用户名（始终加载）
+          // 加载保存的用户名
           if (savedUsername) {
             this.loginForm.username = savedUsername
             console.log('已加载保存的用户名:', savedUsername)
           }
-          // 加载保存的密码（如果存在）
+          // 加载保存的手机号
+          if (savedPhone) {
+            this.loginForm.phone = savedPhone
+            console.log('已加载保存的手机号:', savedPhone)
+          }
+          // 加载保存的密码
           if (savedPassword) {
             this.loginForm.password = savedPassword
           }
@@ -272,13 +305,14 @@
       async handleLogin() {
         // 首先执行所有输入框验证
         this.validateUsername();
+        this.validatePhone();
         this.validatePassword();
         if (this.captchaEnabled) {
           this.validateCode();
         }
 
         // 检查是否有输入错误
-        if (this.errors.username || this.errors.password || (this.captchaEnabled && this.errors.code)) {
+        if (this.errors.username || this.errors.phone || this.errors.password || (this.captchaEnabled && this.errors.code)) {
           return; // 有错误时不提交
         }
 
@@ -304,15 +338,17 @@
         })
       },
       // 登录成功后，处理函数
-      loginSuccess(result) {
-        // 保存用户名和密码到缓存
+      loginSuccess() {
+        // 保存用户名、手机号和密码到缓存
         try {
           // 保存用户名
           uni.setStorageSync('user_username', this.loginForm.username)
+          // 保存手机号
+          uni.setStorageSync('user_phone', this.loginForm.phone)
           // 保存密码
           uni.setStorageSync('user_password_cache', this.loginForm.password)
           
-          console.log('用户名和密码已保存到本地')
+          console.log('用户名、手机号和密码已保存到本地')
         } catch (e) {
           console.error('保存凭据失败:', e)
         }

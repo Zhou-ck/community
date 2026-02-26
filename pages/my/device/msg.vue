@@ -1206,6 +1206,8 @@ export default {
   padding: 24rpx;
   position: relative;
   z-index: 1;
+  height: calc(100vh - 96rpx); /* 减去 tabs 的高度 */
+  box-sizing: border-box;
 }
 
 .list-item {

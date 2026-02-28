@@ -180,7 +180,7 @@
       handleLogout() {
         this.$modal.confirm('确定注销并退出系统吗？').then(() => {
           this.$store.dispatch('LogOut').then(() => {}).finally(()=>{
-            this.$tab.reLaunch('/pages/index')
+            this.$tab.reLaunch('/pages/login')
           })
         })
       },

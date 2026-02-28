@@ -4,12 +4,18 @@
 		<scroll-view 
 			class="address-list" 
 			scroll-y 
-			:style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }"
+			:style="{ height: scrollViewHeight }"
 			refresher-enabled
 			:refresher-triggered="isRefreshing"
 			@refresherrefresh="onRefresh"
 		>
-			<view v-if="addressList.length === 0" class="empty-address">
+			<!-- 加载中状态 -->
+			<view v-if="loading && addressList.length === 0" class="loading-state">
+				<view class="loading-icon"></view>
+				<text class="loading-text">加载中...</text>
+			</view>
+			
+			<view v-else-if="addressList.length === 0" class="empty-address">
 				<image src="/static/images/empty-address.png" mode="aspectFit" class="empty-img" v-if="false"></image>
 				<view class="empty-icon-box">
 					<uni-icons type="location-filled" size="60" color="#e0e0e0"></uni-icons>
@@ -66,7 +72,7 @@
 				</view>
 			</view>
 			<!-- 底部占位，防止被按钮遮挡 -->
-			<view style="height: 20rpx;"></view>
+			<view style="height: 180rpx;"></view>
 		</scroll-view>
 
 		<!-- 底部添加按钮 -->
@@ -145,7 +151,7 @@
 			</view>
 		</view>
 	</view>
-</template>>
+</template>
 
 <script>
 import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, delServicesaddress } from '@/api/servicesaddress'
@@ -162,6 +168,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				isRefreshing: false, // 下拉刷新状态
 				systemInfo: {}, // 系统信息
 				safeAreaBottom: 0, // 底部安全区域高度
+				scrollViewHeight: 'calc(100vh - 180rpx)', // 滚动区域高度
 				addressForm: {
 					addressId: null,
 					contactName: '',
@@ -233,7 +240,11 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 					// 如果没有安全区域信息，设置默认值
 					this.safeAreaBottom = 0
 				}
-
+				
+				// 计算滚动区域高度
+				// 底部按钮栏高度 = 按钮高度(88rpx) + 上下padding(24rpx * 2) + 安全区域高度
+				const bottomBarHeight = 88 + 48 + this.safeAreaBottom
+				this.scrollViewHeight = `calc(100vh - ${bottomBarHeight}rpx)`
 			},
 
 			// 安全地转换为字符串
@@ -807,6 +818,34 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 	.address-list {
 		padding: 24rpx;
 		box-sizing: border-box;
+	}
+
+	/* 加载状态 */
+	.loading-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding-top: 200rpx;
+		
+		.loading-icon {
+			width: 60rpx;
+			height: 60rpx;
+			border: 4rpx solid #f0f0f0;
+			border-top-color: #3ec6c6;
+			border-radius: 50%;
+			animation: spin 0.8s linear infinite;
+			margin-bottom: 20rpx;
+		}
+		
+		.loading-text {
+			font-size: 28rpx;
+			color: #999;
+		}
+	}
+	
+	@keyframes spin {
+		to { transform: rotate(360deg); }
 	}
 
 	/* 空状态 */

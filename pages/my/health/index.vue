@@ -4,12 +4,18 @@
 		<scroll-view 
 			class="record-list" 
 			scroll-y 
-			:style="{ height: 'calc(100vh - ' + (180 + safeAreaBottom) + 'rpx)' }"
+			:style="{ height: 'calc(100vh - ' + (120 + safeAreaBottom) + 'rpx)' }"
 			refresher-enabled
 			:refresher-triggered="isRefreshing"
 			@refresherrefresh="onRefresh"
 		>
-			<view v-if="recordList.length === 0" class="empty-state">
+			<!-- 加载中状态 -->
+			<view v-if="loading && recordList.length === 0" class="loading-state">
+				<view class="loading-icon"></view>
+				<text class="loading-text">加载中...</text>
+			</view>
+			
+			<view v-else-if="recordList.length === 0" class="empty-state">
 				<view class="empty-icon-box">
 					<uni-icons type="heart-filled" size="60" color="#e0e0e0"></uni-icons>
 				</view>
@@ -87,7 +93,7 @@
 			</view>
 			
 			<!-- 底部占位 -->
-			<view style="height: 40rpx;"></view>
+			<view style="height: 180rpx;"></view>
 		</scroll-view>
 
 		<!-- 底部按钮栏 -->
@@ -340,6 +346,7 @@ export default {
 			existingMemberIds: [],
 			safeAreaBottom: 0,
 			isRefreshing: false,
+			loading: false,
 			
 			showModal: false,
 			isEdit: false,
@@ -471,6 +478,7 @@ export default {
 		// 加载健康档案列表
 		async loadRecords() {
 			try {
+				this.loading = true
 				const response = await listResidenthealthrecord({})
 				
 				if (response.code === 200 && response.rows) {
@@ -495,6 +503,7 @@ export default {
 					icon: 'none'
 				})
 			} finally {
+				this.loading = false
 				this.isRefreshing = false
 			}
 		},
@@ -1110,6 +1119,34 @@ export default {
 			}
 		}
 	}
+}
+
+/* 加载状态 */
+.loading-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding-top: 200rpx;
+	
+	.loading-icon {
+		width: 60rpx;
+		height: 60rpx;
+		border: 4rpx solid #f0f0f0;
+		border-top-color: #3ec6c6;
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+		margin-bottom: 20rpx;
+	}
+	
+	.loading-text {
+		font-size: 28rpx;
+		color: #999;
+	}
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
 }
 
 /* 空状态 */

@@ -153,6 +153,24 @@
         
         <view class="popup-content">
           <view class="form-item">
+            <text class="form-label required">设备类型</text>
+            <picker 
+              mode="selector" 
+              :range="deviceTypeOptions" 
+              range-key="dictLabel"
+              :value="deviceTypeIndex"
+              @change="onDeviceTypeChange"
+            >
+              <view class="form-picker">
+                <text :class="{'placeholder': !addForm.deviceType}">
+                  {{ addForm.deviceType ? getDeviceTypeName(addForm.deviceType) : '请选择设备类型' }}
+                </text>
+                <uni-icons type="arrowdown" size="16" color="#999"></uni-icons>
+              </view>
+            </picker>
+          </view>
+          
+          <view class="form-item">
             <text class="form-label required">设备编号</text>
             <view class="input-with-scan">
               <input 
@@ -294,11 +312,13 @@ export default {
       loadingMore: false,
       isRefreshing: false,
       addForm: {
+        deviceType: '',
         deviceKey: '',
         deviceAlias: '',
         installAddress: '',
         remark: ''
       },
+      deviceTypeIndex: 0,
       editForm: {
         deviceId: '',
         deviceKey: '',
@@ -312,6 +332,22 @@ export default {
         installAddress: '',
         remark: ''
       },
+      // 本地设备类型配置
+      localDeviceTypes: [
+        { dictValue: '1', dictLabel: '睡眠-L1' },
+        { dictValue: '2', dictLabel: '跌倒' },
+        { dictValue: '4', dictLabel: '睡眠-L2' },
+        { dictValue: '13', dictLabel: '水浸' },
+        { dictValue: '14', dictLabel: '门磁' },
+        { dictValue: '15', dictLabel: '烟感' },
+        { dictValue: '16', dictLabel: '燃气' },
+        { dictValue: '17', dictLabel: '红外' },
+        { dictValue: '18', dictLabel: '温湿度' },
+        { dictValue: '19', dictLabel: '一氧化碳' },
+        { dictValue: '21', dictLabel: '手表(H102C)' },
+        { dictValue: '22', dictLabel: '手表(AB型)' },
+        { dictValue: '23', dictLabel: '手表(AC型)' }
+      ],
       // 字典数据
       dictData: {
         dev_device_type: [],
@@ -322,6 +358,10 @@ export default {
   
   computed: {
     // 移除原有的 onlineCount 和 offlineCount 计算属性，改为从接口获取
+    // 设备类型选项 - 优先使用本地配置
+    deviceTypeOptions() {
+      return this.localDeviceTypes
+    }
   },
   
   async onLoad() {
@@ -466,6 +506,12 @@ export default {
     
     // 获取设备类型名称
     getDeviceTypeName(deviceType) {
+      // 优先从本地配置获取
+      const localType = this.localDeviceTypes.find(item => String(item.dictValue) === String(deviceType))
+      if (localType) {
+        return localType.dictLabel
+      }
+      // 降级到字典数据
       return this.getDictLabel('dev_device_type', deviceType)
     },
     
@@ -534,10 +580,21 @@ export default {
     // 重置添加表单
     resetAddForm() {
       this.addForm = {
+        deviceType: '',
         deviceKey: '',
         deviceAlias: '',
         installAddress: '',
         remark: ''
+      }
+      this.deviceTypeIndex = 0
+    },
+    
+    // 设备类型选择变化
+    onDeviceTypeChange(e) {
+      const index = e.detail.value
+      this.deviceTypeIndex = index
+      if (this.deviceTypeOptions[index]) {
+        this.addForm.deviceType = this.deviceTypeOptions[index].dictValue
       }
     },
     
@@ -624,6 +681,14 @@ export default {
     // 确认添加设备
     async confirmAddDevice() {
       // 表单验证
+      if (!this.addForm.deviceType) {
+        uni.showToast({
+          title: '请选择设备类型',
+          icon: 'none'
+        })
+        return
+      }
+      
       if (!this.addForm.deviceKey.trim()) {
         uni.showToast({
           title: '请输入设备编号',
@@ -648,34 +713,37 @@ export default {
         // 判断是否是IMEI（纯数字且长度为15位）
         const isImei = /^\d{15}$/.test(deviceNumBering)
         
-        let productKey, deviceKey, deviceType
-        let isWatchDevice = false // 标记是否为手表设备
+        let productKey, deviceKey
+        // 使用用户选择的设备类型
+        const deviceType = this.addForm.deviceType
+        
+        // 判断用户选择的设备类型
+        const isWatchType = ['21', '22', '23'].includes(deviceType)
+        const isAepType = ['13', '14', '15', '16', '17', '18', '19'].includes(deviceType)
         
         if (isImei) {
-          // 是IMEI，先尝试作为手表设备查询
-          const watchRes = await getIwownDeviceByImei(deviceNumBering)
-          
-          if (watchRes.code === 200 && watchRes.data) {
-            // 是手表设备
-            isWatchDevice = true
+          // 是IMEI，根据用户选择的设备类型调用不同接口
+          if (isWatchType) {
+            // 手表设备，调用 iwown 接口
+            const watchRes = await getIwownDeviceByImei(deviceNumBering)
+            
+            if (watchRes.code !== 200 || !watchRes.data) {
+              uni.showToast({
+                title: watchRes.msg || '查询手表设备信息失败',
+                icon: 'none'
+              })
+              return
+            }
+            
             productKey = watchRes.data.productKey
             deviceKey = watchRes.data.deviceKey
-            
-            // 根据deviceKey前缀判断手表类型
-            const deviceKeyPrefix = deviceKey.match(/^[A-Za-z]{2}/)?.[0] || ''
-            const watchTypeMap = {
-              'Za': '21',  // 手表(AA型)
-              'Zb': '22',  // 手表(AB型)
-              'Zc': '23'   // 手表(AC型)
-            }
-            deviceType = watchTypeMap[deviceKeyPrefix] || watchRes.data.deviceType
-          } else {
-            // 不是手表设备，尝试作为AEP设备查询
+          } else if (isAepType) {
+            // AEP设备，调用 AEP 接口
             const aepRes = await getAepDevice({ imei: deviceNumBering })
             
             if (aepRes.code !== 200 || !aepRes.data) {
               uni.showToast({
-                title: aepRes.msg || '查询设备信息失败',
+                title: aepRes.msg || '查询AEP设备信息失败',
                 icon: 'none'
               })
               return
@@ -691,23 +759,13 @@ export default {
               })
               return
             }
-            
-            // 根据deviceKey前缀判断设备类型
-            const deviceKeyPrefix = deviceKey.match(/^[A-Za-z]{2}/)?.[0] || ''
-            const deviceTypeMap = {
-              'Ed': '2',   // 跌倒监测
-              'Ld': '1',   // 呼吸睡眠
-              'La': '4',   // 呼吸睡眠-L2
-              'Sd': '13',  // 水浸
-              'Md': '14',  // 门磁
-              'Yd': '15',  // 烟感
-              'Rd': '16',  // 可燃气体
-              'Hd': '17',  // 红外
-              'Wd': '18',  // 温湿度
-              'Td': '19',  // 一氧化碳
-              'Od': '20'   // 其它
-            }
-            deviceType = deviceTypeMap[deviceKeyPrefix] || aepRes.data.deviceType
+          } else {
+            // KAT设备不支持IMEI格式
+            uni.showToast({
+              title: 'KAT设备不支持IMEI格式，请输入完整设备编号',
+              icon: 'none'
+            })
+            return
           }
         } else {
           // 不是IMEI，使用工具类解析设备编号
@@ -723,7 +781,6 @@ export default {
           
           productKey = parseResult.productKey
           deviceKey = parseResult.deviceKey
-          deviceType = parseResult.deviceType
         }
         
         const response = await addDevice({
@@ -1611,6 +1668,24 @@ export default {
   &.scan-input {
     flex: 1;
     margin-right: 16rpx;
+  }
+}
+
+.form-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 80rpx;
+  padding: 0 24rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+  background: #fff;
+  
+  .placeholder {
+    color: #999;
   }
 }
 

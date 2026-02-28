@@ -116,7 +116,7 @@ const DEVICE_TYPES = {
     AEP_WITH_PARAMS: ['15', '16', '19'],
     // AEP设备-无参数设置
     AEP_NO_PARAMS: ['13', '14', '17', '18'],
-    // 手表设备-无参数设置
+    // 手表设备-无参数设置（使用iwown接口）
     WATCH_NO_PARAMS: ['21', '22', '23']
 };
 
@@ -130,12 +130,57 @@ export function isKatDevice(deviceType) {
 }
 
 /**
+ * 判断是否为手表设备
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function isWatchDevice(deviceType) {
+    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+}
+
+/**
+ * 判断手表设备是否支持实时数据
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function watchSupportsRealTimeData(deviceType) {
+    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+}
+
+/**
+ * 判断手表设备是否支持健康数据总览
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function watchSupportsHealthOverview(deviceType) {
+    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+}
+
+/**
+ * 判断手表设备是否支持通话记录
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function watchSupportsCallHistory(deviceType) {
+    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+}
+
+/**
+ * 判断手表设备是否支持配置
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean}
+ */
+export function watchSupportsConfig(deviceType) {
+    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+}
+
+/**
  * 判断是否为AEP设备
  * @param {string} deviceType - 设备类型值
  * @returns {boolean}
  */
 export function isAepDevice(deviceType) {
-    return !isKatDevice(deviceType);
+    return !isKatDevice(deviceType) && !isWatchDevice(deviceType);
 }
 
 /**

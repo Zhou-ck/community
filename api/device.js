@@ -127,11 +127,19 @@ export function cancelOneCommandLwm2mProfile(data) {
   })
 }
 
-// 查询iwown设备 参数:imei
+// 新增iwown设备 参数:imei
 export function getIwownDeviceByImei(imei) {
   return request({
-    url: '/iwown/device/queryone',
-    method: 'get',
-    params: { imei }
+    url: `/api/iwown/device/imei/${imei}`,
+    method: 'get'
+  })
+}
+
+
+// 根据设备iwown的imei查询实时数据
+export function getIwownDeviceRealtime(imei) {
+  return request({
+    url: '/devices/device/iwown/device/' + imei,
+    method: 'get'
   })
 }

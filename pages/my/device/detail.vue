@@ -96,13 +96,68 @@
       </view>
       
       <!-- 绑定家人 - 只有KAT设备显示 -->
-      <view class="function-card" @click="handleBindFamilyClick" v-if="!isAepDevice">
+      <view class="function-card" @click="handleBindFamilyClick" v-if="!isAepDevice && !isWatchDevice">
         <view class="card-content">
           <text class="card-title">绑定家人</text>
           <text class="card-subtitle">已绑定 {{ boundFamilyMembers.length }} 人</text>
         </view>
         <view class="card-icon cyan-bg">
           <uni-icons type="person" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+      
+      <!-- 手表实时数据 -->
+      <view class="function-card" @click="handleWatchRealTimeDataClick" v-if="showWatchRealTimeData">
+        <view class="card-content">
+          <text class="card-title">实时数据</text>
+          <text class="card-subtitle">查看实时健康数据</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <text class="iconfontA icon-shishijianceshuju" style="font-size: 20px; color: #3ec6c6;"></text>
+        </view>
+      </view>
+      
+      <!-- 健康数据总览 -->
+      <view class="function-card" @click="handleWatchHealthOverviewClick" v-if="showWatchHealthOverview">
+        <view class="card-content">
+          <text class="card-title">健康数据总览</text>
+          <text class="card-subtitle">查看历史健康数据</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="heart" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+      
+      <!-- 睡眠报告 -->
+      <view class="function-card" @click="handleWatchSleepReportClick" v-if="showWatchSleepReport">
+        <view class="card-content">
+          <text class="card-title">睡眠报告</text>
+          <text class="card-subtitle">查看睡眠数据分析</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="bars" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+      
+      <!-- 通话记录 -->
+      <view class="function-card" @click="handleWatchCallHistoryClick" v-if="showWatchCallHistory">
+        <view class="card-content">
+          <text class="card-title">通话记录</text>
+          <text class="card-subtitle">查看手表通话记录</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="phone-filled" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+      
+      <!-- 配置手表 -->
+      <view class="function-card" @click="handleWatchConfigClick" v-if="showWatchConfig">
+        <view class="card-content">
+          <text class="card-title">配置手表</text>
+          <text class="card-subtitle">设置手表参数</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="gear" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>
       
@@ -217,18 +272,64 @@
                      class="setting-scroll" 
                      scroll-y="true"
                      :style="'max-height: ' + scrollViewHeight + 'px;'">
+          <!-- 报警逻辑说明 -->
+          <view class="alarm-logic-tip">
+            <view class="tip-header">
+              <uni-icons type="info-filled" size="16" color="#ff9800"></uni-icons>
+              <text class="tip-title">报警规则说明</text>
+            </view>
+            <view class="tip-content">
+              <text class="tip-item">• 每项报警可独立配置通知方式</text>
+              <text class="tip-item">• 实际发送 = 设备配置 ∩ 接警人设置（取交集）</text>
+              <text class="tip-item">• 只有设备和接警人都开启的方式才会发送</text>
+            </view>
+          </view>
+          
           <view class="setting-list">
-            <view v-for="alarm in alarmSwitches" :key="alarm.identifier" class="setting-item">
-              <view class="setting-info">
-                <text class="setting-label">{{ alarm.name }}</text>
-                <text class="setting-desc">{{ alarm.desc }}</text>
+            <view v-for="alarm in alarmSwitches" :key="alarm.identifier" class="alarm-item-wrapper">
+              <view class="setting-item">
+                <view class="setting-info">
+                  <text class="setting-label">{{ alarm.name }}</text>
+                  <text class="setting-desc">{{ alarm.desc }}</text>
+                </view>
+                <switch 
+                  :checked="alarm.open" 
+                  @change="toggleAlarm(alarm)"
+                  color="#3ec6c6"
+                  class="setting-switch"
+                />
               </view>
-              <switch 
-                :checked="alarm.open" 
-                @change="toggleAlarm(alarm)"
-                color="#3ec6c6"
-                class="setting-switch"
-              />
+              
+              <!-- 报警方式按钮组 -->
+              <view class="alarm-methods" v-if="alarm.open">
+                <view class="method-label">报警方式:</view>
+                <view class="method-buttons">
+                  <view 
+                    class="method-btn" 
+                    :class="{ active: alarm.phoneAlarm }"
+                    @click="toggleAlarmMethod(alarm, 'phoneAlarm')"
+                  >
+                    <uni-icons type="phone" size="16" :color="alarm.phoneAlarm ? '#3ec6c6' : '#999'"></uni-icons>
+                    <text>电话</text>
+                  </view>
+                  <view 
+                    class="method-btn" 
+                    :class="{ active: alarm.smsAlarm }"
+                    @click="toggleAlarmMethod(alarm, 'smsAlarm')"
+                  >
+                    <uni-icons type="chatbubble" size="16" :color="alarm.smsAlarm ? '#3ec6c6' : '#999'"></uni-icons>
+                    <text>短信</text>
+                  </view>
+                  <view 
+                    class="method-btn" 
+                    :class="{ active: alarm.wechatAlarm }"
+                    @click="toggleAlarmMethod(alarm, 'wechatAlarm')"
+                  >
+                    <uni-icons type="chat" size="16" :color="alarm.wechatAlarm ? '#3ec6c6' : '#999'"></uni-icons>
+                    <text>微信</text>
+                  </view>
+                </view>
+              </view>
             </view>
             
             <!-- 如果没有数据，显示提示 -->
@@ -361,12 +462,12 @@
 </template>
 
 <script>
-import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile } from '@/api/device'
+import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei } from '@/api/device'
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId } from '@/api/familyMemberDevice'
 import { getAlarmReceiverIdsByDeviceId } from '@/api/devicereceiver'
-import { needsNetworkConfig, hasParamsSetting, isAepDevice } from '@/utils/parseDevNumber'
+import { needsNetworkConfig, hasParamsSetting, isAepDevice, isWatchDevice, watchSupportsRealTimeData, watchSupportsHealthOverview, watchSupportsCallHistory, watchSupportsConfig } from '@/utils/parseDevNumber'
 
 export default {
   data() {
@@ -469,6 +570,37 @@ export default {
     isAepDevice() {
       if (!this.deviceInfo) return false
       return isAepDevice(String(this.deviceInfo.deviceType))
+    },
+    // 是否为手表设备
+    isWatchDevice() {
+      if (!this.deviceInfo) return false
+      return isWatchDevice(String(this.deviceInfo.deviceType))
+    },
+    // 手表是否支持实时数据
+    showWatchRealTimeData() {
+      if (!this.deviceInfo) return false
+      return watchSupportsRealTimeData(String(this.deviceInfo.deviceType))
+    },
+    // 手表是否支持健康数据总览
+    showWatchHealthOverview() {
+      if (!this.deviceInfo) return false
+      return watchSupportsHealthOverview(String(this.deviceInfo.deviceType))
+    },
+    // 手表是否支持通话记录
+    showWatchCallHistory() {
+      if (!this.deviceInfo) return false
+      return watchSupportsCallHistory(String(this.deviceInfo.deviceType))
+    },
+    // 手表是否支持配置
+    showWatchConfig() {
+      if (!this.deviceInfo) return false
+      return watchSupportsConfig(String(this.deviceInfo.deviceType))
+    },
+    // 手表是否支持睡眠报告
+    showWatchSleepReport() {
+      if (!this.deviceInfo) return false
+      // 所有手表设备都支持睡眠报告
+      return this.isWatchDevice
     }
   },
   
@@ -635,7 +767,11 @@ export default {
             identifier: item.identifier,
             name: item.name,
             desc: item.desc || `${item.name}功能开关`,
-            open: item.open
+            open: item.open,
+            // 兼容后端字段名：callOpen/smsOpen/wxOpen 或 phoneAlarm/smsAlarm/wechatAlarm
+            phoneAlarm: item.callOpen !== undefined ? item.callOpen : (item.phoneAlarm || false),
+            smsAlarm: item.smsOpen !== undefined ? item.smsOpen : (item.smsAlarm || false),
+            wechatAlarm: item.wxOpen !== undefined ? item.wxOpen : (item.wechatAlarm || false)
           }))
           
           // 使用 $set 确保响应式更新
@@ -671,6 +807,34 @@ export default {
       console.log('设置默认报警开关配置完成，长度:', this.alarmSwitches.length)
     },
     
+    // 切换报警方式
+    toggleAlarmMethod(alarm, method) {
+      // 如果报警开关未开启，不允许设置报警方式
+      if (!alarm.open) {
+        uni.showToast({
+          title: '请先开启报警功能',
+          icon: 'none'
+        })
+        return
+      }
+      
+      // 切换报警方式状态
+      alarm[method] = !alarm[method]
+      
+      // 提示用户设备优先逻辑
+      const methodName = method === 'phoneAlarm' ? '电话' : method === 'smsAlarm' ? '短信' : '微信'
+      const status = alarm[method] ? '开启' : '关闭'
+      
+      uni.showToast({
+        title: `${alarm.name}${methodName}通知已${status}`,
+        icon: 'none',
+        duration: 1500
+      })
+      
+      // 保存设置
+      this.saveAlarmSettings()
+    },
+    
     // 获取设备图标
     getDeviceIcon(deviceType) {
       const type = String(deviceType)
@@ -686,7 +850,10 @@ export default {
           '17': require('@/pages/my/static/hongwai.png'),      // 红外(Hd)
           '18': require('@/pages/my/static/wenshidu.png'),     // 温湿度(Wd)
           '19': require('@/pages/my/static/yiyanghuatan.png'), // 一氧化碳(Td)
-          '20': require('@/pages/my/static/breath.png')        // 其它设备(Od)，暂用呼吸图标
+          '20': require('@/pages/my/static/breath.png'),       // 其它设备(Od)，暂用呼吸图标
+          '21': require('@/pages/my/static/watch.png'),        // 手表(Za)
+          '22': require('@/pages/my/static/watch.png'),        // 手表(Zb)
+          '23': require('@/pages/my/static/watch.png')         // 手表(Zc)
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -892,6 +1059,51 @@ export default {
             })
           }
         }
+      })
+    },
+    
+    // 处理手表实时数据点击事件
+    handleWatchRealTimeDataClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/watch/realtime?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+      })
+    },
+    
+    // 处理健康数据总览点击事件
+    handleWatchHealthOverviewClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/watch/health?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+      })
+    },
+    
+    // 处理通话记录点击事件
+    handleWatchCallHistoryClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/watch/callhistory?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+      })
+    },
+    
+    // 处理配置手表点击事件
+    handleWatchConfigClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/watch/config?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+      })
+    },
+    
+    // 处理手表睡眠报告点击事件
+    handleWatchSleepReportClick() {
+      if (!this.deviceInfo) return
+      
+      uni.navigateTo({
+        url: `/pages/my/watch/Sleep-index?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
       })
     },
     
@@ -1969,19 +2181,71 @@ export default {
   width: 100%;
 }
 
+/* 报警逻辑说明 */
+.alarm-logic-tip {
+  background: linear-gradient(135deg, #fff7e6 0%, #fffbf0 100%);
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  border: 2rpx solid #ffe7ba;
+  
+  .tip-header {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    margin-bottom: 16rpx;
+    
+    .tip-title {
+      font-size: 28rpx;
+      font-weight: 600;
+      color: #ff9800;
+    }
+  }
+  
+  .tip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8rpx;
+    
+    .tip-item {
+      font-size: 24rpx;
+      color: #d68910;
+      line-height: 1.6;
+      padding-left: 16rpx;
+      position: relative;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 4rpx;
+        top: 10rpx;
+        width: 6rpx;
+        height: 6rpx;
+        background: #ff9800;
+        border-radius: 50%;
+      }
+    }
+  }
+}
+
 .setting-list {
   padding-top: 16rpx;
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 32rpx;
+}
+
+.alarm-item-wrapper {
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 24rpx;
 }
 
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f8f8f8;
+  padding-bottom: 16rpx;
 }
 
 .setting-info {
@@ -2003,6 +2267,56 @@ export default {
 
 .setting-switch {
   transform: scale(0.9);
+}
+
+/* 报警方式按钮组 */
+.alarm-methods {
+  padding-top: 16rpx;
+  border-top: 1rpx dashed #e0e0e0;
+}
+
+.method-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+.method-buttons {
+  display: flex;
+  gap: 16rpx;
+}
+
+.method-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 16rpx 8rpx;
+  background: #fff;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  transition: all 0.3s;
+  
+  text {
+    font-size: 22rpx;
+    color: #666;
+  }
+  
+  &.active {
+    background: rgba(62, 198, 198, 0.08);
+    border-color: #3ec6c6;
+    
+    text {
+      color: #3ec6c6;
+      font-weight: 500;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 /* Setting List Styles */

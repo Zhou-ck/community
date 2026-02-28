@@ -35,13 +35,31 @@ const upload = config => {
           if (code === 200) {
             resolve(result)
           } else if (code == 401) {
-            showConfirm("登录状态已过期，您可以继续留在该页面，或者重新登录?").then(res => {
-              if (res.confirm) {
-                store.dispatch('LogOut').then(res => {
-                  uni.reLaunch({ url: '/pages/login/login' })
-                })
-              }
-            })
+            // 检查是否有缓存的账号密码（说明之前登录过）
+            // 兼容多种缓存key
+            const cachedUsername = uni.getStorageSync('user_username') || uni.getStorageSync('App-UserName')
+            const cachedPassword = uni.getStorageSync('user_password_cache') || uni.getStorageSync('App-Password')
+            const hasLoginCache = cachedUsername || cachedPassword
+            
+            // 只有存在登录缓存时才弹窗提示
+            if (hasLoginCache) {
+              uni.showModal({
+                title: '登录过期提示',
+                content: '当前登录状态已过期，请重新登录',
+                showCancel: false,
+                confirmText: '确定',
+                success: (res) => {
+                  if (res.confirm) {
+                    store.dispatch('LogOut').then(res => {
+                      uni.reLaunch({ url: '/pages/login' })
+                    })
+                  }
+                }
+              })
+            } else {
+              // 没有登录缓存，静默清除token
+              store.dispatch('LogOut').catch(() => {})
+            }
             reject('无效的会话，或者会话已过期，请重新登录。')
           } else if (code === 500) {
             toast(msg)

@@ -94,26 +94,43 @@ const request = config => {
             console.log('即将跳转登录页面')
             console.groupEnd()
           }
+          
           if (!isRelogin.show) {
             isRelogin.show = true;
-            uni.showModal({
-              title: '登录过期提示',
-              content: '当前登录状态已过期，请重新登录',
-              showCancel: false,
-              confirmText: '确定',
-              success: function(res) {
-                if (res.confirm) {
+            
+            // 检查是否有缓存的账号密码（说明之前登录过）
+            // 兼容多种缓存key
+            const cachedUsername = uni.getStorageSync('user_username') || uni.getStorageSync('App-UserName')
+            const cachedPassword = uni.getStorageSync('user_password_cache') || uni.getStorageSync('App-Password')
+            const hasLoginCache = cachedUsername || cachedPassword
+            
+            // 只有存在登录缓存时才弹窗提示，否则静默处理
+            if (hasLoginCache) {
+              uni.showModal({
+                title: '登录过期提示',
+                content: '当前登录状态已过期，请重新登录',
+                showCancel: false,
+                confirmText: '确定',
+                success: function(res) {
                   store.dispatch('LogOut').then(() => {
                     uni.reLaunch({ url: '/pages/login' })
                   }).catch(() => {
                     // 即使LogOut失败（如网络错误），本地Token已被清除（在store中处理），直接跳转
                     uni.reLaunch({ url: '/pages/login' })
-                  }).finally(() => {
-                    isRelogin.show = false;
                   })
+                },
+                complete: function() {
+                  // 无论用户是否点击，都重置标记（防止页面卡死）
+                  setTimeout(() => {
+                    isRelogin.show = false;
+                  }, 1000)
                 }
-              }
-            })
+              })
+            } else {
+              // 没有登录缓存，静默清除token并重置状态
+              store.dispatch('LogOut').catch(() => {})
+              isRelogin.show = false;
+            }
           }
           reject('无效的会话，或者会话已过期，请重新登录。')
         } else if (code === 500) {

@@ -278,6 +278,28 @@ export default {
     
     // 显示加入社区提示弹窗
     showJoinCommunityModal() {
+      // 先检查是否登录
+      if (!this.$store.getters.token) {
+        uni.showModal({
+          title: '提示',
+          content: '请先登录后再使用服务功能',
+          confirmText: '去登录',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({
+                url: '/pages/login'
+              })
+            } else {
+              // 用户点击取消，返回上一页
+              uni.navigateBack()
+            }
+          }
+        })
+        return
+      }
+      
+      // 已登录但未加入社区
       uni.showModal({
         title: '提示',
         content: '您还未加入社区，请先加入社区后再使用服务功能',

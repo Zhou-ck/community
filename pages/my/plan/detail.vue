@@ -33,7 +33,7 @@
       <view 
         class="plan-item" 
         v-for="(plan, index) in filteredPlans" 
-        :key="plan.planId || index"
+        :key="index"
       >
         <view class="plan-number">{{ index + 1 }}</view>
         

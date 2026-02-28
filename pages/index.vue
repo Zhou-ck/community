@@ -319,6 +319,24 @@ export default {
     
     // 点击服务项目
     handleServiceClick(service) {
+      // 先检查是否登录
+      if (!this.$store.getters.token) {
+        uni.showModal({
+          title: '提示',
+          content: '请先登录后再使用服务功能',
+          confirmText: '去登录',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({
+                url: '/pages/login'
+              })
+            }
+          }
+        })
+        return
+      }
+      
       // 检查是否已加入社区
       if (!this.checkHasJoinedCommunity()) {
         uni.showModal({
@@ -387,6 +405,24 @@ export default {
     
     // 点击居家养老服务
     handleHomeCareClick(service) {
+      // 先检查是否登录
+      if (!this.$store.getters.token) {
+        uni.showModal({
+          title: '提示',
+          content: '请先登录后再使用服务功能',
+          confirmText: '去登录',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({
+                url: '/pages/login'
+              })
+            }
+          }
+        })
+        return
+      }
+      
       // 检查是否已加入社区
       if (!this.checkHasJoinedCommunity()) {
         uni.showModal({

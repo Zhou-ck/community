@@ -71,7 +71,7 @@
             <uni-icons type="wallet" size="20" color="#2196F3"></uni-icons>
           </view>
           <view class="menu-content">
-            <text class="menu-title">套餐充值</text>
+            <text class="menu-title">设备套餐</text>
             <text class="menu-desc">购买通话短信套餐</text>
           </view>
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
@@ -129,40 +129,70 @@
       }
     },
     methods: {
+      // 检查登录状态
+      checkLogin() {
+        if (!this.$store.getters.token) {
+          uni.showModal({
+            title: '提示',
+            content: '请先登录后再使用此功能',
+            confirmText: '去登录',
+            cancelText: '取消',
+            success: (res) => {
+              if (res.confirm) {
+                this.$tab.reLaunch('/pages/login')
+              }
+            }
+          })
+          return false
+        }
+        return true
+      },
+      
       handleToInfo() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/info/index')
       },
       handleToSetting() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/setting/index')
       },
       handleToLogin() {
         this.$tab.reLaunch('/pages/login')
       },
       handleToAvatar() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/avatar/index')
       },
       handleDevice() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/device/index')
       },
       handleAlarmreceiver() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/alarmreceiver/index')
       },
       handleAbout() {
+        // 关于我们是公开信息，不需要登录
         this.$tab.navigateTo('/pages/my/about/index')
       },
       handleJoinCommunity() {
-       this.$tab.navigateTo('/pages/my/joincommunity/index')
+        if (!this.checkLogin()) return
+        this.$tab.navigateTo('/pages/my/joincommunity/index')
       },
       handleFamily(){
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/family/index')
       },
       handleHealth() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/health/index')
       },
       handleAddress() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/address/index')
       },
       handleBalancePackage() {
+        if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/balancePackage/index')
       }
     }

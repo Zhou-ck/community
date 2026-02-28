@@ -82,7 +82,7 @@
 						<view class="service-info">
 							<view class="service-name-row">
 								<text class="service-name">{{ order.serviceName || '服务项目' }}</text>
-								<view class="voice-badge" v-if="order.remark && parseVoiceRemark(order.remark)">
+								<view class="voice-badge" v-if="order.orderType === '1'" @click.stop="playVoice(order)">
 									<uni-icons type="sound" size="12" color="#fff"></uni-icons>
 									<text>语音下单</text>
 								</view>
@@ -105,7 +105,7 @@
 									<text class="detail-text">服务地址：{{ order.serviceAddress }}</text>
 								</view>
 								<!-- 用户备注（非语音下单、非关闭状态时显示） -->
-								<view class="detail-item" v-if="order.remark && order.status !== 'closed' && !parseVoiceRemark(order.remark)">
+								<view class="detail-item" v-if="order.remark && order.status !== 'closed' && order.orderType === '0'">
 									<uni-icons type="chat" size="14" color="#999"></uni-icons>
 									<text class="detail-text remark-text">备注：{{ order.remark }}</text>
 								</view>
@@ -115,7 +115,7 @@
 				</view>
 
 				<!-- 语音下单备注提示 -->
-				<view class="voice-order-remark" v-if="order.remark && parseVoiceRemark(order.remark)">
+				<view class="voice-order-remark" v-if="order.orderType === '1' && order.remark && parseVoiceRemark(order.remark)">
 					<view class="remark-detail">
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).userRequest">
 							<uni-icons type="person" size="14" color="#3ec6c6"></uni-icons>
@@ -296,7 +296,11 @@
 				// WebSocket 相关
 				wsStatus: '', // WebSocket 连接状态: pending, connecting, connected, reconnecting, error, failed, closed
 				unsubscribeList: [], // 取消订阅函数列表
-				isPageUnloaded: false // 页面是否已卸载，防止卸载后继续处理消息
+				isPageUnloaded: false, // 页面是否已卸载，防止卸载后继续处理消息
+				
+				// 音频播放相关
+				innerAudioContext: null, // 音频上下文
+				currentPlayingOrderId: null // 当前正在播放的订单ID
 			}
 		},
 		onLoad(options) {
@@ -319,6 +323,29 @@
 		},
 
 		onShow() {
+			// 检查是否登录
+			if (!this.$store.getters.token) {
+				uni.showModal({
+					title: '提示',
+					content: '请先登录后再查看订单',
+					confirmText: '去登录',
+					cancelText: '返回',
+					success: (res) => {
+						if (res.confirm) {
+							uni.navigateTo({
+								url: '/pages/login'
+							})
+						} else {
+							// 返回首页
+							uni.switchTab({
+								url: '/pages/index'
+							})
+						}
+					}
+				})
+				return
+			}
+			
 			// 重置页面卸载标记
 			this.isPageUnloaded = false
 			
@@ -351,6 +378,13 @@
 				this.searchTimer = null
 			}
 			
+			// 清理音频资源
+			if (this.innerAudioContext) {
+				this.innerAudioContext.stop()
+				this.innerAudioContext.destroy()
+				this.innerAudioContext = null
+			}
+			
 			// 移除事件监听
 			uni.$off('openReviewModal', this.handleOpenReviewModal)
 		},
@@ -365,7 +399,9 @@
 					let userRequest = ''
 					let matchReason = ''
 					
-					for (const part of parts) {
+					// 使用传统 for 循环替代 for...of
+					for (let i = 0; i < parts.length; i++) {
+						const part = parts[i]
 						if (part.includes('用户原始需求:')) {
 							userRequest = part.replace('用户原始需求:', '').trim()
 						} else if (part.includes('匹配原因:')) {
@@ -383,6 +419,118 @@
 					console.error('解析备注失败', e)
 				}
 				return null
+			},
+
+			// 播放语音
+			playVoice(order) {
+				if (!order.filename) {
+					uni.showToast({
+						title: '暂无语音文件',
+						icon: 'none'
+					})
+					return
+				}
+				
+				// 构建完整的音频URL
+				// 正确的路径格式：/api/audio/demand/
+				let url = config.baseUrl + '/api/audio/demand/' + order.filename
+				
+				console.log('播放语音URL:', url)
+				
+				// 如果已经在播放同一个订单的语音，则停止播放
+				if (this.currentPlayingOrderId === order.id && this.innerAudioContext) {
+					this.innerAudioContext.stop()
+					this.currentPlayingOrderId = null
+					uni.showToast({
+						title: '已停止播放',
+						icon: 'none'
+					})
+					return
+				}
+				
+				// 停止之前的播放
+				if (this.innerAudioContext) {
+					this.innerAudioContext.stop()
+					this.innerAudioContext.destroy()
+				}
+				
+				// 直接尝试播放，不再检查文件
+				this.startPlayAudio(url, order.id)
+			},
+			
+			// 开始播放音频
+			startPlayAudio(audioUrl, orderId) {
+				try {
+					// 确保音频实例存在
+					if (!this.innerAudioContext) {
+						this.innerAudioContext = uni.createInnerAudioContext()
+						
+						// 播放结束
+						this.innerAudioContext.onEnded(() => {
+							console.log('语音播放完成')
+							this.currentPlayingOrderId = null
+						})
+						
+						// 播放错误
+						this.innerAudioContext.onError((res) => {
+							console.error('语音播放失败 - 原始错误对象:', res)
+							console.error('音频URL:', audioUrl)
+							
+							let errorMsg = '语音播放失败'
+							
+							// 安全地访问 res 对象
+							if (res && typeof res === 'object') {
+								console.error('错误代码:', res.errCode)
+								console.error('错误信息:', res.errMsg)
+								
+								if (res.errCode === 10001) {
+									errorMsg = '音频格式不支持'
+								} else if (res.errCode === 10002) {
+									errorMsg = '网络错误'
+								} else if (res.errCode === 10003) {
+									errorMsg = '文件错误'
+								} else if (res.errCode === 10004) {
+									errorMsg = '音频格式错误'
+								} else if (res.errMsg) {
+									errorMsg = res.errMsg
+								}
+							}
+							
+							uni.showToast({
+								title: errorMsg,
+								icon: 'none',
+								duration: 2000
+							})
+							this.currentPlayingOrderId = null
+						})
+					}
+					
+					// 停止当前播放
+					this.innerAudioContext.stop()
+					
+					// 设置新的音频源
+					this.innerAudioContext.src = audioUrl
+					
+					// 记录当前播放的订单ID
+					this.currentPlayingOrderId = orderId
+					
+					// 开始播放
+					this.innerAudioContext.play()
+					
+					console.log('开始播放语音')
+					uni.showToast({
+						title: '正在播放语音',
+						icon: 'none',
+						duration: 1000
+					})
+				} catch (e) {
+					console.error('播放音频异常:', e)
+					uni.showToast({ 
+						title: '播放失败: ' + e.message, 
+						icon: 'none' 
+					})
+					this.currentPlayingOrderId = null
+				}
 			},
 
 			// 切换标签
@@ -578,6 +726,8 @@
 					useSubsidy: order.useSubsidy || '0',
 					
 					// 其他信息
+					orderType: order.orderType || '0',  // 订单类型：0-普通下单，1-语音下单
+					filename: order.filename || '',  // 语音文件路径
 					remark: order.remark || '',
 					rating: order.rating || null,
 					evaluationContent: order.evaluationContent || '',
@@ -1543,6 +1693,13 @@
 							border-radius: 100rpx;
 							font-weight: 500;
 							box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.3);
+							cursor: pointer;
+							transition: all 0.2s;
+							
+							&:active {
+								transform: scale(0.95);
+								opacity: 0.8;
+							}
 							
 							text {
 								line-height: 1;

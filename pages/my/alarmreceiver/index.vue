@@ -15,6 +15,12 @@
 				<uni-icons type="info" size="14" color="#3ec6c6"></uni-icons>
 				<text>请选择要绑定到设备的接警人</text>
 			</view>
+			
+			<!-- 报警逻辑说明 -->
+			<view class="logic-tip-bar">
+				<uni-icons type="info-filled" size="14" color="#ff9800"></uni-icons>
+				<text>实际通知 = 设备配置 ∩ 接警人设置，双方都开启才会发送</text>
+			</view>
 
 			<view class="empty-state" v-if="receiverList.length === 0">
 				<view class="empty-icon-box">
@@ -158,6 +164,10 @@
 
 					<view class="form-group">
 						<view class="section-title">通知设置</view>
+						<view class="notify-tip">
+							<uni-icons type="info" size="12" color="#999"></uni-icons>
+							<text>实际通知 = 设备配置 ∩ 接警人设置（取交集）</text>
+						</view>
 						<view class="form-item switch-item">
 							<text class="label">电话通知</text>
 							<switch :checked="formData.phoneNotifySwitch === '1'" @change="e => formData.phoneNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
@@ -742,6 +752,22 @@
 			color: #1890ff;
 		}
 	}
+	
+	.logic-tip-bar {
+		background: #fff7e6;
+		padding: 16rpx 24rpx;
+		border-radius: 12rpx;
+		margin-bottom: 24rpx;
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+		
+		text {
+			font-size: 24rpx;
+			color: #ff9800;
+			line-height: 1.5;
+		}
+	}
 
 	.receiver-card {
 		background: #fff;
@@ -1121,6 +1147,22 @@
 				padding-left: 16rpx;
 				border-left: 6rpx solid #3ec6c6;
 				line-height: 1;
+			}
+			
+			.notify-tip {
+				display: flex;
+				align-items: center;
+				gap: 8rpx;
+				padding: 12rpx 16rpx;
+				background: #f9f9f9;
+				border-radius: 8rpx;
+				margin-bottom: 16rpx;
+				
+				text {
+					font-size: 22rpx;
+					color: #999;
+					line-height: 1.4;
+				}
 			}
 		}
 

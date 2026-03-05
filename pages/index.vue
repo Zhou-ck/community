@@ -182,18 +182,27 @@ export default {
           bgColor: '#FFE8F0',
           iconColor: '#FF4081'
         },
+      //   {
+      //     id: 7,
+      //     name: '志愿服务',
+      //     icon: 'icon-zhiyuanzhe',
+      //     bgColor: '#F3E5F5',
+      //     iconColor: '#9C27B0',
+		  //  iconSize: '60rpx' 
+      //   },
+     
         {
           id: 7,
-          name: '志愿服务',
-          icon: 'icon-zhiyuanzhe',
+          name: '服务套餐',
+          icon: 'icon-fuwutaocan',
           bgColor: '#F3E5F5',
           iconColor: '#9C27B0',
-		   iconSize: '60rpx' 
+		   iconSize: '48rpx' 
         },
      
          {
           id: 8,
-          name: '养老机构',
+          name: '设备套餐',
           icon: 'icon-yiliaojigou',
           bgColor: '#E8F4FF',
           iconColor: '#2196F3',
@@ -389,10 +398,16 @@ export default {
         uni.navigateTo({
           url: '/pages/server/volunteer/index'
         })
-      } else if (service.name === '养老机构') {
-        // 跳转到养老机构页面
+      } else if (service.name === '服务套餐') {
+        // 跳转到志愿服务页面
         uni.navigateTo({
-          url: '/pages/server/institution/index'
+          url: '/pages/server/SetMeal/index'
+        })
+      }
+      else if (service.name === '设备套餐') {
+        // 跳转到设备套餐页面
+        uni.navigateTo({
+          url: '/pages/my/balancePackage/index'
         })
       } else {
         // 其他服务显示开发中提示

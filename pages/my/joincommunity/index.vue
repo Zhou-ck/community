@@ -550,7 +550,7 @@ export default {
           this.communityList.forEach(community => {
             // 如果有throughStatus字段，根据其值设置applyStatus
             if (community.throughStatus !== undefined) {
-              // throughStatus: 0-待审核，1-通过，2-未通过，3-已撤销，4-已退出
+              // throughStatus: 0-待审核，1-已同意，2-已拒绝，3-申请已撤销，4-居民已退出社区
               // 转换为数字进行比较，兼容字符串和数字类型
               const status = parseInt(community.throughStatus)
               switch (status) {
@@ -563,7 +563,7 @@ export default {
                 case 2:
                 case 3:
                 case 4:
-                  community.applyStatus = 0 // 可申请（未通过、已撤销、已退出都可以重新申请）
+                  community.applyStatus = 0 // 可申请（已拒绝、申请已撤销、居民已退出社区都可以重新申请）
                   break
                 default:
                   community.applyStatus = 0 // 默认可申请
@@ -584,10 +584,25 @@ export default {
     
     // 查看社区详情
     handleCommunityDetail(community) {
-      uni.showModal({
-        title: community.deptName || community.name,
-        content: `地址: ${community.address || '地址待完善'}\n\n${community.description || '专业的智慧养老社区，提供全方位的养老服务'}`,
-        showCancel: false
+      // 构建跳转参数
+      const params = {
+        deptId: community.deptId,
+        deptName: community.deptName || community.name,
+        address: community.address || ''
+      }
+      
+      // 如果有申请记录，传递applyId
+      if (community.applyId) {
+        params.applyId = community.applyId
+      }
+      
+      // 构建URL参数
+      const query = Object.keys(params)
+        .map(key => `${key}=${encodeURIComponent(params[key])}`)
+        .join('&')
+      
+      uni.navigateTo({
+        url: `/pages/my/joincommunity/detail?${query}`
       })
     },
     

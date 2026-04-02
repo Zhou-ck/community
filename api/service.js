@@ -62,6 +62,14 @@ export function updateServiceorder(data) {
   })
 }
 
+// 查询订单的修改记录
+export function getModificationHistory(orderId) {
+  return request({
+    url: '/services/appointment/modification/history/' + orderId,
+    method: 'get'
+  })
+}
+
 // 删除服务订单
 export function delServiceorder(orderId) {
   return request({
@@ -71,14 +79,14 @@ export function delServiceorder(orderId) {
 }
 
 
-// // 服务完成
-// export function completeServiceorder(data) {
-//   return request({
-//     url: '/services/serviceorder/complete',
-//     method: 'put',
-//     data: data
-//   })
-// }
+// 服务完成
+export function completeServiceorder(data) {
+  return request({
+    url: '/services/serviceorder/complete',
+    method: 'put',
+    data: data
+  })
+}
 
 // 服务评价
 export function evaluationServiceorder(data) {
@@ -86,5 +94,13 @@ export function evaluationServiceorder(data) {
     url: '/services/serviceorder/evaluation',
     method: 'put',
     data: data
+  })
+}
+
+// 查询订单评价列表
+export function getEvaluationListByOrderId(orderId) {
+  return request({
+    url: '/services/evaluation/listByOrderId/' + orderId,
+    method: 'get'
   })
 }

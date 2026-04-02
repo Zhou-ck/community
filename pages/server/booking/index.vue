@@ -95,6 +95,7 @@
           mode="date"
           :value="bookingData.appointmentDate"
           :start="minDate"
+          :end="maxDate"
           @change="onDateChange"
         >
           <view class="picker-input">
@@ -104,6 +105,10 @@
             <uni-icons type="calendar" size="20" color="#999"></uni-icons>
           </view>
         </picker>
+        <view class="form-tip">
+          <uni-icons type="info" size="14" color="#999"></uni-icons>
+          <text>只能预约一周之内的服务</text>
+        </view>
       </view>
       
       <!-- 预约时段 -->
@@ -228,6 +233,7 @@ export default {
       submitting: false,
       canUseSubsidy: false,
       minDate: '',
+      maxDate: '', // 最大日期（一周后）
       selectedAddressId: null, // 选中的地址ID
       isEditMode: false, // 是否为编辑模式
       currentOrderId: null, // 当前编辑的订单ID
@@ -497,7 +503,28 @@ export default {
     
     // 日期改变
     onDateChange(e) {
-      this.bookingData.appointmentDate = e.detail.value;
+      const selectedDate = e.detail.value;
+      
+      // 验证日期是否在允许范围内
+      if (selectedDate < this.minDate) {
+        uni.showToast({
+          title: '不能选择今天之前的日期',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+      
+      if (selectedDate > this.maxDate) {
+        uni.showToast({
+          title: '只能预约一周之内的服务',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+      
+      this.bookingData.appointmentDate = selectedDate;
       
       // 如果已选择的时间段在新日期下已过期，清空选择
       if (this.bookingData.appointmentPeriod && this.isTimeSlotDisabled(this.bookingData.appointmentPeriod)) {
@@ -634,7 +661,8 @@ export default {
           subsidyAmount: this.bookingData.subsidyAmount,
           actualAmount: this.bookingData.actualAmount,
           remark: this.bookingData.remark,
-          useSubsidy: this.bookingData.useSubsidy
+          useSubsidy: this.bookingData.useSubsidy,
+          orderSource: '4'  // 订单来源：4表示预约服务
         };
         
         console.log('提交订单数据:', submitData);
@@ -745,7 +773,7 @@ export default {
       }
     },
     
-    // 获取最小日期（今天）并设置默认日期
+    // 获取最小日期（今天）和最大日期（一周后）并设置默认日期
     getMinDate() {
       const today = new Date();
       const year = today.getFullYear();
@@ -753,6 +781,14 @@ export default {
       const day = String(today.getDate()).padStart(2, '0');
       const todayStr = `${year}-${month}-${day}`;
       this.minDate = todayStr;
+      
+      // 计算一周后的日期
+      const oneWeekLater = new Date(today);
+      oneWeekLater.setDate(today.getDate() + 7);
+      const maxYear = oneWeekLater.getFullYear();
+      const maxMonth = String(oneWeekLater.getMonth() + 1).padStart(2, '0');
+      const maxDay = String(oneWeekLater.getDate()).padStart(2, '0');
+      this.maxDate = `${maxYear}-${maxMonth}-${maxDay}`;
       
       // 默认选择当天
       if (!this.bookingData.appointmentDate) {
@@ -1071,6 +1107,21 @@ export default {
   width: 100%;
   box-sizing: border-box;
   line-height: 1.5;
+}
+
+/* 表单提示 */
+.form-tip {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 12rpx;
+  padding-left: 4rpx;
+  
+  text {
+    font-size: 24rpx;
+    color: #999;
+    line-height: 1.4;
+  }
 }
 
 /* 单选框组 */

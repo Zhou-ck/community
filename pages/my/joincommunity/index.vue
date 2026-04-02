@@ -55,7 +55,7 @@
         <view 
           class="community-item" 
           v-for="(community, index) in communityList" 
-          :key="community.id"
+          :key="community.deptId"
           @click="handleCommunityDetail(community)"
         >
           <view class="community-card">
@@ -584,25 +584,16 @@ export default {
     
     // 查看社区详情
     handleCommunityDetail(community) {
-      // 构建跳转参数
-      const params = {
+      // 直接存储到缓存，避免URL参数中文乱码
+      uni.setStorageSync('community_detail_params', {
         deptId: community.deptId,
         deptName: community.deptName || community.name,
-        address: community.address || ''
-      }
-      
-      // 如果有申请记录，传递applyId
-      if (community.applyId) {
-        params.applyId = community.applyId
-      }
-      
-      // 构建URL参数
-      const query = Object.keys(params)
-        .map(key => `${key}=${encodeURIComponent(params[key])}`)
-        .join('&')
+        address: community.address || '',
+        applyId: community.applyId || ''
+      })
       
       uni.navigateTo({
-        url: `/pages/my/joincommunity/detail?${query}`
+        url: `/pages/my/joincommunity/detail`
       })
     },
     

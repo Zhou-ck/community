@@ -123,14 +123,24 @@ export default {
   },
   
   onLoad(options) {
-    if (options.deptId) {
+    // 优先从缓存读取（避免URL参数中文乱码）
+    const cached = uni.getStorageSync('community_detail_params')
+    if (cached && cached.deptId) {
+      this.communityInfo.deptId = cached.deptId
+      this.communityInfo.deptName = cached.deptName || ''
+      this.communityInfo.address = cached.address || ''
+      uni.removeStorageSync('community_detail_params')
+      if (cached.applyId) {
+        this.loadJoinRecord(cached.applyId)
+      }
+    } else if (options.deptId) {
+      // 兼容旧方式（URL参数）
       this.communityInfo.deptId = options.deptId
-      this.communityInfo.deptName = options.deptName || ''
-      this.communityInfo.address = options.address || ''
-    }
-    
-    if (options.applyId) {
-      this.loadJoinRecord(options.applyId)
+      this.communityInfo.deptName = options.deptName ? decodeURIComponent(options.deptName) : ''
+      this.communityInfo.address = options.address ? decodeURIComponent(options.address) : ''
+      if (options.applyId) {
+        this.loadJoinRecord(options.applyId)
+      }
     }
   },
   

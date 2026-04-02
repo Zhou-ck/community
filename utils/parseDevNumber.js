@@ -53,9 +53,9 @@ export function parseDeviceNumber(deviceNumBering) {
         resDeviceNumber.deviceType = '19';
     } else if (deviceTypeStr === 'Od') {//其它
         resDeviceNumber.deviceType = '20';
-    } else if (deviceTypeStr === 'Za') {//手表(AA型)
+    } else if (deviceTypeStr === 'Za') {//手表(H102C)
         resDeviceNumber.deviceType = '21';
-    } else if (deviceTypeStr === 'Zb') {//手表(AB型)
+    } else if (deviceTypeStr === 'Zb') {//手表(BP100C)
         resDeviceNumber.deviceType = '22';
     } else if (deviceTypeStr === 'Zc') {//手表(AC型)
         resDeviceNumber.deviceType = '23';
@@ -74,16 +74,6 @@ export function parseDeviceNumberIsImei(deviceNumBering) {
     const imeiRegex = /^\d{15}$/;
     return imeiRegex.test(deviceNumBering);
 }
-
-/** 判断设备是否需要配网模块
- * 只有 '1'(呼吸睡眠), '2'(跌倒监测), '4'(呼吸睡眠-L2) 需要配网
- * @param {string} deviceType - 设备类型值
- * @returns {boolean} - 是否需要配网
- */
-export function needsNetworkConfig(deviceType) {
-    return ['1', '2', '4'].includes(deviceType);
-}
-
 
 /**
  * 设备类型常量定义
@@ -106,7 +96,7 @@ export function needsNetworkConfig(deviceType) {
  * 
  * 手表设备-无参数设置（使用iwown接口）:
  *   - 21: 手表(H102C)
- *   - 22: 手表(AB型)
+ *   - 22: 手表(BP100C)
  *   - 23: 手表(AC型)
  */
 const DEVICE_TYPES = {
@@ -119,6 +109,117 @@ const DEVICE_TYPES = {
     // 手表设备-无参数设置（使用iwown接口）
     WATCH_NO_PARAMS: ['21', '22', '23']
 };
+
+/** 判断设备是否需要配网模块
+ * 只有 KAT 设备需要配网：'1'(呼吸睡眠), '2'(跌倒监测), '4'(呼吸睡眠-L2)
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean} - 是否需要配网
+ */
+export function needsNetworkConfig(deviceType) {
+    return DEVICE_TYPES.KAT.includes(deviceType);
+}
+
+// ==================== 设备绑定家人相关配置 ====================
+
+/**
+ * 不同设备类型可绑定的最大家人数
+ * key 为设备类型（string），value 为最大可绑定家人数
+ * 0 或 undefined 表示不限制人数
+ */
+export const deviceTypeMaxBindCountMap = {
+    '0': 0,   // 人体存在
+    '1': 1,   // 呼吸睡眠
+    '2': 0,   // 跌倒监测
+    '4': 1,   // 呼吸睡眠-L2
+    '13': 0,  // 水浸
+    '14': 0,  // 门磁
+    '15': 0,  // 烟感
+    '16': 0,  // 可燃气体
+    '17': 0,  // 红外
+    '18': 0,  // 温湿度
+    '19': 0,  // 一氧化碳
+    '20': 0,  // 其它
+    '21': 0,  // 手表(H102C)
+    '22': 0,  // 手表(BP100C)
+    '23': 0   // 手表(AC型)
+};
+
+/**
+ * 不支持绑定家人的设备类型列表
+ * 元素为设备类型（string）
+ * 在前端会根据该配置隐藏/禁用"绑定家人"入口
+ */
+export const deviceTypesDisableBindFamily = [
+    '0',   // 人体存在
+    '2',   // 跌倒监测
+    '13',  // 水浸
+    '14',  // 门磁
+    '15',  // 烟感
+    '16',  // 可燃气体
+    '17',  // 红外
+    '18',  // 温湿度
+    '19',  // 一氧化碳
+    '20',  // 其它
+    '21',  // 手表(H102C)
+    '22',  // 手表(BP100C)
+    '23'   // 手表(AC型)
+];
+
+/**
+ * 获取设备类型可绑定的最大家人数
+ * @param {string} deviceType - 设备类型值
+ * @returns {number} - 最大可绑定家人数，0表示不限制
+ */
+export function getDeviceMaxBindCount(deviceType) {
+    return deviceTypeMaxBindCountMap[deviceType] || 0;
+}
+
+/**
+ * 判断设备类型是否支持绑定家人
+ * @param {string} deviceType - 设备类型值
+ * @returns {boolean} - true表示支持绑定家人，false表示不支持
+ */
+export function canBindFamily(deviceType) {
+    return !deviceTypesDisableBindFamily.includes(deviceType);
+}
+
+/**
+ * 判断设备是否已达到绑定家人上限
+ * @param {string} deviceType - 设备类型值
+ * @param {number} currentBindCount - 当前已绑定的家人数
+ * @returns {boolean} - true表示已达上限，false表示未达上限
+ */
+export function isBindFamilyLimitReached(deviceType, currentBindCount) {
+    const maxCount = getDeviceMaxBindCount(deviceType);
+    // maxCount为0表示不限制
+    if (maxCount === 0) {
+        return false;
+    }
+    return currentBindCount >= maxCount;
+}
+
+/**
+ * 获取设备绑定家人的提示信息
+ * @param {string} deviceType - 设备类型值
+ * @param {number} currentBindCount - 当前已绑定的家人数
+ * @returns {string} - 提示信息
+ */
+export function getBindFamilyTip(deviceType, currentBindCount = 0) {
+    if (!canBindFamily(deviceType)) {
+        return '该设备类型不支持绑定家人';
+    }
+    
+    const maxCount = getDeviceMaxBindCount(deviceType);
+    if (maxCount === 0) {
+        return '可绑定多个家人';
+    }
+    
+    if (isBindFamilyLimitReached(deviceType, currentBindCount)) {
+        return `该设备最多绑定${maxCount}个家人，已达上限`;
+    }
+    
+    return `该设备最多可绑定${maxCount}个家人，当前已绑定${currentBindCount}个`;
+}
 
 /**
  * 判断是否为KAT设备
@@ -139,39 +240,32 @@ export function isWatchDevice(deviceType) {
 }
 
 /**
- * 判断手表设备是否支持实时数据
+ * 判断手表设备是否支持特定功能
+ * 目前所有手表设备都支持以下功能：实时数据、健康数据总览、通话记录、配置
  * @param {string} deviceType - 设备类型值
+ * @param {string} feature - 功能名称（可选）：'realtime'|'health'|'call'|'config'
  * @returns {boolean}
  */
+export function watchSupportsFeature(deviceType, feature) {
+    // 所有手表设备都支持这些功能
+    return isWatchDevice(deviceType);
+}
+
+// 为了保持向后兼容，保留原有的函数名，但内部调用统一的函数
 export function watchSupportsRealTimeData(deviceType) {
-    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+    return watchSupportsFeature(deviceType, 'realtime');
 }
 
-/**
- * 判断手表设备是否支持健康数据总览
- * @param {string} deviceType - 设备类型值
- * @returns {boolean}
- */
 export function watchSupportsHealthOverview(deviceType) {
-    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+    return watchSupportsFeature(deviceType, 'health');
 }
 
-/**
- * 判断手表设备是否支持通话记录
- * @param {string} deviceType - 设备类型值
- * @returns {boolean}
- */
 export function watchSupportsCallHistory(deviceType) {
-    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+    return watchSupportsFeature(deviceType, 'call');
 }
 
-/**
- * 判断手表设备是否支持配置
- * @param {string} deviceType - 设备类型值
- * @returns {boolean}
- */
 export function watchSupportsConfig(deviceType) {
-    return DEVICE_TYPES.WATCH_NO_PARAMS.includes(deviceType);
+    return watchSupportsFeature(deviceType, 'config');
 }
 
 /**

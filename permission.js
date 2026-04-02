@@ -58,7 +58,8 @@ list.forEach(item => {
       const hasToken = getToken()
       
       // 已登录用户访问登录页，跳转到首页
-      if (hasToken && to.url === loginPage) {
+      // 但如果是 reLaunch 方式（通常是登录过期后的跳转），则允许通过
+      if (hasToken && to.url === loginPage && item !== 'reLaunch') {
         uni.reLaunch({ url: "/pages/index" })
         return false
       }

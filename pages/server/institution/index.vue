@@ -38,9 +38,9 @@
 
 					<view class="rating-row">
 						<view class="stars">
-							<uni-icons type="star-filled" size="14" color="#FF9800" v-for="n in 5" :key="n"
+							<uni-icons type="star-filled" size="14" color="#FF9800" v-for="n in 5" :key="'filled-' + n"
 								v-if="n <= Math.floor(item.rating)"></uni-icons>
-							<uni-icons type="star-filled" size="14" color="#E0E0E0" v-for="n in 5" :key="n"
+							<uni-icons type="star-filled" size="14" color="#E0E0E0" v-for="n in 5" :key="'empty-' + n"
 								v-if="n > Math.floor(item.rating)"></uni-icons>
 						</view>
 						<text class="score">{{ item.rating }}分</text>

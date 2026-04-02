@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@dcloudio/uni-ui": "^1.5.11",
     "@qiun/ucharts": "^2.5.0-20230101",
-    "uview-ui": "^2.0.38"
+    "uview-ui": "^2.0.38",
+    "weapp-qrcode": "^1.0.0"
   },
   "devDependencies": {
     "sass": "^1.97.3",

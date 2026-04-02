@@ -64,6 +64,17 @@
 							</view>
 						</view>
 						
+						<!-- 慢性病标签 -->
+						<view class="disease-tags-box" v-if="record.chronicDiseaseInfo && parseChronicDiseases(record.chronicDiseaseInfo).length > 0">
+							<view 
+								v-for="(item, idx) in parseChronicDiseases(record.chronicDiseaseInfo)" 
+								:key="idx"
+								class="mini-disease-tag"
+							>
+								{{ item.name }}
+							</view>
+						</view>
+						
 						<view class="allergy-box" v-if="record.allergicDrugs">
 							<uni-icons type="info-filled" size="14" color="#ff9c6e"></uni-icons>
 							<text class="warning-text">过敏: {{ record.allergicDrugs }}</text>
@@ -284,6 +295,20 @@
 							</picker>
 						</view>
 						<view class="form-item column">
+							<text class="label">慢性病信息</text>
+							<view class="disease-grid">
+								<view 
+									v-for="item in chronicDiseases" 
+									:key="item.id" 
+									class="disease-tag"
+									:class="{ active: item.hasFlag }"
+									@click="toggleDisease(item)"
+								>
+									{{ item.name }}
+								</view>
+							</view>
+						</view>
+						<view class="form-item column">
 							<text class="label">过敏药物</text>
 							<textarea
 								v-model="formData.allergicDrugs"
@@ -336,6 +361,7 @@ import {
 	delResidenthealthrecord,
 	getExistingFamilyMemberIds
 } from '@/api/residenthealthrecord'
+import { chronicDiseaseConfig } from '@/utils/chronicDiseaseConfig'
 
 export default {
 	data() {
@@ -365,6 +391,7 @@ export default {
 				nextCheckupTime: '',
 				allergicDrugs: '',
 				medicalHistory: '',
+				chronicDiseaseInfo: '',
 				remark: ''
 			},
 			// 保存原始的表单数据用于对比
@@ -379,8 +406,12 @@ export default {
 				nextCheckupTime: '',
 				allergicDrugs: '',
 				medicalHistory: '',
+				chronicDiseaseInfo: '',
 				remark: ''
 			},
+			
+			// 慢性病配置列表
+			chronicDiseases: [],
 			
 			selectedMemberIndex: -1,
 			selectedMemberLabel: '',
@@ -440,6 +471,9 @@ export default {
 		const day = String(date.getDate()).padStart(2, '0')
 		this.today = `${year}-${month}-${day}`
 		
+		// 初始化慢性病列表
+		this.initChronicDiseases()
+		
 		this.loadFamilyMembers()
 		this.loadRecords()
 	},
@@ -458,6 +492,31 @@ export default {
 				this.safeAreaBottom = systemInfo.safeAreaInsets.bottom * 2
 			} else {
 				this.safeAreaBottom = 0
+			}
+		},
+
+		// 初始化慢性病列表
+		initChronicDiseases() {
+			this.chronicDiseases = chronicDiseaseConfig.map(item => ({
+				...item,
+				hasFlag: false
+			}))
+		},
+
+		// 切换慢性病选中状态
+		toggleDisease(item) {
+			item.hasFlag = !item.hasFlag
+		},
+
+		// 解析慢性病信息字符串
+		parseChronicDiseases(info) {
+			if (!info) return []
+			try {
+				const diseases = typeof info === 'string' ? JSON.parse(info) : info
+				return diseases.filter(d => d.hasFlag)
+			} catch (e) {
+				console.error('解析慢性病信息失败:', e)
+				return []
 			}
 		},
 
@@ -579,8 +638,12 @@ export default {
 				nextCheckupTime: '',
 				allergicDrugs: '',
 				medicalHistory: '',
+				chronicDiseaseInfo: '',
 				remark: ''
 			}
+			// 重置慢性病选择
+			this.chronicDiseases.forEach(d => d.hasFlag = false)
+			
 			this.selectedMemberIndex = -1
 			this.selectedMemberLabel = ''
 			this.updateAvailableFamilyMembers()
@@ -603,8 +666,27 @@ export default {
 				nextCheckupTime: record.nextCheckupTime || '',
 				allergicDrugs: record.allergicDrugs || '',
 				medicalHistory: record.medicalHistory || '',
+				chronicDiseaseInfo: record.chronicDiseaseInfo || '',
 				remark: record.remark || ''
 			}
+			// 设置慢性病选中状态
+			if (record.chronicDiseaseInfo) {
+				try {
+					const savedDiseases = typeof record.chronicDiseaseInfo === 'string' 
+						? JSON.parse(record.chronicDiseaseInfo) 
+						: record.chronicDiseaseInfo
+					
+					this.chronicDiseases.forEach(disease => {
+						const saved = savedDiseases.find(d => d.id === disease.id)
+						disease.hasFlag = !!(saved && saved.hasFlag)
+					})
+				} catch (e) {
+					console.error('回显慢性病信息失败:', e)
+				}
+			} else {
+				this.chronicDiseases.forEach(d => d.hasFlag = false)
+			}
+
 			// 保存原始数据用于对比
 			this.originalFormData = {
 				bloodType: record.bloodType || '',
@@ -617,6 +699,7 @@ export default {
 				nextCheckupTime: record.nextCheckupTime || '',
 				allergicDrugs: record.allergicDrugs || '',
 				medicalHistory: record.medicalHistory || '',
+				chronicDiseaseInfo: record.chronicDiseaseInfo || '',
 				remark: record.remark || ''
 			}
 			
@@ -834,6 +917,7 @@ export default {
 			
 			// 编辑模式下对比数据是否发生变化
 			if (this.isEdit) {
+				const currentDiseaseInfo = JSON.stringify(this.chronicDiseases)
 				const isDataChanged = 
 					this.formData.bloodType !== this.originalFormData.bloodType ||
 					this.formData.bloodSugar !== this.originalFormData.bloodSugar ||
@@ -845,6 +929,7 @@ export default {
 					this.formData.nextCheckupTime !== this.originalFormData.nextCheckupTime ||
 					this.formData.allergicDrugs !== this.originalFormData.allergicDrugs ||
 					this.formData.medicalHistory !== this.originalFormData.medicalHistory ||
+					currentDiseaseInfo !== this.originalFormData.chronicDiseaseInfo ||
 					this.formData.remark !== this.originalFormData.remark
 				
 				if (!isDataChanged) {
@@ -861,6 +946,10 @@ export default {
 				
 				// 获取用户ID
 				const storageData = uni.getStorageSync('storage_data')
+				
+				// 序列化慢性病信息
+				this.formData.chronicDiseaseInfo = JSON.stringify(this.chronicDiseases)
+				
 				const submitData = {
 					...this.formData,
 					userId: storageData.user_id
@@ -1069,6 +1158,22 @@ export default {
 					font-size: 26rpx;
 					color: #fa541c;
 					font-weight: 500;
+				}
+			}
+
+			.disease-tags-box {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 12rpx;
+				margin-bottom: 20rpx;
+				
+				.mini-disease-tag {
+					font-size: 22rpx;
+					color: #ff4d4f;
+					background: #fff2f0;
+					border: 1rpx solid #ffccc7;
+					padding: 4rpx 12rpx;
+					border-radius: 6rpx;
 				}
 			}
 		}
@@ -1387,6 +1492,35 @@ export default {
 		
 		.placeholder {
 			color: #ccc;
+		}
+
+		.disease-grid {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 16rpx;
+			padding: 10rpx 0;
+			
+			.disease-tag {
+				padding: 12rpx 24rpx;
+				background: #f5f7fa;
+				border-radius: 100rpx;
+				font-size: 26rpx;
+				color: #666;
+				border: 1rpx solid transparent;
+				transition: all 0.2s;
+				
+				&.active {
+					background: #e6f7f7;
+					color: #3ec6c6;
+					border-color: #3ec6c6;
+					font-weight: 500;
+				}
+				
+				&:active {
+					opacity: 0.8;
+					transform: scale(0.95);
+				}
+			}
 		}
 		
 		.picker-flex {

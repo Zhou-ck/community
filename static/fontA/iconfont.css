@@ -12,6 +12,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-fuwutaocan:before {
+  content: "\e613";
+}
+
+.icon-tubiao-fuwutaocan:before {
+  content: "\e6cd";
+}
+
 .icon-lianxiren:before {
   content: "\e68d";
 }

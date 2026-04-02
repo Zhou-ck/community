@@ -3,7 +3,15 @@
 		<!-- 顶部提示 -->
 		<view class="tip-box" v-if="deviceId || memberList.length > 0">
 			<uni-icons type="info" size="16" color="#3ec6c6"></uni-icons>
-			<text class="tip-text">{{ deviceId ? '请选择要绑定到设备的家庭成员' : '添加家庭成员后，可为家人预约服务' }}</text>
+			<text class="tip-text" v-if="deviceId && bindMode === 'replace'">
+				请选择要绑定到设备的家庭成员（最多{{ maxSelectableCount }}人）
+			</text>
+			<text class="tip-text" v-else-if="deviceId">
+				请选择要绑定到设备的家庭成员
+			</text>
+			<text class="tip-text" v-else>
+				添加家庭成员后，可为家人预约服务
+			</text>
 		</view>
 
 		<!-- 成员列表 -->
@@ -29,7 +37,8 @@
 					<view class="card-header">
 						<view class="header-left">
 							<view class="avatar-box">
-								<text class="avatar-text">{{ member.memberName ? member.memberName.charAt(0) : '家' }}</text>
+								<image v-if="member.photo" :src="getPhotoUrl(member.photo)" class="avatar-image" mode="aspectFill"></image>
+								<text v-else class="avatar-text">{{ member.memberName ? member.memberName.charAt(0) : '家' }}</text>
 							</view>
 							<view class="info-box">
 								<view class="name-row">
@@ -84,6 +93,20 @@
 								<text class="value">{{ formatIdCard(member.idCard) }}</text>
 							</view>
 						</view>
+						<view class="info-row" v-if="member.likes">
+							<view class="info-item full">
+								<text class="label">喜好</text>
+								<view class="likes-display">
+									<view 
+										class="like-display-tag" 
+										v-for="(like, index) in parseLikesToArray(member.likes)" 
+										:key="index"
+									>
+										<text>{{ like }}</text>
+									</view>
+								</view>
+							</view>
+						</view>
 						<view class="info-row" v-if="member.remark">
 							<view class="info-item full">
 								<text class="label">备注</text>
@@ -124,14 +147,15 @@
 		<!-- 批量绑定操作栏 -->
 		<view class="bottom-bar bind-mode" v-if="deviceId" :style="{ paddingBottom: (safeAreaBottom + 24) + 'rpx' }">
 			<view class="bind-info">
-				<text>已选 {{ selectedMembers.length }} 人</text>
+				<text v-if="bindMode === 'replace'">已选 {{ selectedMembers.length }}/{{ maxSelectableCount }} 人</text>
+				<text v-else>已选 {{ selectedMembers.length }} 人</text>
 			</view>
 			<view class="btn-group">
 				<view class="action-btn cancel" @click="clearSelection" v-if="selectedMembers.length > 0">取消</view>
 				<view class="action-btn confirm" 
 					:class="{ disabled: selectedMembers.length === 0 }"
 					@click="batchBindMembers">
-					确认绑定
+					{{ bindMode === 'replace' ? '确认更换' : '确认绑定' }}
 				</view>
 			</view>
 		</view>
@@ -199,6 +223,51 @@
 							<text class="label required">身份证</text>
 							<input type="idcard" v-model="formData.idCard" maxlength="18" placeholder="请输入身份证号" placeholder-class="placeholder" />
 						</view>
+						<view class="form-item">
+							<text class="label">照片</text>
+							<view class="photo-upload-container">
+								<view class="photo-preview" v-if="formData.photo" @click="previewPhoto">
+									<image :src="getPhotoUrl(formData.photo)" class="photo-image" mode="aspectFill"></image>
+									<view class="photo-remove" @click.stop="removePhoto">
+										<uni-icons type="closeempty" size="16" color="#fff"></uni-icons>
+									</view>
+								</view>
+								<view class="photo-upload" v-else @click="uploadPhoto">
+									<uni-icons type="camera" size="32" color="#999"></uni-icons>
+									<text class="upload-text">点击上传照片</text>
+								</view>
+							</view>
+						</view>
+						<view class="form-item column">
+							<text class="label">喜好</text>
+							<view class="likes-container">
+								<view class="likes-tags">
+									<view 
+										class="like-tag" 
+										v-for="(like, index) in formData.likesArray" 
+										:key="index"
+										@click="removeLike(index)"
+									>
+										<text>{{ like }}</text>
+										<uni-icons type="closeempty" size="12" color="#3ec6c6"></uni-icons>
+									</view>
+								</view>
+								<view class="add-like-container">
+									<input 
+										type="text" 
+										v-model="newLikeText" 
+										placeholder="输入喜好后回车或点击添加" 
+										placeholder-class="placeholder"
+										@confirm="addLike"
+										@input="onLikeInput"
+										class="like-input"
+									/>
+									<view class="add-like-btn" @click="addLike" v-if="newLikeText.trim()">
+										<uni-icons type="plus" size="16" color="#3ec6c6"></uni-icons>
+									</view>
+								</view>
+							</view>
+						</view>
 						<view class="form-item column">
 							<text class="label">备注</text>
 							<textarea v-model="formData.remark" placeholder="请输入备注信息（选填）" placeholder-class="placeholder" maxlength="200" disable-default-padding />
@@ -220,6 +289,10 @@
 <script>
 import { listFamilymemberNoPage, addFamilymember, updateFamilymember, delFamilymember } from '@/api/familymember'
 import { getMemberIdsByDeviceId, bindFamilyMemberByDevice, delFamilyMemberDevice } from '@/api/familyMemberDevice'
+import { listProfiles, updateProfiles, addProfiles } from '@/api/profiles'
+import { resetDeviceNetwork } from '@/api/device'
+import { getDeviceMaxBindCount } from '@/utils/parseDevNumber'
+import config from '@/config.js'
 
 export default {
 	data() {
@@ -229,6 +302,10 @@ export default {
 			isEdit: false,
 			submitting: false,
 			deviceId: '', // 设备ID，从路由参数获取
+			deviceType: '1', // 设备类型，从路由参数获取
+			productKey: '', // 设备productKey
+			deviceKey: '', // 设备deviceKey
+			bindMode: 'normal', // 绑定模式：normal(正常绑定) 或 replace(更换绑定)
 			boundMembers: [], // 已绑定的成员列表
 			selectedMembers: [], // 选中要绑定的成员列表
 			isRefreshing: false, // 下拉刷新状态
@@ -242,10 +319,32 @@ export default {
 				height: '',
 				weight: '',
 				bmi: '',
-				remark: ''
+				remark: '',
+				likes: '', // 喜好列表
+				likesArray: [], // 喜好标签数组
+				photo: '' // 照片地址
 			},
+			newLikeText: '', // 新增喜好的输入文本
 			originalFormData: null, // 保存原始数据用于对比
 			relationList: ['本人', '爷爷', '奶奶', '外公', '外婆', '父亲', '母亲', '叔叔', '阿姨', '舅舅', '舅妈', '姑姑', '姑父', '姨妈', '姨父', '配偶', '兄弟', '姐妹', '朋友','其他']
+		}
+	},
+	computed: {
+		// 设备最大绑定数
+		deviceMaxBindCount() {
+			if (!this.deviceId) return 0
+			return getDeviceMaxBindCount(this.deviceType)
+		},
+		
+		// 在更换模式下，最多可选择的人数
+		maxSelectableCount() {
+			if (this.bindMode !== 'replace') return 999 // 正常模式不限制
+			return this.deviceMaxBindCount
+		},
+		
+		// 是否已达到选择上限
+		isSelectionLimitReached() {
+			return this.selectedMembers.length >= this.maxSelectableCount
 		}
 	},
 	onLoad(options) {
@@ -253,6 +352,10 @@ export default {
 		// 获取设备ID参数
 		if (options.deviceId) {
 			this.deviceId = options.deviceId
+			this.bindMode = options.mode || 'normal' // 绑定模式：normal(正常绑定) 或 replace(更换绑定)
+			this.deviceType = options.deviceType || '1' // 设备类型，默认为呼吸睡眠设备
+			this.productKey = options.productKey || '' // 设备productKey
+			this.deviceKey = options.deviceKey || '' // 设备deviceKey
 			this.loadBoundMembers()
 		}
 		this.loadMembers()
@@ -308,6 +411,7 @@ export default {
 		// 添加成员
 		addMember() {
 			this.isEdit = false
+			this.newLikeText = ''
 			this.formData = {
 				memberId: null,
 				memberName: '',
@@ -317,7 +421,10 @@ export default {
 				height: '',
 				weight: '',
 				bmi: '',
-				remark: ''
+				remark: '',
+				likes: '',
+				likesArray: [],
+				photo: ''
 			}
 			this.showModal = true
 		},
@@ -325,6 +432,7 @@ export default {
 		// 编辑成员
 		editMember(member) {
 			this.isEdit = true
+			const likesArray = this.parseLikesToArray(member.likes || '')
 			this.formData = {
 				memberId: member.memberId,
 				memberName: member.memberName,
@@ -334,7 +442,10 @@ export default {
 				height: member.height || '',
 				weight: member.weight || '',
 				bmi: member.bmi || '',
-				remark: member.remark || ''
+				remark: member.remark || '',
+				likes: member.likes || '',
+				likesArray: likesArray,
+				photo: member.photo || ''
 			}
 			// 保存原始数据的深拷贝用于对比
 			this.originalFormData = JSON.parse(JSON.stringify(this.formData))
@@ -473,7 +584,8 @@ export default {
 				const storageData = uni.getStorageSync('storage_data')
 				const submitData = {
 					...this.formData,
-					userId: storageData.user_id
+					userId: storageData.user_id,
+					likes: this.formatLikesForSubmit(this.formData.likesArray) // 转换喜好格式
 				}
 
 				let response
@@ -510,6 +622,7 @@ export default {
 		// 关闭弹窗
 		closeModal() {
 			this.showModal = false
+			this.newLikeText = ''
 			this.formData = {
 				memberId: null,
 				memberName: '',
@@ -519,7 +632,10 @@ export default {
 				height: '',
 				weight: '',
 				bmi: '',
-				remark: ''
+				remark: '',
+				likes: '',
+				likesArray: [],
+				photo: ''
 			}
 			this.originalFormData = null
 		},
@@ -531,6 +647,116 @@ export default {
 				return idCard.substring(0, 6) + '********' + idCard.substring(14)
 			}
 			return idCard
+		},
+
+		// 格式化喜好显示（去除JSON格式的方括号和引号）
+		formatLikes(likes) {
+			if (!likes) return ''
+			
+			try {
+				// 如果是JSON数组格式，解析后用逗号连接
+				if (likes.startsWith('[') && likes.endsWith(']')) {
+					const likesArray = JSON.parse(likes)
+					return Array.isArray(likesArray) ? likesArray.join('、') : likes
+				}
+				// 如果不是JSON格式，直接返回
+				return likes
+			} catch (error) {
+				// 解析失败，直接返回原始字符串
+				return likes
+			}
+		},
+
+		// 将用户输入的喜好文本转换为JSON数组格式（用于提交到后端）
+		formatLikesForSubmit(likesArray) {
+			if (!likesArray || likesArray.length === 0) return ''
+			return JSON.stringify(likesArray)
+		},
+
+		// 解析喜好数据为数组格式
+		parseLikesToArray(likes) {
+			if (!likes) return []
+			
+			try {
+				// 如果是JSON数组格式，解析后返回
+				if (likes.startsWith('[') && likes.endsWith(']')) {
+					const likesArray = JSON.parse(likes)
+					return Array.isArray(likesArray) ? likesArray : []
+				}
+				// 如果不是JSON格式，按分隔符拆分
+				return likes.split(/[、,，]/).map(item => item.trim()).filter(item => item !== '')
+			} catch (error) {
+				// 解析失败，按分隔符拆分
+				return likes.split(/[、,，]/).map(item => item.trim()).filter(item => item !== '')
+			}
+		},
+
+		// 添加喜好标签
+		addLike() {
+			const likeText = this.newLikeText.trim()
+			if (!likeText) return
+			
+			// 检查是否已存在
+			if (this.formData.likesArray.includes(likeText)) {
+				uni.showToast({
+					title: '该喜好已存在',
+					icon: 'none'
+				})
+				return
+			}
+			
+			// 限制最多10个标签
+			if (this.formData.likesArray.length >= 10) {
+				uni.showToast({
+					title: '最多只能添加10个喜好',
+					icon: 'none'
+				})
+				return
+			}
+			
+			this.formData.likesArray.push(likeText)
+			this.newLikeText = ''
+		},
+
+		// 移除喜好标签
+		removeLike(index) {
+			this.formData.likesArray.splice(index, 1)
+		},
+
+		// 输入框输入事件
+		onLikeInput(e) {
+			this.newLikeText = e.detail.value
+		},
+
+		// 处理照片URL
+		getPhotoUrl(photoPath) {
+			if (!photoPath) return ''
+			
+			// 如果是本地临时路径（上传时的临时文件），直接返回
+			if (photoPath.startsWith('wxfile://') || photoPath.startsWith('file://') || photoPath.indexOf('tmp') > -1) {
+				return photoPath
+			}
+			
+			// 获取 token
+			const token = uni.getStorageSync('App-Token')
+			
+			let fullUrl = ''
+			
+			// 如果是完整的URL
+			if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
+				fullUrl = photoPath
+			} 
+			// 如果是相对路径，拼接基础URL
+			else if (photoPath.startsWith('/')) {
+				fullUrl = config.baseUrl + photoPath
+			}
+			else {
+				return photoPath
+			}
+			
+			// 添加 token 参数
+			const separator = fullUrl.includes('?') ? '&' : '?'
+			return `${fullUrl}${separator}App-Token=${encodeURIComponent(token)}`
 		},
 
 		// 加载已绑定的成员列表
@@ -597,6 +823,14 @@ export default {
 				// 取消选择
 				this.selectedMembers.splice(index, 1)
 			} else {
+				// 检查是否达到选择上限（仅在更换模式下）
+				if (this.bindMode === 'replace' && this.isSelectionLimitReached) {
+					uni.showToast({
+						title: `最多只能选择${this.maxSelectableCount}人`,
+						icon: 'none'
+					})
+					return
+				}
 				// 添加选择
 				this.selectedMembers.push(member)
 			}
@@ -619,41 +853,73 @@ export default {
 
 			try {
 				uni.showLoading({
-					title: '绑定中...'
+					title: this.bindMode === 'replace' ? '更换中...' : '绑定中...'
 				})
 
-				// 合并已绑定的成员ID和当前选中的成员ID（去重）
-				const boundIds = this.boundMembers.map(m => m.memberId)
-				const selectedIds = this.selectedMembers.map(m => m.memberId)
-				const allIds = [...new Set([...boundIds, ...selectedIds])]
-
-				const bindData = {
-					deviceId: this.deviceId,
-					memberIds: allIds // 提交合并后的列表
+				let bindData
+				if (this.bindMode === 'replace') {
+					// 更换模式：只提交选中的成员ID，替换原有绑定
+					bindData = {
+						deviceId: this.deviceId,
+						memberIds: this.selectedMembers.map(m => m.memberId)
+					}
+				} else {
+					// 正常模式：合并已绑定的成员ID和当前选中的成员ID（去重）
+					const boundIds = this.boundMembers.map(m => m.memberId)
+					const selectedIds = this.selectedMembers.map(m => m.memberId)
+					const allIds = [...new Set([...boundIds, ...selectedIds])]
+					
+					bindData = {
+						deviceId: this.deviceId,
+						memberIds: allIds
+					}
 				}
 
 				const response = await bindFamilyMemberByDevice(bindData)
 				if (response.code === 200) {
-					// 更新本地已绑定列表（去重）
-					const newBound = this.selectedMembers.filter(
-						m => !this.boundMembers.some(b => b.memberId === m.memberId)
-					)
+					// 如果是呼吸睡眠-L2设备（deviceType='4'），需要同步更新设备 profiles
+					console.log('检查是否需要同步设备 profiles:', {
+						deviceType: this.deviceType,
+						productKey: this.productKey,
+						deviceKey: this.deviceKey,
+						shouldSync: this.deviceType === '4' && this.productKey && this.deviceKey
+					})
 					
-					if (newBound.length === 0) {
-						uni.showToast({
-							title: '选中的成员已全部绑定',
-							icon: 'none'
-						})
-						this.clearSelection()
-						return
+					if (this.deviceType === '4' && this.productKey && this.deviceKey) {
+						console.log('开始同步设备 profiles...')
+						await this.syncDeviceProfiles()
 					}
 					
-					this.boundMembers.push(...newBound)
-					
-					uni.showToast({
-						title: `本次成功绑定 ${newBound.length} 位成员`,
-						icon: 'success'
-					})
+					if (this.bindMode === 'replace') {
+						// 更换模式：更新本地绑定列表为选中的成员
+						this.boundMembers = [...this.selectedMembers]
+						
+						uni.showToast({
+							title: `成功更换绑定 ${this.selectedMembers.length} 位成员`,
+							icon: 'success'
+						})
+					} else {
+						// 正常模式：更新本地已绑定列表（去重）
+						const newBound = this.selectedMembers.filter(
+							m => !this.boundMembers.some(b => b.memberId === m.memberId)
+						)
+						
+						if (newBound.length === 0) {
+							uni.showToast({
+								title: '选中的成员已全部绑定',
+								icon: 'none'
+							})
+							this.clearSelection()
+							return
+						}
+						
+						this.boundMembers.push(...newBound)
+						
+						uni.showToast({
+							title: `本次成功绑定 ${newBound.length} 位成员`,
+							icon: 'success'
+						})
+					}
 					
 					// 清空选择
 					this.clearSelection()
@@ -664,19 +930,257 @@ export default {
 					}, 2000)
 				} else {
 					uni.showToast({
-						title: response.msg || '绑定失败',
+						title: response.msg || (this.bindMode === 'replace' ? '更换失败' : '绑定失败'),
 						icon: 'none'
 					})
 				}
 			} catch (error) {
 				console.error('批量绑定失败:', error)
 				uni.showToast({
-					title: '绑定失败',
+					title: this.bindMode === 'replace' ? '更换失败' : '绑定失败',
 					icon: 'none'
 				})
 			} finally {
 				uni.hideLoading()
 			}
+		},
+		
+		// 同步设备 profiles（仅用于呼吸睡眠-L2设备）
+		async syncDeviceProfiles() {
+			console.log('syncDeviceProfiles 被调用')
+			try {
+				// 获取当前绑定的第一个成员（呼吸睡眠-L2设备只能绑定一个）
+				const member = this.selectedMembers[0]
+				console.log('选中的成员:', member)
+				if (!member) {
+					console.log('没有选中的成员，退出')
+					return
+				}
+				
+				// 查询该设备是否已有 profile
+				console.log('查询设备 profiles...', {
+					deviceId: this.deviceId,
+					productKey: this.productKey,
+					deviceKey: this.deviceKey
+				})
+				const profilesRes = await listProfiles({
+					deviceId: this.deviceId,
+					productKey: this.productKey,
+					deviceKey: this.deviceKey
+				})
+				console.log('查询 profiles 结果:', profilesRes)
+				
+				// 准备 profile 数据（参数与 content 页面完全一致）
+				// 注意：photo 字段不传递，照片通过专门的上传接口处理
+				const profileData = {
+					deviceId: this.deviceId,
+					productKey: this.productKey,
+					deviceKey: this.deviceKey,
+					displayName: member.memberName,
+					age: member.age || '',
+					birthdate: member.birthDate || '',
+					// likes 必须是有效的 JSON 格式，空值传 null 或不传
+					likes: member.likes || null
+				}
+				console.log('准备提交的 profile 数据:', profileData)
+				
+				// 判断是新增还是更新
+				let res
+				if (profilesRes.code === 200 && profilesRes.rows && profilesRes.rows.length > 0) {
+					// 更新现有 profile
+					profileData.profilesId = profilesRes.rows[0].profilesId
+					console.log('更新现有 profile, profilesId:', profileData.profilesId)
+					res = await updateProfiles(profileData)
+				} else {
+					// 新增 profile
+					console.log('新增 profile')
+					res = await addProfiles(profileData)
+				}
+				console.log('profile 操作结果:', res)
+				
+				// 如果家人有照片，单独上传照片
+				if (res && res.code === 200 && member.photo) {
+					console.log('开始上传照片:', member.photo)
+					await this.uploadProfilePhoto(member.photo)
+				}
+				
+				if (res && res.code === 200) {
+					// 调用 invoke/service 接口通知设备更新（参数与 content 页面完全一致）
+					console.log('通知设备更新...')
+					await resetDeviceNetwork({
+						ack: 1,
+						address: null,
+						deviceKey: this.deviceKey,
+						function: 'needUpdate',
+						productKey: this.productKey,
+						propertyValue: { needUpdate: 1 },
+						type: null
+					})
+					
+					console.log('设备 profiles 同步成功')
+				}
+			} catch (error) {
+				console.error('同步设备 profiles 失败:', error)
+				// 不阻断主流程，只记录错误
+			}
+		},
+		
+		// 上传设备 profile 照片（参数与 content 页面完全一致）
+		async uploadProfilePhoto(photoPath) {
+			return new Promise((resolve) => {
+				// 如果照片路径是服务器路径，直接返回
+				if (!photoPath || photoPath.startsWith('/profile/') || photoPath.startsWith('http')) {
+					console.log('照片已是服务器路径，直接使用:', photoPath)
+					resolve(photoPath)
+					return
+				}
+				
+				// 如果是本地临时路径，需要上传
+				console.log('照片是本地路径，需要上传:', photoPath)
+				const token = uni.getStorageSync('App-Token')
+				
+				uni.uploadFile({
+					url: config.baseUrl + '/devices/profiles/photo',
+					filePath: photoPath,
+					name: 'photo',
+					header: {
+						'Authorization': 'Bearer ' + token
+					},
+					formData: {
+						deviceId: this.deviceId,
+						productKey: this.productKey,
+						device: this.deviceKey
+					},
+					success: (uploadFileRes) => {
+						try {
+							const data = JSON.parse(uploadFileRes.data)
+							console.log('照片上传响应:', data)
+							if (data.code === 200) {
+								const photoUrl = data.url || data.fileName || data.data
+								console.log('照片上传成功，URL:', photoUrl)
+								resolve(photoUrl)
+							} else {
+								console.error('上传设备照片失败:', data.msg)
+								resolve('')
+							}
+						} catch (e) {
+							console.error('解析上传响应失败:', e)
+							resolve('')
+						}
+					},
+					fail: (error) => {
+						console.error('上传设备照片失败:', error)
+						resolve('')
+					}
+				})
+			})
+		},
+
+		// 上传照片
+		uploadPhoto() {
+			uni.chooseImage({
+				count: 1,
+				sizeType: ['original'], // 使用原图以保证裁剪质量
+				sourceType: ['camera', 'album'],
+				success: (res) => {
+					const tempFilePath = res.tempFilePaths[0]
+					
+					// 调用图片裁剪
+					uni.navigateTo({
+						url: `/pages/common/imageCropper?imagePath=${encodeURIComponent(tempFilePath)}&width=154&height=240`,
+						events: {
+							// 监听裁剪完成事件
+							acceptDataFromCropperPage: (data) => {
+								if (data.croppedPath) {
+									// 上传到服务器
+									this.uploadToServer(data.croppedPath)
+								}
+							}
+						}
+					})
+				},
+				fail: (error) => {
+					console.error('选择图片失败:', error)
+					uni.showToast({
+						title: '选择图片失败',
+						icon: 'none'
+					})
+				}
+			})
+		},
+		
+		// 上传图片到服务器
+		uploadToServer(filePath) {
+			uni.showLoading({ title: '上传中...' })
+			
+			// 获取 token
+			const token = uni.getStorageSync('App-Token')
+			
+			uni.uploadFile({
+				url: config.baseUrl + '/common/upload',
+				filePath: filePath,
+				name: 'file',
+				header: {
+					'Authorization': 'Bearer ' + token
+				},
+				success: (uploadRes) => {
+					uni.hideLoading()
+					
+					try {
+						const data = JSON.parse(uploadRes.data)
+						if (data.code === 200) {
+							// 上传成功，保存服务器返回的图片路径
+							this.formData.photo = data.fileName || data.url || data.data
+							uni.showToast({
+								title: '上传成功',
+								icon: 'success'
+							})
+						} else {
+							uni.showToast({
+								title: data.msg || '上传失败',
+								icon: 'none'
+							})
+						}
+					} catch (error) {
+						console.error('解析上传结果失败:', error)
+						uni.showToast({
+							title: '上传失败',
+							icon: 'none'
+						})
+					}
+				},
+				fail: (error) => {
+					uni.hideLoading()
+					console.error('上传失败:', error)
+					uni.showToast({
+						title: '上传失败',
+						icon: 'none'
+					})
+				}
+			})
+		},
+
+		// 预览照片
+		previewPhoto() {
+			if (this.formData.photo) {
+				uni.previewImage({
+					urls: [this.getPhotoUrl(this.formData.photo)],
+					current: this.getPhotoUrl(this.formData.photo)
+				})
+			}
+		},
+
+		// 移除照片
+		removePhoto() {
+			uni.showModal({
+				title: '确认删除',
+				content: '确定要删除这张照片吗？',
+				success: (res) => {
+					if (res.confirm) {
+						this.formData.photo = ''
+					}
+				}
+			})
 		}
 	}
 }
@@ -787,11 +1291,17 @@ export default {
 				align-items: center;
 				justify-content: center;
 				box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+				overflow: hidden;
 				
 				.avatar-text {
 					font-size: 40rpx;
 					color: #fff;
 					font-weight: 600;
+				}
+				
+				.avatar-image {
+					width: 100%;
+					height: 100%;
 				}
 			}
 			
@@ -935,6 +1445,32 @@ export default {
 				display: flex;
 				font-size: 28rpx;
 				
+				&.full {
+					align-items: flex-start;
+					
+					.likes-display {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 12rpx;
+						flex: 1;
+						
+						.like-display-tag {
+							display: inline-flex;
+							align-items: center;
+							padding: 8rpx 16rpx;
+							background: #f0fcfc;
+							border: 1rpx solid #3ec6c6;
+							border-radius: 20rpx;
+							font-size: 24rpx;
+							color: #3ec6c6;
+							
+							text {
+								line-height: 1;
+							}
+						}
+					}
+				}
+				
 				.label {
 					color: #999;
 					width: 100rpx;
@@ -947,6 +1483,12 @@ export default {
 					
 					&.remark {
 						line-height: 1.5;
+					}
+					
+					&.likes {
+						line-height: 1.5;
+						color: #3ec6c6;
+						font-weight: 500;
 					}
 				}
 			}
@@ -1304,6 +1846,129 @@ export default {
 					background: #3ec6c6;
 					color: #fff;
 					box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.3);
+				}
+			}
+		}
+		
+		// 照片上传相关样式
+		.photo-upload-container {
+			flex: 1;
+			display: flex;
+			justify-content: flex-end;
+		}
+		
+		.photo-upload {
+			width: 160rpx;
+			height: 160rpx;
+			border: 2rpx dashed #ddd;
+			border-radius: 12rpx;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 12rpx;
+			background: #fafafa;
+			transition: all 0.2s;
+			
+			&:active {
+				border-color: #3ec6c6;
+				background: #f0fafa;
+			}
+			
+			.upload-text {
+				font-size: 24rpx;
+				color: #999;
+			}
+		}
+		
+		.photo-preview {
+			width: 160rpx;
+			height: 160rpx;
+			border-radius: 12rpx;
+			overflow: hidden;
+			position: relative;
+			
+			.photo-image {
+				width: 100%;
+				height: 100%;
+			}
+			
+			.photo-remove {
+				position: absolute;
+				top: 8rpx;
+				right: 8rpx;
+				width: 32rpx;
+				height: 32rpx;
+				background: rgba(0, 0, 0, 0.6);
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+		}
+		
+		// 喜好标签相关样式
+		.likes-container {
+			width: 100%;
+			
+			.likes-tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 16rpx;
+				margin-bottom: 20rpx;
+				
+				.like-tag {
+					display: flex;
+					align-items: center;
+					gap: 8rpx;
+					padding: 12rpx 20rpx;
+					background: #f0fcfc;
+					border: 2rpx solid #3ec6c6;
+					border-radius: 30rpx;
+					font-size: 26rpx;
+					color: #3ec6c6;
+					
+					text {
+						line-height: 1;
+					}
+					
+					&:active {
+						opacity: 0.8;
+					}
+				}
+			}
+			
+			.add-like-container {
+				display: flex;
+				align-items: center;
+				background: #f9f9f9;
+				border-radius: 12rpx;
+				padding: 20rpx;
+				gap: 16rpx;
+				
+				.like-input {
+					flex: 1;
+					font-size: 28rpx;
+					color: #333;
+					background: transparent;
+					border: none;
+					outline: none;
+				}
+				
+				.add-like-btn {
+					width: 48rpx;
+					height: 48rpx;
+					background: #f0fcfc;
+					border: 2rpx solid #3ec6c6;
+					border-radius: 50%;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					
+					&:active {
+						opacity: 0.8;
+						transform: scale(0.95);
+					}
 				}
 			}
 		}

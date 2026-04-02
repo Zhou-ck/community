@@ -84,7 +84,7 @@
         </view>
       </view>
       
-      <!-- 参数设置 - 门磁(14)、水浸(13)、红外(17) 没有参数设置模块 -->
+      <!-- 参数设置 - 根据设备类型决定是否显示参数设置模块 -->
       <view class="function-card" @click="handleParamSettingsClick" v-if="showParamsSetting">
         <view class="card-content">
           <text class="card-title">参数设置</text>
@@ -95,11 +95,11 @@
         </view>
       </view>
       
-      <!-- 绑定家人 - 只有KAT设备显示 -->
-      <view class="function-card" @click="handleBindFamilyClick" v-if="!isAepDevice && !isWatchDevice">
+      <!-- 绑定家人 - 根据设备类型和绑定限制显示 -->
+      <view class="function-card" @click="handleBindFamilyClick" v-if="showBindFamily">
         <view class="card-content">
           <text class="card-title">绑定家人</text>
-          <text class="card-subtitle">已绑定 {{ boundFamilyMembers.length }} 人</text>
+          <text class="card-subtitle">{{ bindFamilySubtitle }}</text>
         </view>
         <view class="card-icon cyan-bg">
           <uni-icons type="person" size="20" color="#3ec6c6"></uni-icons>
@@ -172,7 +172,7 @@
         </view>
       </view>
 
-      <!-- 配置网络 - 只有呼吸睡眠(1)、跌倒监测(2)、呼吸睡眠-L2(4) 需要配网 -->
+      <!-- 配置网络 - 根据设备类型决定是否需要配网 -->
       <view class="function-card" @click="handleConfigNetwork" v-if="showNetworkConfig">
         <view class="card-content">
           <text class="card-title">配置网络</text>
@@ -467,7 +467,22 @@ import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcomm
 import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId } from '@/api/familyMemberDevice'
 import { getAlarmReceiverIdsByDeviceId } from '@/api/devicereceiver'
-import { needsNetworkConfig, hasParamsSetting, isAepDevice, isWatchDevice, watchSupportsRealTimeData, watchSupportsHealthOverview, watchSupportsCallHistory, watchSupportsConfig } from '@/utils/parseDevNumber'
+import { 
+  needsNetworkConfig, 
+  hasParamsSetting, 
+  isAepDevice, 
+  isWatchDevice, 
+  isKatDevice,
+  isAepWithParams,
+  watchSupportsRealTimeData, 
+  watchSupportsHealthOverview, 
+  watchSupportsCallHistory, 
+  watchSupportsConfig, 
+  canBindFamily, 
+  getDeviceMaxBindCount, 
+  isBindFamilyLimitReached, 
+  getBindFamilyTip 
+} from '@/utils/parseDevNumber'
 
 export default {
   data() {
@@ -601,6 +616,48 @@ export default {
       if (!this.deviceInfo) return false
       // 所有手表设备都支持睡眠报告
       return this.isWatchDevice
+    },
+    
+    // 是否为KAT设备
+    isKatDevice() {
+      if (!this.deviceInfo) return false
+      return isKatDevice(String(this.deviceInfo.deviceType))
+    },
+    
+    // 是否为有参数设置的AEP设备
+    isAepWithParams() {
+      if (!this.deviceInfo) return false
+      return isAepWithParams(String(this.deviceInfo.deviceType))
+    },
+    
+    // 是否显示绑定家人功能
+    showBindFamily() {
+      if (!this.deviceInfo) return false
+      return canBindFamily(String(this.deviceInfo.deviceType))
+    },
+    
+    // 绑定家人副标题
+    bindFamilySubtitle() {
+      if (!this.deviceInfo) return '已绑定 0 人'
+      
+      const deviceType = String(this.deviceInfo.deviceType)
+      const currentCount = this.boundFamilyMembers.length
+      const maxCount = getDeviceMaxBindCount(deviceType)
+      
+      if (maxCount === 0) {
+        return `已绑定 ${currentCount} 人`
+      } else {
+        return `已绑定 ${currentCount}/${maxCount} 人`
+      }
+    },
+    
+    // 绑定家人提示信息
+    bindFamilyTip() {
+      if (!this.deviceInfo) return ''
+      
+      const deviceType = String(this.deviceInfo.deviceType)
+      const currentCount = this.boundFamilyMembers.length
+      return getBindFamilyTip(deviceType, currentCount)
     }
   },
   
@@ -840,20 +897,20 @@ export default {
       const type = String(deviceType)
       try {
         const iconMap = {
-          '1': require('@/pages/my/static/breath.png'),        // 呼吸睡眠(Ld)
-          '2': require('@/pages/my/static/tumble.png'),        // 跌倒监测(Ed)
-          '4': require('@/pages/my/static/keranqiti.png'),     // 呼吸睡眠-L2(La)
-          '13': require('@/pages/my/static/shuijin.png'),      // 水浸(Sd)
-          '14': require('@/pages/my/static/menci.png'),        // 门磁(Md)
-          '15': require('@/pages/my/static/yangan.png'),       // 烟感(Yd)
-          '16': require('@/pages/my/static/keranqiti.png'),    // 可燃气体(Rd)
-          '17': require('@/pages/my/static/hongwai.png'),      // 红外(Hd)
-          '18': require('@/pages/my/static/wenshidu.png'),     // 温湿度(Wd)
-          '19': require('@/pages/my/static/yiyanghuatan.png'), // 一氧化碳(Td)
-          '20': require('@/pages/my/static/breath.png'),       // 其它设备(Od)，暂用呼吸图标
-          '21': require('@/pages/my/static/watch.png'),        // 手表(Za)
-          '22': require('@/pages/my/static/watch.png'),        // 手表(Zb)
-          '23': require('@/pages/my/static/watch.png')         // 手表(Zc)
+          '1': '../../my/static/breath.png',        // 呼吸睡眠(Ld)
+          '2': '../../my/static/tumble.png',        // 跌倒监测(Ed)
+          '4': '../../my/static/keranqiti.png',     // 呼吸睡眠-L2(La)
+          '13': '../../my/static/shuijin.png',      // 水浸(Sd)
+          '14': '../../my/static/menci.png',        // 门磁(Md)
+          '15': '../../my/static/yangan.png',       // 烟感(Yd)
+          '16': '../../my/static/keranqiti.png',    // 可燃气体(Rd)
+          '17': '../../my/static/hongwai.png',      // 红外(Hd)
+          '18': '../../my/static/wenshidu.png',     // 温湿度(Wd)
+          '19': '../../my/static/yiyanghuatan.png', // 一氧化碳(Td)
+          '20': '../../my/static/breath.png',       // 其它设备(Od)，暂用呼吸图标
+          '21': '../../my/static/watch.png',        // 手表(Za)，暂用呼吸图标
+          '22': '../../my/static/watch.png',        // 手表(Zb)，暂用呼吸图标
+          '23': '../../my/static/watch.png'         // 手表(Zc)，暂用呼吸图标
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -957,12 +1014,13 @@ export default {
       const deviceType = String(this.deviceInfo.deviceType)
       let targetPage = ''
       
-      // 1: 呼吸睡眠, 2: 跌倒监测
+      // 根据设备类型跳转到对应的实时监测页面
       if (deviceType === '1') {
-        targetPage = '/pages/my/device/sleep'
+        targetPage = '/pages/my/device/sleep'  // 呼吸睡眠
       } else if (deviceType === '2') {
-        targetPage = '/pages/my/device/fall'
+        targetPage = '/pages/my/device/fall'   // 跌倒监测
       }
+      
       if (targetPage) {
         uni.navigateTo({
           url: `${targetPage}?productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}&deviceId=${this.deviceInfo.deviceId}`
@@ -1008,9 +1066,37 @@ export default {
     
     // 处理绑定家人点击事件
     handleBindFamilyClick() {
-      uni.navigateTo({
-        url: '/pages/my/family/index?deviceId=' + this.deviceId
-      })
+      if (!this.deviceInfo) return
+      
+      const deviceType = String(this.deviceInfo.deviceType)
+      const currentCount = this.boundFamilyMembers.length
+      const maxCount = getDeviceMaxBindCount(deviceType)
+      
+      // 检查是否已达到绑定上限
+      if (isBindFamilyLimitReached(deviceType, currentCount)) {
+        // 显示已达上限的弹窗
+        const familyNames = this.boundFamilyMembers.map(member => member.memberName || `家人${member.memberId}`).join('、')
+        
+        uni.showModal({
+          title: '绑定家人',
+          content: `该设备最多绑定${maxCount}个家人，是否要更换绑定人？`,
+          confirmText: '更换绑定',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              // 跳转到绑定家人页面进行更换，传递设备类型、productKey 和 deviceKey
+              uni.navigateTo({
+                url: `/pages/my/family/index?deviceId=${this.deviceId}&mode=replace&deviceType=${deviceType}&productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}`
+              })
+            }
+          }
+        })
+      } else {
+        // 未达上限，正常跳转到绑定页面，传递设备类型、productKey 和 deviceKey
+        uni.navigateTo({
+          url: `/pages/my/family/index?deviceId=${this.deviceId}&deviceType=${deviceType}&productKey=${this.deviceInfo.productKey}&deviceKey=${this.deviceInfo.deviceKey}`
+        })
+      }
     },
     
     // 处理绑定接警人点击事件
@@ -1125,10 +1211,13 @@ export default {
           uni.showLoading({ title: '加载参数中...' })
           
           // 根据设备类型选择不同的加载方式
-          if (this.isAepDevice) {
+          if (this.isAepWithParams) {
             await this.loadAepParamSettings()
-          } else {
+          } else if (this.isKatDevice) {
             await this.loadParamSettings()
+          } else {
+            // 其他设备类型可能没有参数设置
+            this.$set(this, 'paramProps', [])
           }
           
           uni.hideLoading()

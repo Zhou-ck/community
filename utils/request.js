@@ -112,11 +112,19 @@ const request = config => {
                 showCancel: false,
                 confirmText: '确定',
                 success: function(res) {
+                  // 先执行LogOut清除Token
                   store.dispatch('LogOut').then(() => {
-                    uni.reLaunch({ url: '/pages/login' })
+                    // 等待Token清除完成后再跳转，避免路由拦截器检测到旧Token
+                    setTimeout(() => {
+                      uni.reLaunch({ url: '/pages/login' })
+                      isRelogin.show = false
+                    }, 100)
                   }).catch(() => {
-                    // 即使LogOut失败（如网络错误），本地Token已被清除（在store中处理），直接跳转
-                    uni.reLaunch({ url: '/pages/login' })
+                    // 即使LogOut失败（如网络错误），本地Token已被清除（在store中处理），延迟后跳转
+                    setTimeout(() => {
+                      uni.reLaunch({ url: '/pages/login' })
+                      isRelogin.show = false
+                    }, 100)
                   })
                 },
                 complete: function() {
@@ -132,7 +140,7 @@ const request = config => {
               isRelogin.show = false;
             }
           }
-          reject('无效的会话，或者会话已过期，请重新登录。')
+          return reject('无效的会话，或者会话已过期，请重新登录。')
         } else if (code === 500) {
           // 调试信息：服务器错误
           if (DEBUG) {
@@ -143,7 +151,7 @@ const request = config => {
             console.groupEnd()
           }
           toast(msg)
-          reject('500')
+          return reject('500')
         } else if (code !== 200) {
           // 调试信息：业务错误
           if (DEBUG) {
@@ -155,7 +163,7 @@ const request = config => {
             console.groupEnd()
           }
           toast(msg)
-          reject(code)
+          return reject(code)
         }
         resolve(res.data)
       })

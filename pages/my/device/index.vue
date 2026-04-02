@@ -483,19 +483,19 @@ export default {
       const type = String(deviceType)
       try {
         const iconMap = {
-          '1': require('@/pages/my/static/breath.png'),      // 呼吸睡眠 Ld
-          '2': require('@/pages/my/static/tumble.png'),      // 跌倒监测 Ed
-          '4': require('@/pages/my/static/breath.png'),      // 呼吸睡眠-L2 La
-          '13': require('@/pages/my/static/shuijin.png'),    // 水浸 Sd
-          '14': require('@/pages/my/static/menci.png'),      // 门磁 Md
-          '15': require('@/pages/my/static/yangan.png'),     // 烟感 Yd
-          '16': require('@/pages/my/static/keranqiti.png'),  // 可燃气体 Rd
-          '17': require('@/pages/my/static/hongwai.png'),    // 红外 Hd
-          '18': require('@/pages/my/static/wenshidu.png'),   // 温湿度 Wd
-          '19': require('@/pages/my/static/yiyanghuatan.png') // 一氧化碳 Td
-          // '21': require('@/pages/my/static/watch.png'),   // 手表(AA型) Za - 待添加图标
-          // '22': require('@/pages/my/static/watch.png'),   // 手表(AB型) Zb - 待添加图标
-          // '23': require('@/pages/my/static/watch.png')    // 手表(AC型) Zc - 待添加图标
+          '1': '../static/breath.png',      // 呼吸睡眠 Ld
+          '2': '../static/tumble.png',      // 跌倒监测 Ed
+          '4': '../static/breath.png',      // 呼吸睡眠-L2 La
+          '13': '../static/shuijin.png',    // 水浸 Sd
+          '14': '../static/menci.png',      // 门磁 Md
+          '15': '../static/yangan.png',     // 烟感 Yd
+          '16': '../static/keranqiti.png',  // 可燃气体 Rd
+          '17': '../static/hongwai.png',    // 红外 Hd
+          '18': '../static/wenshidu.png',   // 温湿度 Wd
+          '19': '../static/yiyanghuatan.png', // 一氧化碳 Td
+          '21': '../static/watch.png',   // 手表(AA型) Za - 待添加图标
+          '22': '../static/watch.png',   // 手表(AB型) Zb - 待添加图标
+          '23': '../static/watch.png'    // 手表(AC型) Zc - 待添加图标
         }
         return iconMap[type] || ''
       } catch (e) {

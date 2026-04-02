@@ -24,7 +24,7 @@
 				<text class="empty-sub">点击底部按钮添加新地址</text>
 			</view>
 			
-			<view v-else class="address-item" v-for="(address, index) in addressList" :key="address.addressId" :class="{ 'selected': isFromBooking && selectedAddressId === address.addressId }">
+			<view v-else class="address-item" v-for="(address, index) in addressList" :key="address.addressId" :class="{ 'selected': (isFromBooking || isFromPurchase) && selectedAddressId === address.addressId }">
 				<view class="address-content" @click="selectAddressByIndex(index)">
 					<view class="header-row">
 						<view class="info-left">
@@ -34,7 +34,7 @@
 						<view class="tags-row">
 							<text class="tag default" v-if="address.isDefault">默认</text>
 							<text class="tag set-default" v-if="!address.isDefault" @click.stop="setDefaultAddress(index)">设为默认</text>
-							<text class="tag selected" v-if="isFromBooking && selectedAddressId === address.addressId">已选</text>
+							<text class="tag selected" v-if="(isFromBooking || isFromPurchase) && selectedAddressId === address.addressId">已选</text>
 						</view>
 					</view>
 					
@@ -162,6 +162,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				addressList: [],
 				isFromOrder: false, // 是否从订单页面跳转而来
 				isFromBooking: false, // 是否从预约页面跳转而来
+				isFromPurchase: false, // 是否从购买套餐页面跳转而来
 				isEdit: false,
 				showPopup: false, // 控制弹窗显示
 				loading: false, // 加载状态
@@ -201,13 +202,30 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 			
 			if (options.from === 'booking') {
 				this.isFromBooking = true
-				
+
 				// 获取当前预约页面已选中的地址ID（如果有）
 				const currentAddressId = uni.getStorageSync('currentBookingAddressId')
 				if (currentAddressId) {
 					this.selectedAddressId = currentAddressId
 				}
-				
+
+				// 如果有action=add参数，自动打开新增弹窗
+				if (options.action === 'add') {
+					setTimeout(() => {
+						this.showAddressPopup()
+					}, 300)
+				}
+			}
+
+			if (options.from === 'purchase') {
+				this.isFromPurchase = true
+
+				// 获取当前购买页面已选中的地址ID（如果有）
+				const currentAddressId = uni.getStorageSync('currentPurchaseAddressId')
+				if (currentAddressId) {
+					this.selectedAddressId = currentAddressId
+				}
+
 				// 如果有action=add参数，自动打开新增弹窗
 				if (options.action === 'add') {
 					setTimeout(() => {
@@ -360,25 +378,45 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				}
 				
 				if (this.isFromBooking) {
-					// 先更新选中状态，让用户看到"已选"图标
-					this.selectedAddressId = address.addressId
-					
-					// 将选中的地址存储到缓存
-					uni.setStorageSync('selectedAddressForBooking', address)
-					
-					// 显示选中提示
-					uni.showToast({
-						title: '地址已选中',
-						icon: 'success',
-						duration: 600
-					})
-					
-					// 延迟返回，让用户看到选中效果
-					setTimeout(() => {
-						uni.navigateBack()
-					}, 800) // 延迟800毫秒，让用户看到已选状态
-				}
-			},
+				// 先更新选中状态，让用户看到"已选"图标
+				this.selectedAddressId = address.addressId
+				
+				// 将选中的地址存储到缓存
+				uni.setStorageSync('selectedAddressForBooking', address)
+				
+				// 显示选中提示
+				uni.showToast({
+					title: '地址已选中',
+					icon: 'success',
+					duration: 600
+				})
+				
+				// 延迟返回，让用户看到选中效果
+				setTimeout(() => {
+					uni.navigateBack()
+				}, 800) // 延迟800毫秒，让用户看到已选状态
+			}
+			
+			if (this.isFromPurchase) {
+				// 先更新选中状态，让用户看到"已选"图标
+				this.selectedAddressId = address.addressId
+				
+				// 将选中的地址存储到缓存
+				uni.setStorageSync('selectedAddressForPurchase', address)
+				
+				// 显示选中提示
+				uni.showToast({
+					title: '地址已选中',
+					icon: 'success',
+					duration: 600
+				})
+				
+				// 延迟返回，让用户看到选中效果
+				setTimeout(() => {
+					uni.navigateBack()
+				}, 800) // 延迟800毫秒，让用户看到已选状态
+			}
+		},
 			
 			// 显示地址弹窗
 			showAddressPopup(address = null) {

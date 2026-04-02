@@ -1,11 +1,12 @@
 // 应用全局配置
 module.exports = {
   baseUrl: 'https://community.katlot.cn',
-  // baseUrl: 'http://192.168.84.105:8125',
-  // baseUrl: 'http://192.168.1.89:8125',
+  // baseUrl: 'http://192.168.96.105:8125',
+  // baseUrl: 'http://192.168.1.235:8125',
   // baseUrl: 'http://kaf95d89.natappfree.cc', 
   // baseUrl: 'http://60.214.209.203:8125',
 	 // baseUrl: 'http://katsc.nat300.top',
+	 // baseUrl: 'http://localhost:8125',
   // 应用信息
   appInfo: {
     // 应用名称

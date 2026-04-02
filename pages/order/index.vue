@@ -20,30 +20,13 @@
 				<input
 					class="search-input"
 					type="text"
-					placeholder="搜索订单服务名称"
+					placeholder="搜索服务名称或订单编号"
 					v-model="searchKeyword"
 					@input="handleSearch"
 					@confirm="handleSearch"
 				/>
 				<view class="clear-btn" v-if="searchKeyword" @click="clearSearch">
 					<uni-icons type="clear" size="16" color="#999"></uni-icons>
-				</view>
-			</view>
-		</view>
-
-		<!-- 我的评价模块（仅在评价标签下显示） -->
-		<view class="my-review-section" v-if="currentTab === 4">
-			<view class="review-header" @click="goToReviewCenter">
-				<view class="review-info">
-					<image :src="userInfo.avatar || '/static/images/profile.jpg'" class="user-avatar" />
-					<view class="user-detail">
-						<text class="username">{{ userInfo.nickname || '用户' }}</text>
-						<text class="review-stats">已评价 {{ reviewStats.totalReviews }} 条</text>
-					</view>
-				</view>
-				<view class="review-action">
-					<text class="action-text">我的评价</text>
-					<uni-icons type="right" size="16" color="#999"></uni-icons>
 				</view>
 			</view>
 		</view>
@@ -62,11 +45,15 @@
 				<text class="empty-text">暂无相关服务订单</text>
 			</view>
 
-			<view v-else class="order-item" v-for="(order, index) in orderList" :key="index">
+			<view v-else class="order-item" v-for="(order, index) in orderList" :key="order.id" @click="viewOrderDetail(order.id)">
 				<view class="order-header">
 					<view class="order-info">
 						<text class="order-time">{{ order.createTime }}</text>
-						<text class="order-no">订单号：{{ order.id }}</text>
+						<view class="order-no-wrapper" @longpress.stop="copyOrderNo(order.orderNo || order.id)">
+							<text class="order-no-label">订单号：</text>
+							<text class="order-no">{{ order.orderNo || order.id }}</text>
+							<uni-icons type="copy" size="14" color="#999"></uni-icons>
+						</view>
 					</view>
 					<text class="order-status" :class="order.statusClass">{{ order.statusText }}</text>
 				</view>
@@ -82,7 +69,11 @@
 						<view class="service-info">
 							<view class="service-name-row">
 								<text class="service-name">{{ order.serviceName || '服务项目' }}</text>
-								<view class="voice-badge" v-if="order.orderType === '1'" @click.stop="playVoice(order)">
+								<view class="package-badge" v-if="order.orderSource === '2' || order.orderSource === 2">
+									<uni-icons type="wallet" size="12" color="#fff"></uni-icons>
+									<text>套餐订单</text>
+								</view>
+								<view class="voice-badge" v-if="order.orderSource === '5' || order.orderSource === 5" @click.stop="playVoice(order)">
 									<uni-icons type="sound" size="12" color="#fff"></uni-icons>
 									<text>语音下单</text>
 								</view>
@@ -104,8 +95,23 @@
 									<uni-icons type="location" size="14" color="#999"></uni-icons>
 									<text class="detail-text">服务地址：{{ order.serviceAddress }}</text>
 								</view>
+								<!-- 服务商信息 -->
+								<view class="detail-item" v-if="order.providerName">
+									<uni-icons type="shop" size="14" color="#999"></uni-icons>
+									<text class="detail-text">服务商：{{ order.providerName }}</text>
+								</view>
+								<!-- 服务人员信息 -->
+								<view class="detail-item" v-if="order.staffName">
+									<uni-icons type="person-filled" size="14" color="#999"></uni-icons>
+									<text class="detail-text">服务人员：{{ order.staffName }}</text>
+									<!-- 核销方式标签（紧跟服务人员信息） -->
+									<view class="inline-method-badge" v-if="order.status === 'completed' && order.verificationMethod">
+										<uni-icons :type="getVerificationMethodIcon(order.verificationMethod)" size="10" color="#fff"></uni-icons>
+										<text>{{ getVerificationMethodText(order.verificationMethod) }}</text>
+									</view>
+								</view>
 								<!-- 用户备注（非语音下单、非关闭状态时显示） -->
-								<view class="detail-item" v-if="order.remark && order.status !== 'closed' && order.orderType === '0'">
+								<view class="detail-item" v-if="order.remark && order.status !== 'closed' && order.orderSource !== '5' && order.orderSource !== 5">
 									<uni-icons type="chat" size="14" color="#999"></uni-icons>
 									<text class="detail-text remark-text">备注：{{ order.remark }}</text>
 								</view>
@@ -115,7 +121,7 @@
 				</view>
 
 				<!-- 语音下单备注提示 -->
-				<view class="voice-order-remark" v-if="order.orderType === '1' && order.remark && parseVoiceRemark(order.remark)">
+				<view class="voice-order-remark" v-if="(order.orderSource === '5' || order.orderSource === 5) && order.remark && parseVoiceRemark(order.remark)">
 					<view class="remark-detail">
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).userRequest">
 							<uni-icons type="person" size="14" color="#3ec6c6"></uni-icons>
@@ -123,7 +129,7 @@
 						</view>
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).matchReason">
 							<uni-icons type="compose" size="14" color="#999"></uni-icons>
-							<text class="remark-value">{{ parseVoiceRemark(order.remark).matchReason }}</text>
+							<text class="remark-value secondary">{{ parseVoiceRemark(order.remark).matchReason }}</text>
 						</view>
 					</view>
 				</view>
@@ -136,13 +142,13 @@
 				</view>
 
 				<!-- 关闭原因提示 -->
-			<view class="reject-reason" v-if="order.status === 'closed' && order.remark">
-				<uni-icons type="info-filled" size="16" color="#fa8c16"></uni-icons>
-				<text class="reason-title">关闭原因：</text>
-				<text class="reason-content">{{ order.remark }}</text>
-			</view>
+				<view class="reject-reason" v-if="order.status === 'closed' && order.remark">
+					<uni-icons type="info-filled" size="16" color="#fa8c16"></uni-icons>
+					<text class="reason-title">关闭原因：</text>
+					<text class="reason-content">{{ order.remark }}</text>
+				</view>
 
-			<view class="order-footer">
+				<view class="order-footer">
 					<view class="order-summary">
 						<text class="total-text">服务价格：￥{{ order.price }}</text>
 						<text class="subsidy-text" v-if="order.useSubsidy === '1' && order.subsidyAmount > 0">补贴：-￥{{ order.subsidyAmount }}</text>
@@ -155,7 +161,7 @@
 							</text>
 						</view>
 					</view>
-					<view class="order-actions">
+					<view class="order-actions" @click.stop>
 						<!-- 待接单状态 -->
 						<template v-if="order.status === 'pending'">
 							<button class="action-btn delete" @click="deleteOrder(order.id)">删除订单</button>
@@ -165,25 +171,29 @@
 
 						<!-- 已接单状态 -->
 						<template v-if="order.status === 'accepted'">
-							<button class="action-btn delete" @click="deleteOrder(order.id)">删除订单</button>
+							<button class="action-btn secondary" @click="viewOrderDetail(order.id)">查看详情</button>
+						</template>
+
+						<!-- 待核销状态 -->
+						<template v-if="order.status === 'verifying'">
+							<button class="action-btn secondary" @click="showVerificationCode(order)">查看核销码</button>
+							<button class="action-btn secondary" @click="viewOrderDetail(order.id)">查看详情</button>
 						</template>
 
 						<!-- 服务中状态 -->
 						<template v-if="order.status === 'serving'">
+							<button class="action-btn secondary" @click="showVerificationCode(order)">查看核销码</button>
 							<button class="action-btn secondary" @click="viewOrderDetail(order.id)">查看详情</button>
-							<button class="action-btn primary" @click="confirmComplete(order.id)">确认完成</button>
 						</template>
 
-						<!-- 待评价状态 -->
-						<template v-if="order.status === 'completed' && !order.isReviewed">
+						<!-- 已完成状态 - 根据是否已评价显示不同按钮 -->
+						<template v-if="order.status === 'completed'">
 							<button class="action-btn secondary" @click="viewOrderDetail(order.id)">查看详情</button>
-							<button class="action-btn review" @click="goToReview(order.id)">立即评价</button>
-						</template>
-
-						<!-- 已评价状态 -->
-						<template v-if="order.status === 'completed' && order.isReviewed">
-							<button class="action-btn secondary" @click="viewOrderDetail(order.id)">查看详情</button>
-							<button class="action-btn reviewed" @click="viewMyReview(order.id)">查看评价</button>
+							
+							<button class="action-btn review" @click="goToReview(order.id)">
+								{{ order.evaluationFlag === '1' ? '再次评价' : '立即评价' }}
+							</button>
+							<button class="action-btn reviewed" v-if="order.evaluationFlag === '1'" @click="viewMyReview(order.id)">查看评价</button>
 						</template>
 						
 						<!-- 已取消/已拒绝/已关闭状态 -->
@@ -204,94 +214,86 @@
 			</view>
 		</scroll-view>
 
-		<!-- 评价弹窗 -->
-		<view class="review-modal" v-if="showReviewModal" @click="closeReviewModal">
-			<view class="review-content" @click.stop>
-				<view class="review-header">
-					<text class="review-title">服务评价</text>
-					<uni-icons type="closeempty" size="24" color="#999" @click="closeReviewModal"></uni-icons>
-				</view>
-				
-				<view class="review-body">
-					<!-- 评分 -->
-					<view class="review-item">
-						<text class="review-label">服务评分</text>
-						<view class="star-rating">
-							<uni-icons
-								v-for="star in 5"
-								:key="star"
-								:type="star <= reviewData.rating ? 'star-filled' : 'star'"
-								size="32"
-								:color="star <= reviewData.rating ? '#FFB400' : '#E0E0E0'"
-								@click="setRating(star)"
-							></uni-icons>
-						</view>
-					</view>
-					
-					<!-- 评价内容 -->
-					<view class="review-item">
-						<text class="review-label">评价内容</text>
-						<textarea
-							v-model="reviewData.content"
-							class="review-textarea"
-							placeholder="请描述您对本次服务的评价"
-							maxlength="200"
-							:auto-height="true"
-						></textarea>
-						<text class="char-count">{{ reviewData.content.length }}/200</text>
-					</view>
-				</view>
-				
-				<view class="review-footer">
-					<button class="cancel-btn" @click="closeReviewModal">取消</button>
-					<button class="submit-btn" @click="submitReview" :loading="submittingReview">提交评价</button>
-				</view>
-			</view>
-		</view>
+		<!-- 评价弹窗组件 -->
+		<ReviewModal
+			:visible="showReviewModal"
+			:mode="reviewMode"
+			:isAppend="isAppendReview"
+			:orderInfo="reviewData.orderInfo"
+			:rating="reviewData.rating"
+			:content="reviewData.content"
+			:images="reviewData.images"
+			:selectedTags="reviewData.selectedTags"
+			:createTime="reviewData.createTime"
+			:submitting="submittingReview"
+			@close="closeReviewModal"
+			@update:rating="reviewData.rating = $event"
+			@update:content="reviewData.content = $event"
+			@update:images="reviewData.images = $event"
+			@toggle-tag="handleToggleTag"
+			@submit="submitReview"
+		/>
+
+		<!-- 核销码弹窗组件 -->
+		<VerificationModal
+			:visible="showVerificationModal"
+			:code="verificationCode"
+			:loading="verificationCodeLoading"
+			:qrcodeUrl="qrcodeImageUrl"
+			@close="closeVerificationModal"
+			@manual-confirm="handleManualConfirm"
+			@qrcode-load="handleQrcodeLoad"
+			@qrcode-error="handleQrcodeError"
+		/>
 	</view>
 </template>
 
 <script>
-	import { listServiceorder, cancelServiceorder, updateServiceorder, delServiceorder, evaluationServiceorder } from '@/api/service'
-	import config from '@/config.js'
+	import { listServiceorder, cancelServiceorder, updateServiceorder, delServiceorder, evaluationServiceorder, completeServiceorder } from '@/api/service'
+	import { ORDER_STATUS_MAP, ORDER_STATUS_CODE_MAP, getServiceIcon as _getServiceIcon } from '@/utils/service-helper'
 	import websocket from '@/utils/websocket.js'
+	import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'
+	import config from '@/config.js'
+	import verificationMixin from '@/mixins/verification-mixin.js'
+	import VerificationModal from '@/components/verification-modal/verification-modal.vue'
+	import ReviewModal from '@/components/review-modal/review-modal.vue'
 	
 	export default {
+		mixins: [verificationMixin],
+		components: {
+			'uni-icons': uniIcons,
+			VerificationModal,
+			ReviewModal
+		},
 		data() {
 			return {
-				tabs: ['全部', '待接单', '已接单', '服务中', '评价'],
+				config: config, // 配置对象
+				tabs: ['全部', '待接单', '已接单', '服务中', '已完成'],
 				currentTab: 0,
 				orderList: [],
-				allOrders: [], // 存储所有订单数据
-				searchKeyword: '', // 搜索关键词
-				searchTimer: null, // 搜索防抖定时器
+				allOrders: [],
+				searchKeyword: '',
+				searchTimer: null,
 				page: 1,
 				pageSize: 10,
 				isLoading: false,
 				hasMore: true,
 				isRefreshing: false,
-				userInfo: {}, // 用户信息
-				reviewStats: { // 评价统计
-					totalReviews: 0
-				},
 				// 评价相关
 				showReviewModal: false,
+				reviewMode: 'edit', // 'edit' 或 'view'
 				submittingReview: false,
+				isAppendReview: false, // 是否为追评模式
 				reviewData: {
 					orderId: null,
-					rating: 5,
-					content: ''
+					orderInfo: null,
+					rating: 0,
+					content: '',
+					images: [],
+					selectedTags: [],
+					createTime: ''
 				},
-			// 服务订单状态映射
-			statusMap: {
-					pending: { text: '待接单', class: 'status-pending' },
-					accepted: { text: '已接单', class: 'status-accepted' },
-					serving: { text: '服务中', class: 'status-serving' },
-					completed: { text: '已完成', class: 'status-completed' },
-					cancelled: { text: '已取消', class: 'status-cancelled' },
-					rejected: { text: '已拒绝', class: 'status-rejected' },
-					closed: { text: '已关闭', class: 'status-closed' }
-				},
+				statusMap: ORDER_STATUS_MAP,
 				
 				// WebSocket 相关
 				wsStatus: '', // WebSocket 连接状态: pending, connecting, connected, reconnecting, error, failed, closed
@@ -300,9 +302,10 @@
 				
 				// 音频播放相关
 				innerAudioContext: null, // 音频上下文
-				currentPlayingOrderId: null // 当前正在播放的订单ID
+				currentPlayingOrderId: null, // 当前正在播放的订单ID
 			}
 		},
+	
 		onLoad(options) {
 			// 重置页面卸载标记（防止页面缓存复用）
 			this.isPageUnloaded = false
@@ -311,8 +314,6 @@
 			if (options.status) {
 				this.currentTab = parseInt(options.status)
 			}
-			this.loadUserInfo()
-			this.loadReviewStats()
 			this.loadOrders()
 
 			// 连接 WebSocket
@@ -349,7 +350,6 @@
 			// 重置页面卸载标记
 			this.isPageUnloaded = false
 			
-			this.loadReviewStats()
 			// 强制刷新订单数据
 			this.refreshOrders()
 			
@@ -389,6 +389,28 @@
 			uni.$off('openReviewModal', this.handleOpenReviewModal)
 		},
 		methods: {
+			// 复制订单号
+			copyOrderNo(orderNo) {
+				if (!orderNo) return
+				
+				uni.setClipboardData({
+					data: orderNo,
+					success: () => {
+						uni.showToast({
+							title: '订单号已复制',
+							icon: 'success',
+							duration: 1500
+						})
+					},
+					fail: () => {
+						uni.showToast({
+							title: '复制失败',
+							icon: 'none'
+						})
+					}
+				})
+			},
+			
 			// 解析语音下单备注
 			parseVoiceRemark(remark) {
 				if (!remark || !remark.includes('|')) return null
@@ -562,22 +584,16 @@
 				}, 300)
 			},
 			
-			// 执行搜索（前端过滤）
+			// 执行搜索（后端查询）
 			performSearch() {
 				if (this.currentTab !== 0) return
 				
-				const keyword = this.searchKeyword.trim().toLowerCase()
-				
-				if (!keyword) {
-					// 没有搜索关键词，显示所有订单
-					this.orderList = [...this.allOrders]
-				} else {
-					// 根据服务名称过滤订单
-					this.orderList = this.allOrders.filter(order => {
-						const serviceName = (order.serviceName || '').toLowerCase()
-						return serviceName.includes(keyword)
-					})
-				}
+				// 重置分页并重新加载数据
+				this.page = 1
+				this.hasMore = true
+				this.orderList = []
+				this.allOrders = []
+				this.loadOrders()
 			},
 
 			// 清空搜索
@@ -588,8 +604,12 @@
 					clearTimeout(this.searchTimer)
 					this.searchTimer = null
 				}
-				// 立即显示所有订单
-				this.orderList = [...this.allOrders]
+				// 重新加载订单数据
+				this.page = 1
+				this.hasMore = true
+				this.orderList = []
+				this.allOrders = []
+				this.loadOrders()
 			},
 
 			// 强制刷新订单数据
@@ -623,19 +643,41 @@
 
 					// 根据当前标签添加状态筛选
 					if (this.currentTab !== 0) {
-						// 服务订单状态映射：1-待接单, 2-已接单, 3-服务中, 4-评价
-						const statusArray = ['0', '1', '2', '3'] // 0-待接单, 1-已接单, 2-服务中, 3-已完成
+						// 服务订单状态映射：0-待接单, 1-已接单, 2-服务中, 3-已完成, 8-待核销
 						if (this.currentTab === 4) {
-							// 评价标签页：查询已完成待评价的订单
+							// 已完成标签页：查询已完成的订单（包括已评价和待评价）
 							query.orderStatus = '3' // 已完成状态
-							// 筛选未评价的订单（rating为null或0）
+						} else if (this.currentTab === 3) {
+							// 服务中标签页：需要查询服务中(2)和待核销(8)的订单
+							// 由于后端不支持多状态查询，需要分别查询并合并
+							await this.loadOrdersWithMultipleStatus(['2', '8'], query)
+							return
 						} else {
 							// 其他标签页：按状态筛选
+							const statusArray = ['0', '1', '2', '3'] // 0-待接单, 1-已接单, 2-服务中, 3-已完成
 							query.orderStatus = statusArray[this.currentTab - 1]
 						}
 					}
 
-					// 前端搜索，不再传递搜索参数到后端
+					// 添加搜索关键词和套餐订单过滤控制
+					const keyword = this.searchKeyword.trim()
+					if (keyword) {
+						// 判断是否为订单编号（通常为数字或特定格式）
+						const isOrderNumber = /^[A-Za-z0-9\-_]+$/.test(keyword) && keyword.length >= 6
+						
+						if (isOrderNumber) {
+							// 输入订单编号查询时：包含套餐订单
+							query.orderNo = keyword
+							query.excludePackageByDefault = false
+						} else {
+							// 按服务名称搜索时：排除套餐订单
+							query.serviceName = keyword
+							query.excludePackageByDefault = true
+						}
+					} else {
+						// 未输入搜索关键词时：排除套餐订单
+						query.excludePackageByDefault = true
+					}
 
 					// 调用后端API
 					const response = await listServiceorder(query)
@@ -647,16 +689,12 @@
 						// 更新列表数据
 						if (this.page === 1) {
 							this.orderList = orders
-							// 在全部标签下，保存所有订单用于前端搜索
-							if (this.currentTab === 0) {
-								this.allOrders = [...orders]
-							}
+							// 保存所有订单数据
+							this.allOrders = [...orders]
 						} else {
 							this.orderList = [...this.orderList, ...orders]
-							// 在全部标签下，追加到所有订单
-							if (this.currentTab === 0) {
-								this.allOrders = [...this.allOrders, ...orders]
-							}
+							// 追加到所有订单
+							this.allOrders = [...this.allOrders, ...orders]
 						}
 
 						// 判断是否还有更多数据
@@ -685,29 +723,67 @@
 				}
 			},
 
-			// 格式化服务订单数据
-			formatOrderData(order) {
-				// 服务订单状态映射 (orderStatus字段)
-				const statusTextMap = {
-					'0': 'pending',    // 待接单
-					'1': 'accepted',   // 已接单
-					'2': 'serving',    // 服务中
-					'3': 'completed',  // 已完成
-					'4': 'cancelled',  // 已取消
-					'5': 'rejected',   // 已拒绝
-					'6': 'closed'      // 已关闭
+			// 处理多状态查询（用于服务中标签页查询状态2和8）
+			async loadOrdersWithMultipleStatus(statusArray, baseQuery) {
+				try {
+					let allOrders = []
+					
+					// 分别查询每个状态的订单
+					for (const status of statusArray) {
+						const query = {
+							...baseQuery,
+							orderStatus: status
+						}
+						
+						const response = await listServiceorder(query)
+						
+						if (response.code === 200 && response.rows) {
+							const orders = response.rows.map(order => this.formatOrderData(order))
+							allOrders = [...allOrders, ...orders]
+						}
+					}
+					
+					// 按创建时间倒序排序
+					allOrders.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+					
+					// 更新列表数据
+					if (this.page === 1) {
+						this.orderList = allOrders
+						this.allOrders = [...allOrders]
+					} else {
+						this.orderList = [...this.orderList, ...allOrders]
+						this.allOrders = [...this.allOrders, ...allOrders]
+					}
+					
+					// 多状态查询暂时不支持分页，设置hasMore为false
+					this.hasMore = false
+					
+				} catch (error) {
+					console.error('多状态查询订单列表异常:', error)
+					if (this.page === 1) {
+						this.orderList = []
+					}
+					this.hasMore = false
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none'
+					})
 				}
-				
-				const status = statusTextMap[order.orderStatus] || 'pending'
+			},
+
+			formatOrderData(order) {
+				const status = ORDER_STATUS_CODE_MAP[order.orderStatus] || 'pending'
 				const statusInfo = this.statusMap[status] || this.statusMap.pending
 				
 				const formattedOrder = {
 					id: order.orderId,
+					orderNo: order.orderNo || null,  // 订单号，优先显示
 					createTime: order.createTime || '',
 					status: status,
 					statusText: statusInfo.text,
 					statusClass: statusInfo.class,
-					isReviewed: order.rating != null && order.rating > 0,  // 有评分即为已评价
+					evaluationFlag: order.evaluationFlag || '0',  // 评价标识：0-未评价，1-已评价
+					isReviewed: order.evaluationFlag === '1',  // 根据evaluationFlag判断是否已评价
 					
 					// 服务订单特有字段
 					serviceName: order.serviceName || '服务项目',
@@ -718,6 +794,9 @@
 					appointmentDate: order.appointmentDate || '',
 					appointmentPeriod: order.appointmentPeriod || '',
 					serviceAddress: order.detailAddress || '',
+					providerName: order.providerName || '',  // 服务商名称
+					staffName: order.staffName || '',  // 服务人员姓名
+					staffPhone: order.staffPhone || '',  // 服务人员电话
 					
 					// 价格相关
 					price: order.price || 0,
@@ -727,11 +806,15 @@
 					
 					// 其他信息
 					orderType: order.orderType || '0',  // 订单类型：0-普通下单，1-语音下单
+					orderSource: order.orderSource || '0',  // 订单来源：0-普通订单，2-套餐订单
 					filename: order.filename || '',  // 语音文件路径
 					remark: order.remark || '',
 					rating: order.rating || null,
 					evaluationContent: order.evaluationContent || '',
+					evaluationImages: order.evaluationImages || '',  // 评价图片
+					evaluationTime: order.evaluationTime || '',  // 评价时间
 					rejectReason: order.rejectReason || '', // 拒绝原因
+					verificationMethod: order.verificationMethod || '', // 核销方式
 
 					// 用户信息 - 从后端返回的订单数据中获取
 					userId: order.userId || '',
@@ -758,8 +841,6 @@
 				try {
 					// 刷新订单列表
 					await this.loadOrders()
-					// 刷新评价统计
-					await this.loadReviewStats()
 				} catch (error) {
 					console.error('刷新失败:', error)
 					uni.showToast({
@@ -778,50 +859,101 @@
 
 			// 评价订单
 			goToReview(orderId) {
-				// 打开评价弹窗
+				const order = this.orderList.find(o => o.id === orderId) || this.allOrders.find(o => o.id === orderId)
+				
+				// 判断是首评还是追评
+				this.isAppendReview = order && order.evaluationFlag === '1'
+				this.reviewMode = 'edit'
 				this.reviewData = {
 					orderId: orderId,
-					rating: 5,
-					content: ''
+					orderInfo: order ? {
+						serviceName: order.serviceName,
+						providerName: order.providerName,
+						icon: this.getServiceIcon(order.icon)
+					} : null,
+					rating: 0,
+					content: '',
+					images: [],
+					selectedTags: [],
+					createTime: ''
 				}
 				this.showReviewModal = true
 			},
-
-			// 设置评分
-			setRating(star) {
-				this.reviewData.rating = star
+			
+			// 切换标签选择
+			handleToggleTag(tag) {
+				const index = this.reviewData.selectedTags.indexOf(tag)
+				if (index > -1) {
+					this.reviewData.selectedTags.splice(index, 1)
+				} else {
+					this.reviewData.selectedTags.push(tag)
+				}
 			},
 
 			// 关闭评价弹窗
 			closeReviewModal() {
 				this.showReviewModal = false
+				this.reviewMode = 'edit'
 				this.reviewData = {
 					orderId: null,
-					rating: 5,
-					content: ''
+					orderInfo: null,
+					rating: 0,
+					content: '',
+					images: [],
+					selectedTags: [],
+					createTime: ''
 				}
 			},
 
 			// 提交评价
 			async submitReview() {
-				// 验证
-				if (!this.reviewData.content.trim()) {
-					uni.showToast({
-						title: '请输入评价内容',
-						icon: 'none'
-					})
-					return
+				// 组合评价内容：标签 + 自定义内容
+				let finalContent = ''
+				if (this.reviewData.selectedTags.length > 0) {
+					finalContent = this.reviewData.selectedTags.join('、')
+				}
+				if (this.reviewData.content.trim()) {
+					if (finalContent) {
+						finalContent += '；' + this.reviewData.content.trim()
+					} else {
+						finalContent = this.reviewData.content.trim()
+					}
 				}
 
 				try {
 					this.submittingReview = true
 
+					// 上传图片
+					let uploadedImages = []
+					if (this.reviewData.images && this.reviewData.images.length > 0) {
+						uni.showLoading({ title: '上传图片中...' })
+						for (let i = 0; i < this.reviewData.images.length; i++) {
+							try {
+								const uploadResult = await this.$upload({
+									url: '/common/upload',
+									filePath: this.reviewData.images[i],
+									name: 'file'
+								})
+								if (uploadResult.code === 200 && uploadResult.fileName) {
+									uploadedImages.push(uploadResult.fileName)
+								}
+							} catch (uploadError) {
+								console.error('图片上传失败:', uploadError)
+							}
+						}
+						uni.hideLoading()
+					}
+
 					// 调用评价接口
-					const response = await evaluationServiceorder({
+					const evaluationData = {
 						orderId: this.reviewData.orderId,
 						rating: this.reviewData.rating,
-						evaluationContent: this.reviewData.content
-					})
+						evaluationContent: finalContent
+					}
+					if (uploadedImages.length > 0) {
+						evaluationData.evaluationImages = JSON.stringify(uploadedImages)
+					}
+					const response = await evaluationServiceorder(evaluationData)
 
 					if (response.code === 200) {
 						uni.showToast({
@@ -831,9 +963,6 @@
 
 						// 关闭弹窗
 						this.closeReviewModal()
-
-						// 刷新评价统计
-						this.loadReviewStats()
 
 						// 刷新订单列表
 						this.refreshOrders()
@@ -854,65 +983,57 @@
 				}
 			},
 
-			// 跳转到评价中心
-			goToReviewCenter() {
-				uni.navigateTo({
-					url: '/pages/shopping/review/center'
-				})
-			},
-
-			// 获取服务图标路径
 			getServiceIcon(iconPath) {
-				if (!iconPath) {
-					return '/static/images/default-service.png'
+				return _getServiceIcon(iconPath)
+			},
+			
+			// 获取核销方式文本
+			getVerificationMethodText(method) {
+				const methodMap = {
+					'SCAN': '扫码核销',
+					'MANUAL': '手动核销',
+					'RESIDENT': '居民确认'
 				}
-				
-				// 如果是完整URL，直接返回
-				if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
-					return iconPath
+				return methodMap[method] || method
+			},
+			
+			// 获取核销方式图标
+			getVerificationMethodIcon(method) {
+				const iconMap = {
+					'SCAN': 'scan',
+					'MANUAL': 'hand-up',
+					'RESIDENT': 'person-filled'
 				}
-				
-				// 如果是相对路径，拼接baseUrl
-				if (iconPath.startsWith('/')) {
-					return config.baseUrl + iconPath
+				return iconMap[method] || 'checkmark-circle'
+			},
+			
+			// 获取核销方式样式类
+			getVerificationMethodClass(method) {
+				if (method === 'RESIDENT') {
+					return 'method-resident'
+				} else if (method === 'SCAN') {
+					return 'method-scan'
+				} else if (method === 'MANUAL') {
+					return 'method-manual'
 				}
-				
-				return '/static/images/default-service.png'
+				return 'method-default'
 			},
 
 			// 查看我的评价
 			viewMyReview(orderId) {
-				// 从订单列表中查找该订单
-				const order = this.orderList.find(o => o.id === orderId);
+				const order = this.orderList.find(o => o.id === orderId) || this.allOrders.find(o => o.id === orderId)
 				
-				if (order && order.evaluationContent) {
-					// 使用弹窗显示评价内容
-					uni.showModal({
-						title: '我的评价',
-						content: order.evaluationContent,
-						showCancel: false,
-						confirmText: '确定'
-					});
+				if (order && order.evaluationFlag === '1') {
+					// 跳转到评价列表页面
+					uni.navigateTo({
+						url: `/pages/evaluation/list?orderId=${orderId}`
+					})
 				} else {
 					uni.showToast({
 						title: '暂无评价内容',
 						icon: 'none'
-					});
+					})
 				}
-			},
-
-			// 加载用户信息
-			loadUserInfo() {
-				this.userInfo = uni.getStorageSync('userInfo') || {
-					nickname: '用户',
-					avatar: '/static/images/profile.jpg'
-				}
-			},
-
-			// 加载评价统计
-			loadReviewStats() {
-				const reviews = uni.getStorageSync('userReviews') || []
-				this.reviewStats.totalReviews = reviews.length
 			},
 
 			// 取消订单
@@ -1059,24 +1180,10 @@
 				})
 			},
 			
-			// 确认完成服务
-			confirmComplete(orderId) {
-				uni.showModal({
-					title: '确认完成',
-					content: '确认服务已完成吗？',
-					success: (res) => {
-						if (res.confirm) {
-							// TODO: 调用完成服务API
-							uni.showToast({
-								title: '已确认完成',
-								icon: 'success'
-							})
-							
-							// 刷新订单列表
-							this.refreshOrders()
-						}
-					}
-				})
+			// 核销成功回调（混入会调用此方法）
+			onVerificationSuccess() {
+				// 刷新订单列表
+				this.refreshOrders()
 			},
 
 			// ============ WebSocket 相关方法 ============
@@ -1179,6 +1286,13 @@
 				// 格式化订单数据
 				const newOrder = this.formatOrderData(orderData)
 
+				// 检查订单是否已存在（避免重复）
+				const existsInList = this.orderList.some(o => o.id === newOrder.id)
+				if (existsInList) {
+					console.log('订单已存在，跳过添加:', newOrder.id)
+					return
+				}
+
 				// 判断是否在当前标签页显示
 				if (this.shouldShowInCurrentTab(newOrder)) {
 					// 插入到列表顶部
@@ -1186,7 +1300,10 @@
 					
 					// 如果在全部标签，也添加到 allOrders
 					if (this.currentTab === 0) {
-						this.allOrders.unshift(newOrder)
+						const existsInAll = this.allOrders.some(o => o.id === newOrder.id)
+						if (!existsInAll) {
+							this.allOrders.unshift(newOrder)
+						}
 					}
 
 					// 显示通知
@@ -1212,17 +1329,8 @@
 					return
 				}
 
-				// 状态映射
-				const statusTextMap = {
-					'0': 'pending',    // 待接单
-					'1': 'accepted',   // 已接单
-					'2': 'serving',    // 服务中
-					'3': 'completed',  // 已完成
-					'4': 'cancelled',  // 已取消
-					'5': 'rejected'    // 已拒绝
-				}
-				
-				const newStatus = statusTextMap[orderData.orderStatus]
+				// 使用统一的状态映射
+				const newStatus = ORDER_STATUS_CODE_MAP[orderData.orderStatus]
 				if (!newStatus) {
 					console.warn('[订单页面] 未知的订单状态:', orderData.orderStatus)
 					return
@@ -1279,13 +1387,8 @@
 				const orderData = message.data
 				if (!orderData || !orderData.orderId) return
 
-				// 状态映射
-				const statusTextMap = {
-					'4': 'cancelled',  // 已取消
-					'5': 'rejected'    // 已拒绝
-				}
-				
-				const newStatus = statusTextMap[orderData.orderStatus]
+				// 使用统一的状态映射
+				const newStatus = ORDER_STATUS_CODE_MAP[orderData.orderStatus]
 				if (!newStatus) return
 				
 				const newStatusInfo = this.statusMap[newStatus]
@@ -1362,8 +1465,7 @@
 				}
 
 				return order.status === expectedStatus
-			},
-
+			}
 		}
 	}
 </script>
@@ -1466,70 +1568,9 @@
 		}
 	}
 
-	// 我的评价模块样式
-	.my-review-section {
-		background: #fff;
-		margin: 20rpx 24rpx;
-		border-radius: 24rpx;
-		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
-		flex-shrink: 0;
-
-		.review-header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 32rpx;
-		}
-
-		.review-info {
-			display: flex;
-			align-items: center;
-			gap: 24rpx;
-		}
-
-		.user-avatar {
-			width: 100rpx;
-			height: 100rpx;
-			border-radius: 50rpx;
-			border: 4rpx solid #f7f8fa;
-		}
-
-		.user-detail {
-			display: flex;
-			flex-direction: column;
-			gap: 8rpx;
-		}
-
-		.username {
-			font-size: 32rpx;
-			font-weight: 600;
-			color: #333;
-		}
-
-		.review-stats {
-			font-size: 24rpx;
-			color: #999;
-			background: #f7f8fa;
-			padding: 4rpx 16rpx;
-			border-radius: 100rpx;
-			display: inline-block;
-		}
-
-		.review-action {
-			display: flex;
-			align-items: center;
-			gap: 4rpx;
-		}
-
-		.action-text {
-			font-size: 26rpx;
-			color: #999;
-		}
-	}
-
 	.order-list {
 		flex: 1;
-		padding: 0 24rpx 24rpx;
+		padding: 24rpx 24rpx 24rpx;
 		height: 0;
 	}
 
@@ -1568,15 +1609,17 @@
 		.order-header {
 			display: flex;
 			justify-content: space-between;
-			align-items: center;
+			align-items: flex-start;
 			padding-bottom: 24rpx;
 			margin-bottom: 0; 
 			border-bottom: none; /* 去掉分割线，用间距代替 */
 
 			.order-info {
 				display: flex;
-				align-items: center;
-				gap: 16rpx;
+				flex-direction: column;
+				gap: 12rpx;
+				flex: 1;
+				min-width: 0; // 允许内容收缩
 			}
 
 			.order-time {
@@ -1585,11 +1628,36 @@
 				background: #f8f9fa;
 				padding: 6rpx 16rpx;
 				border-radius: 8rpx;
+				align-self: flex-start;
+			}
+
+			.order-no-wrapper {
+				display: flex;
+				align-items: center;
+				gap: 6rpx;
+				padding: 6rpx 16rpx;
+				background: #f8f9fa;
+				border-radius: 8rpx;
+				max-width: 100%;
+				align-self: flex-start;
+				
+				&:active {
+					background: #eff0f1;
+				}
+			}
+
+			.order-no-label {
+				font-size: 22rpx;
+				color: #999;
+				flex-shrink: 0;
 			}
 
 			.order-no {
 				font-size: 22rpx;
 				color: #999;
+				word-break: break-all;
+				flex: 1;
+				min-width: 0;
 			}
 
 			.order-status {
@@ -1638,6 +1706,14 @@
 					color: #ff5722;
 					background: rgba(255, 87, 34, 0.08);
 				}
+				&.status-dispatching {
+					color: #fa8c16;
+					background: rgba(250, 140, 22, 0.08);
+				}
+				&.status-verifying {
+					color: #52c41a;
+					background: rgba(82, 196, 26, 0.08);
+				}
 			}
 		}
 
@@ -1682,6 +1758,23 @@
 							line-height: 1.4;
 						}
 						
+						.package-badge {
+							display: inline-flex;
+							align-items: center;
+							gap: 6rpx;
+							background: linear-gradient(135deg, #fa8c16 0%, #f57c00 100%);
+							color: #fff;
+							font-size: 20rpx;
+							padding: 6rpx 14rpx;
+							border-radius: 100rpx;
+							font-weight: 500;
+							box-shadow: 0 2rpx 8rpx rgba(250, 140, 22, 0.3);
+							
+							text {
+								line-height: 1;
+							}
+						}
+						
 						.voice-badge {
 							display: inline-flex;
 							align-items: center;
@@ -1724,6 +1817,26 @@
 								line-height: 1.4;
 								flex: 1;
 							}
+							
+							// 内联核销方式标签
+							.inline-method-badge {
+								display: inline-flex;
+								align-items: center;
+								gap: 4rpx;
+								padding: 4rpx 12rpx;
+								border-radius: 100rpx;
+								font-size: 20rpx;
+								font-weight: 500;
+								margin-left: 12rpx;
+								flex-shrink: 0;
+								background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+								color: #fff;
+								box-shadow: 0 2rpx 6rpx rgba(82, 196, 26, 0.25);
+								
+								text {
+									line-height: 1;
+								}
+							}
 						}
 					}
 				}
@@ -1732,17 +1845,34 @@
 
 		// 语音下单备注提示框
 		.voice-order-remark {
-			margin: 0 0 16rpx 0;
-			padding: 16rpx 20rpx;
-			background: #f8fcfc;
-			border-radius: 12rpx;
+			margin: 0 0 24rpx 0;
+			padding: 24rpx;
+			background: #f0fafa;
+			border-radius: 16rpx;
+			border: 1rpx solid rgba(62, 198, 198, 0.1);
+			position: relative;
+			overflow: hidden;
+
+			&::before {
+				content: 'AI 智能匹配';
+				position: absolute;
+				top: 0;
+				right: 0;
+				background: rgba(62, 198, 198, 0.1);
+				color: #3ec6c6;
+				font-size: 18rpx;
+				padding: 4rpx 12rpx;
+				border-bottom-left-radius: 12rpx;
+				font-weight: bold;
+				letter-spacing: 1rpx;
+			}
 			
 			.remark-detail {
 				.remark-item {
 					display: flex;
 					align-items: flex-start;
-					margin-bottom: 8rpx;
-					gap: 8rpx;
+					margin-bottom: 16rpx;
+					gap: 12rpx;
 					
 					&:last-child {
 						margin-bottom: 0;
@@ -1750,20 +1880,31 @@
 					
 					uni-icons {
 						flex-shrink: 0;
-						margin-top: 4rpx;
+						margin-top: 6rpx;
+						background: rgba(62, 198, 198, 0.1);
+						padding: 6rpx;
+						border-radius: 8rpx;
 					}
 					
 					.remark-value {
-						font-size: 24rpx;
-						color: #666;
-						line-height: 1.5;
+						font-size: 26rpx;
+						color: #333;
+						line-height: 1.6;
 						word-break: break-all;
 						flex: 1;
 						
 						&.highlight {
-							color: #3ec6c6;
+							color: #2bb3b3;
 							font-weight: 500;
-							font-size: 26rpx;
+							font-size: 28rpx;
+							display: block;
+							padding: 4rpx 0;
+						}
+
+						&.secondary {
+							color: #888;
+							font-size: 24rpx;
+							font-style: italic;
 						}
 					}
 				}
@@ -1871,44 +2012,94 @@
 					min-width: 140rpx;
 					white-space: nowrap;
 					box-sizing: border-box;
+					transition: all 0.3s ease;
+					position: relative;
+					overflow: hidden;
 					
 					&::after {
 						border: none;
 					}
+					
+					// 添加按钮点击波纹效果
+					&::before {
+						content: '';
+						position: absolute;
+						top: 50%;
+						left: 50%;
+						width: 0;
+						height: 0;
+						border-radius: 50%;
+						background: rgba(255, 255, 255, 0.3);
+						transform: translate(-50%, -50%);
+						transition: width 0.6s, height 0.6s;
+					}
 
 					&:active {
-						opacity: 0.8;
-						transform: scale(0.98);
+						transform: scale(0.96);
+						
+						&::before {
+							width: 200rpx;
+							height: 200rpx;
+						}
 					}
 
 					&.primary {
 						color: #fff;
-						background: linear-gradient(135deg, #3ec6c6, #2bb3b3);
-						box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+						background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
+						box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.35);
+						border: none;
+						
+						&:active {
+							box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.25);
+						}
 					}
 					
-					&.secondary, &.remind, &.review, &.test-ship, &.test-review {
+					&.secondary {
+						background: linear-gradient(135deg, #fff 0%, #f8fcfc 100%);
+						border: 2rpx solid #3ec6c6;
+						color: #3ec6c6;
+						box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.1);
+						
+						&:active {
+							background: linear-gradient(135deg, #f0fafa 0%, #e6f7f7 100%);
+							box-shadow: 0 1rpx 4rpx rgba(62, 198, 198, 0.15);
+						}
+					}
+					
+					&.remind, &.review, &.test-ship, &.test-review {
 						background: #fff;
 						border: 2rpx solid #3ec6c6;
 						color: #3ec6c6;
+						box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.08);
 					}
 					
 					&.cancel {
 						color: #999;
 						background: #fff;
 						border: 2rpx solid #e0e0e0;
+						box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
+						
+						&:active {
+							background: #f5f5f5;
+						}
 					}
 					
 					&.delete {
 						color: #ff5555;
 						background: #fff;
 						border: 2rpx solid #ffcdd2;
+						box-shadow: 0 2rpx 6rpx rgba(255, 85, 85, 0.1);
+						
+						&:active {
+							background: #fff5f5;
+						}
 					}
 					
 					&.reviewed {
 						color: #999;
 						border: 2rpx solid #eee;
 						background: #f9f9f9;
+						box-shadow: none;
 					}
 					
 					&[disabled] {
@@ -1933,129 +2124,6 @@
 
 		uni-icons {
 			margin-right: 10rpx;
-		}
-	}
-
-	// 评价弹窗样式
-	.review-modal {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.6);
-		z-index: 999;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		backdrop-filter: blur(4px);
-		
-		.review-content {
-			width: 600rpx;
-			background: #fff;
-			border-radius: 32rpx;
-			overflow: hidden;
-			box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.15);
-			animation: modalShow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-			
-			@keyframes modalShow {
-				from { transform: scale(0.9); opacity: 0; }
-				to { transform: scale(1); opacity: 1; }
-			}
-			
-			.review-header {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				padding: 32rpx 40rpx;
-				border-bottom: 2rpx solid #f7f8fa;
-				
-				.review-title {
-					font-size: 34rpx;
-					font-weight: bold;
-					color: #333;
-				}
-			}
-			
-			.review-body {
-				padding: 40rpx;
-				
-				.review-item {
-					margin-bottom: 40rpx;
-					
-					&:last-child {
-						margin-bottom: 0;
-					}
-					
-					.review-label {
-						display: block;
-						font-size: 28rpx;
-						color: #666;
-						margin-bottom: 20rpx;
-						font-weight: 500;
-					}
-					
-					.star-rating {
-						display: flex;
-						gap: 16rpx;
-						justify-content: center;
-					}
-					
-					.review-textarea {
-						width: 100%;
-						min-height: 200rpx;
-						padding: 24rpx;
-						border: none;
-						background: #f7f8fa;
-						border-radius: 16rpx;
-						font-size: 28rpx;
-						line-height: 1.6;
-						box-sizing: border-box;
-						color: #333;
-						
-						&::placeholder {
-							color: #bbb;
-						}
-					}
-					
-					.char-count {
-						display: block;
-						font-size: 24rpx;
-						color: #ccc;
-						text-align: right;
-						margin-top: 12rpx;
-					}
-				}
-			}
-			
-			.review-footer {
-				display: flex;
-				gap: 24rpx;
-				padding: 24rpx 40rpx 40rpx;
-				
-				button {
-					flex: 1;
-					height: 88rpx;
-					line-height: 88rpx;
-					border-radius: 100rpx;
-					font-size: 30rpx;
-					font-weight: 600;
-					border: none;
-					
-					&::after { border: none; }
-					
-					&.cancel-btn {
-						background: #f5f5f5;
-						color: #666;
-					}
-					
-					&.submit-btn {
-						background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
-						color: #fff;
-						box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.25);
-					}
-				}
-			}
 		}
 	}
 </style>

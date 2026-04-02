@@ -77,6 +77,17 @@
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
         </view>
         
+        <view class="menu-item" @click="handleServicePackage">
+          <view class="menu-icon-wrapper" style="background-color: #F3E5F5;">
+            <uni-icons type="gift" size="20" color="#9C27B0"></uni-icons>
+          </view>
+          <view class="menu-content">
+            <text class="menu-title">服务套餐</text>
+            <text class="menu-desc">查看我的服务套餐</text>
+          </view>
+          <uni-icons type="right" size="16" color="#ccc"></uni-icons>
+        </view>
+        
         <view class="menu-item" @click="handleDevice">
           <view class="menu-icon-wrapper" style="background-color: #FFF3E0;">
             <text class="iconfontA icon-shebeiguanli" style="color: #FF9800; font-size: 20px;"></text>
@@ -194,6 +205,10 @@
       handleBalancePackage() {
         if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/balancePackage/index')
+      },
+      handleServicePackage() {
+        if (!this.checkLogin()) return
+        this.$tab.navigateTo('/pages/server/SetMeal/index?tab=my')
       }
     }
   }

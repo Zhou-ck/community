@@ -50,7 +50,10 @@ const upload = config => {
                 confirmText: '确定',
                 success: (res) => {
                   if (res.confirm) {
-                    store.dispatch('LogOut').then(res => {
+                    store.dispatch('LogOut').then(() => {
+                      uni.reLaunch({ url: '/pages/login' })
+                    }).catch(() => {
+                      // 即使LogOut失败，也要跳转到登录页
                       uni.reLaunch({ url: '/pages/login' })
                     })
                   }
@@ -70,8 +73,8 @@ const upload = config => {
           }
         },
         fail: (error) => {
-          let { message } = error
-          if (message == 'Network Error') {
+          let message = error.errMsg || error.message || '网络请求失败'
+          if (message.includes('Network Error') || message.includes('net::ERR')) {
             message = '后端接口连接异常'
           } else if (message.includes('timeout')) {
             message = '系统接口请求超时'

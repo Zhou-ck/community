@@ -5,7 +5,8 @@ export function grouplistServicetype(query) {
   return request({
     url: '/services/servicetype/grouplist',
     method: 'get',
-    params: query
+    params: query,
+    headers: { isToken: false }
   })
 }
 
@@ -15,7 +16,7 @@ export function listServiceitem(query) {
     url: '/services/serviceitem/list',
     method: 'get',
     params: query
-  })
+    })
 }
 
 // 预约服务

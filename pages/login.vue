@@ -146,12 +146,18 @@
       this.getRuleValue()
       this.loadSavedCredentials()
     },
-    onLoad() {
+    onLoad(options) {
       //#ifdef H5
       if (getToken()) {
         this.$tab.switchTab('/pages/index')
       }
       //#endif
+      // 从注册页跳转过来时，用新账号信息覆盖表单
+      if (options && options.username) {
+        this.loginForm.username = decodeURIComponent(options.username)
+        this.loginForm.password = ''
+        this.loginForm.phone = options.phone ? decodeURIComponent(options.phone) : ''
+      }
     },
     methods: {
       // 清除账号错误状态

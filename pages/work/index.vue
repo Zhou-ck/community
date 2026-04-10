@@ -395,29 +395,6 @@
 
     // 页面显示时检查是否有目标分类
     onShow() {
-      // 检查是否登录
-      if (!this.$store.getters.token) {
-        uni.showModal({
-          title: '提示',
-          content: '请先登录后再使用服务功能',
-          confirmText: '去登录',
-          cancelText: '返回',
-          success: (res) => {
-            if (res.confirm) {
-              uni.navigateTo({
-                url: '/pages/login'
-              })
-            } else {
-              // 返回首页
-              uni.switchTab({
-                url: '/pages/index'
-              })
-            }
-          }
-        })
-        return
-      }
-      
       // 检查本地存储中是否有目标分类
       const targetCategory = uni.getStorageSync('targetCategory');
       console.log('onShow - 从本地存储获取的目标分类:', targetCategory);

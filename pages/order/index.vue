@@ -666,25 +666,28 @@
 						const isOrderNumber = /^[A-Za-z0-9\-_]+$/.test(keyword) && keyword.length >= 6
 						
 						if (isOrderNumber) {
-							// 输入订单编号查询时：包含套餐订单
+							// 输入订单编号查询时：包含套餐订单，但只显示一周内未完成的
 							query.orderNo = keyword
 							query.excludePackageByDefault = false
 						} else {
 							// 按服务名称搜索时：排除套餐订单
 							query.serviceName = keyword
-							query.excludePackageByDefault = true
+							query.excludePackageByDefault = false
 						}
 					} else {
 						// 未输入搜索关键词时：排除套餐订单
-						query.excludePackageByDefault = true
+						query.excludePackageByDefault = false
 					}
-
+					
 					// 调用后端API
 					const response = await listServiceorder(query)
 					
 					if (response.code === 200 && response.rows) {
 						// 处理订单数据
-						const orders = response.rows.map(order => this.formatOrderData(order))
+						let orders = response.rows.map(order => this.formatOrderData(order))
+						
+						// 前端额外过滤：确保套餐订单只显示一周内未完成的
+						orders = this.filterPackageOrders(orders)
 						
 						// 更新列表数据
 						if (this.page === 1) {
@@ -723,6 +726,39 @@
 				}
 			},
 
+			// 过滤套餐订单：只显示一周内未完成的套餐订单
+			filterPackageOrders(orders) {
+				const now = new Date()
+				const oneWeekFromNow = new Date()
+				oneWeekFromNow.setDate(now.getDate() + 7)
+				
+				return orders.filter(order => {
+					// 如果不是套餐订单，直接保留
+					if (order.orderSource !== '2' && order.orderSource !== 2) {
+						return true
+					}
+					
+					// 套餐订单需要满足两个条件：
+					// 1. 预约时间在一周内（从今天开始算）
+					// 2. 状态不是已完成
+					
+					// 检查预约时间是否在一周内
+					if (!order.appointmentDate) {
+						// 如果没有预约时间，不显示
+						return false
+					}
+					
+					const appointmentDate = new Date(order.appointmentDate)
+					// 预约时间应该在今天到一周后之间
+					const isWithinOneWeek = appointmentDate >= now && appointmentDate <= oneWeekFromNow
+					
+					// 检查是否未完成（排除已完成、已取消、已拒绝、已关闭状态）
+					const isNotCompleted = !['completed', 'cancelled', 'rejected', 'closed'].includes(order.status)
+					
+					return isWithinOneWeek && isNotCompleted
+				})
+			},
+
 			// 处理多状态查询（用于服务中标签页查询状态2和8）
 			async loadOrdersWithMultipleStatus(statusArray, baseQuery) {
 				try {
@@ -742,6 +778,9 @@
 							allOrders = [...allOrders, ...orders]
 						}
 					}
+					
+					// 前端额外过滤：确保套餐订单只显示一周内未完成的
+					allOrders = this.filterPackageOrders(allOrders)
 					
 					// 按创建时间倒序排序
 					allOrders.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))

@@ -23,6 +23,17 @@
               <view class="status-dot"></view>
               <text>{{ getDictLabel('dev_online_status', deviceInfo.onlineStatus) }}</text>
             </view>
+            <!-- 社区监控状态标签 -->
+            <view class="device-tag monitor-tag" 
+              :class="{
+                'not-monitored': String(deviceInfo.communityMonitorStatus) === '0',
+                'package-monitoring': String(deviceInfo.communityMonitorStatus) === '1',
+                'apply-monitoring': String(deviceInfo.communityMonitorStatus) === '2',
+                'apply-reviewing': String(deviceInfo.communityMonitorStatus) === '3'
+              }"
+              v-if="deviceInfo.communityMonitorStatus !== undefined && deviceInfo.communityMonitorStatus !== null">
+              <text>{{ getMonitorStatusText(deviceInfo.communityMonitorStatus) }}</text>
+            </view>
           </view>
         </view>
       </view>
@@ -66,7 +77,7 @@
           :checked="deviceInfo && deviceInfo.defenseStatus === '1'" 
           @change="toggleDefenseStatus"
           color="#3ec6c6"
-          style="transform:scale(0.9)"
+          class="defense-switch"
         />
       </view>
     </view>
@@ -233,6 +244,28 @@
         </view>
         <view class="card-icon cyan-bg">
           <uni-icons type="images" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+
+      <!-- 申请监控 - 当sourceType为1且communityMonitorStatus为0时显示 -->
+      <view class="function-card" @click="handleApplyMonitorClick" v-if="showApplyMonitor">
+        <view class="card-content">
+          <text class="card-title">申请监控</text>
+          <text class="card-subtitle">申请社区监控服务</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="eye" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
+
+      <!-- 撤销监控 - 当sourceType为1且communityMonitorStatus为3时显示 -->
+      <view class="function-card" @click="handleCancelMonitorClick" v-if="showCancelMonitor">
+        <view class="card-content">
+          <text class="card-title danger-text">撤销申请</text>
+          <text class="card-subtitle">撤销监控申请</text>
+        </view>
+        <view class="card-icon red-bg">
+          <uni-icons type="closeempty" size="20" color="#f56c6c"></uni-icons>
         </view>
       </view>
 
@@ -458,11 +491,48 @@
         </view>
       </view>
     </uni-popup>
+
+    <!-- 申请监控弹窗 -->
+    <uni-popup ref="applyMonitorPopup" type="center" :mask-click="false">
+      <view class="apply-monitor-popup">
+        <view class="popup-header">
+          <text class="popup-title">申请社区监控</text>
+          <uni-icons type="clear" size="24" color="#666" @click="closeApplyMonitorPopup"></uni-icons>
+        </view>
+        
+        <view class="popup-body">
+          <view class="form-item">
+            <text class="form-label">设备</text>
+            <input 
+              class="form-input disabled" 
+              :value="applyMonitorDeviceDisplay"
+              disabled
+            />
+          </view>
+          
+          <view class="form-item">
+            <text class="form-label required">申请原因</text>
+            <textarea 
+              class="form-textarea" 
+              v-model="applyMonitorForm.applyReason" 
+              placeholder="请输入申请原因"
+              maxlength="500"
+            ></textarea>
+          </view>
+        </view>
+        
+        <view class="popup-footer">
+          <button class="confirm-btn" @click="submitApplyMonitor" :loading="applyMonitorSubmitting">提交</button>
+          <button class="cancel-btn" @click="closeApplyMonitorPopup">取消</button>
+        </view>
+      </view>
+    </uni-popup>
   </view>
 </template>
 
 <script>
 import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei } from '@/api/device'
+import { submitMonitorApply, cancelMonitorApplyByDeviceId } from '@/api/monitorApply'
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId } from '@/api/familyMemberDevice'
@@ -526,7 +596,13 @@ export default {
       // 绑定的接警人列表
       boundReceivers: [],
       // 参数设置弹窗滚动区域高度
-      scrollViewHeight: 400
+      scrollViewHeight: 400,
+      // 申请监控表单
+      applyMonitorForm: {
+        applyReason: ''
+      },
+      // 申请监控提交状态
+      applyMonitorSubmitting: false
     }
   },
   
@@ -658,6 +734,26 @@ export default {
       const deviceType = String(this.deviceInfo.deviceType)
       const currentCount = this.boundFamilyMembers.length
       return getBindFamilyTip(deviceType, currentCount)
+    },
+    
+    // 是否显示申请监控功能（sourceType为1且communityMonitorStatus为0时显示）
+    showApplyMonitor() {
+      if (!this.deviceInfo) return false
+      return String(this.deviceInfo.sourceType) === '1' && String(this.deviceInfo.communityMonitorStatus) === '0'
+    },
+    
+    // 申请监控弹窗中显示的设备信息
+    applyMonitorDeviceDisplay() {
+      if (!this.deviceInfo) return ''
+      const deviceName = this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey
+      const deviceNumber = (this.deviceInfo.productKey || '') + this.deviceInfo.deviceKey
+      return `${deviceName} (${deviceNumber})`
+    },
+    
+    // 是否显示撤销监控功能（sourceType为1且communityMonitorStatus为3时显示）
+    showCancelMonitor() {
+      if (!this.deviceInfo) return false
+      return String(this.deviceInfo.sourceType) === '1' && String(this.deviceInfo.communityMonitorStatus) === '3'
     }
   },
   
@@ -929,6 +1025,131 @@ export default {
       const dictList = this.dictData[dictType] || []
       const dictItem = dictList.find(item => String(item.dictValue) === String(dictValue))
       return dictItem ? dictItem.dictLabel : dictValue
+    },
+    
+    // 获取社区监控状态文本
+    getMonitorStatusText(status) {
+      const statusMap = {
+        '0': '未监控',
+        '1': '套餐服务监控中',
+        '2': '申请监控中',
+        '3': '申请审核中'
+      }
+      return statusMap[String(status)] || '未知状态'
+    },
+    
+    // 获取社区监控状态样式类
+    getMonitorStatusClass(status) {
+      const classMap = {
+        '0': 'not-monitored',
+        '1': 'package-monitoring',
+        '2': 'apply-monitoring',
+        '3': 'apply-reviewing'
+      }
+      return classMap[String(status)] || 'not-monitored'
+    },
+    
+    // 处理申请监控点击
+    handleApplyMonitorClick() {
+      // 重置表单
+      this.applyMonitorForm.applyReason = ''
+      this.$refs.applyMonitorPopup.open()
+    },
+    
+    // 关闭申请监控弹窗
+    closeApplyMonitorPopup() {
+      this.$refs.applyMonitorPopup.close()
+    },
+    
+    // 提交申请监控
+    async submitApplyMonitor() {
+      // 验证申请原因
+      if (!this.applyMonitorForm.applyReason || !this.applyMonitorForm.applyReason.trim()) {
+        uni.showToast({
+          title: '请填写申请原因',
+          icon: 'none'
+        })
+        return
+      }
+      
+      this.applyMonitorSubmitting = true
+      try {
+        const params = {
+          deviceId: this.deviceInfo.deviceId,
+          applyReason: this.applyMonitorForm.applyReason.trim()
+        }
+        
+        const response = await submitMonitorApply(params)
+        
+        if (response.code === 200) {
+          uni.showToast({
+            title: '申请提交成功',
+            icon: 'success'
+          })
+          this.closeApplyMonitorPopup()
+          // 刷新设备详情，更新监控状态
+          this.loadDeviceDetail()
+        } else {
+          uni.showToast({
+            title: response.msg || '申请提交失败',
+            icon: 'none'
+          })
+        }
+      } catch (error) {
+        console.error('提交申请监控失败:', error)
+        uni.showToast({
+          title: '网络错误',
+          icon: 'none'
+        })
+      } finally {
+        this.applyMonitorSubmitting = false
+      }
+    },
+    
+    // 处理撤销监控点击
+    handleCancelMonitorClick() {
+      uni.showModal({
+        title: '确认撤销',
+        content: '确定要撤销监控申请吗？',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: async (res) => {
+          if (res.confirm) {
+            await this.cancelMonitorApply()
+          }
+        }
+      })
+    },
+    
+    // 撤销监控申请
+    async cancelMonitorApply() {
+      try {
+        uni.showLoading({ title: '撤销中...' })
+        
+        const response = await cancelMonitorApplyByDeviceId(this.deviceInfo.deviceId)
+        
+        if (response.code === 200) {
+          uni.showToast({
+            title: '撤销成功',
+            icon: 'success'
+          })
+          // 刷新设备详情，更新监控状态
+          this.loadDeviceDetail()
+        } else {
+          uni.showToast({
+            title: response.msg || '撤销失败',
+            icon: 'none'
+          })
+        }
+      } catch (error) {
+        console.error('撤销监控申请失败:', error)
+        uni.showToast({
+          title: '网络错误',
+          icon: 'none'
+        })
+      } finally {
+        uni.hideLoading()
+      }
     },
     
     // 切换设备布防状态
@@ -1521,9 +1742,12 @@ export default {
             }
             // 尝试寻找包含参数的对象
             else {
-              for (const [key, value] of Object.entries(response.data)) {
-                if (value && typeof value === 'object' && 
-                    Object.keys(value).some(k => ['height', 'unmanned', 'DWT', 'FRT', 'threshold', 'lamp', 'buz'].includes(k))) {
+              const dataKeys = Object.keys(response.data)
+              const targetFields = ['height', 'unmanned', 'DWT', 'FRT', 'threshold', 'lamp', 'buz']
+              for (let di = 0; di < dataKeys.length; di++) {
+                const value = response.data[dataKeys[di]]
+                if (value && typeof value === 'object' &&
+                    Object.keys(value).some(function(k) { return targetFields.indexOf(k) >= 0 })) {
                   realTimeParams = value
                   break
                 }
@@ -1550,8 +1774,8 @@ export default {
         if (typeof tm === 'string') {
           try { tm = JSON.parse(tm) } catch (e) { /* JSON解析失败 */ }
         }
-        let props = Array.isArray(tm?.properties) ? tm.properties
-                   : Array.isArray(tm?.model?.properties) ? tm.model.properties
+        let props = (tm && Array.isArray(tm.properties)) ? tm.properties
+                   : (tm && tm.model && Array.isArray(tm.model.properties)) ? tm.model.properties
                    : []
         const writables = props.filter(p => p && p.accessMode === 'w')
         
@@ -1559,8 +1783,8 @@ export default {
         const realTimeData = await this.loadRealTimeData()
         
         const mapped = writables.map(p => {
-          const type = p?.dataType?.type || 'string'
-          const specs = p?.dataType?.specs || {}
+          const type = (p && p.dataType && p.dataType.type) ? p.dataType.type : 'string'
+          const specs = (p && p.dataType && p.dataType.specs) ? p.dataType.specs : {}
           let uiType = type === 'bool' || type === 'boolean' ? 'bool'
                          : type === 'int' || type === 'float' || type === 'double' || type === 'long' || type === 'number' ? 'number'
                          : type === 'enum' ? 'enum' : 'string'
@@ -1585,7 +1809,7 @@ export default {
                 enumLabels = specs.map(i => i.text || i.name || String(i.value))
               } else if (specs && typeof specs === 'object') {
                 enumValues = Object.keys(specs)
-                enumLabels = Object.values(specs).map(v => typeof v === 'string' ? v : (v?.text || ''))
+                enumLabels = Object.values(specs).map(function(v) { return typeof v === 'string' ? v : (v && v.text ? v.text : '') })
               }
             }
           }
@@ -1614,10 +1838,13 @@ export default {
             }
             
             // 4. 通过映射查找
-            for (const [key, aliases] of Object.entries(fieldMapping)) {
-              if (aliases.includes(identifier) || aliases.includes(name)) {
-                if (realTimeData[key] !== undefined) {
-                  return realTimeData[key]
+            const fieldMappingKeys = Object.keys(fieldMapping)
+            for (let fi = 0; fi < fieldMappingKeys.length; fi++) {
+              const fKey = fieldMappingKeys[fi]
+              const aliases = fieldMapping[fKey]
+              if (aliases.indexOf(identifier) >= 0 || aliases.indexOf(name) >= 0) {
+                if (realTimeData[fKey] !== undefined) {
+                  return realTimeData[fKey]
                 }
               }
             }
@@ -1680,7 +1907,7 @@ export default {
             enumDisplay = idx >= 0 ? enumLabels[idx] : (enumLabels[0] || '')
           }
           // 提取单位信息
-          const unit = specs?.unit || ''
+          const unit = (specs && specs.unit) ? specs.unit : ''
           
           // 步进器配置
           let stepperConfig = { min: 0, max: 100, step: 1 }
@@ -2097,6 +2324,28 @@ export default {
       .status-dot { background: #f44336; }
     }
   }
+  
+  &.monitor-tag {
+    &.not-monitored {
+      background: rgba(158, 158, 158, 0.1);
+      color: #9e9e9e;
+    }
+    
+    &.package-monitoring {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4CAF50;
+    }
+    
+    &.apply-monitoring {
+      background: rgba(33, 150, 243, 0.1);
+      color: #2196F3;
+    }
+    
+    &.apply-reviewing {
+      background: rgba(255, 152, 0, 0.1);
+      color: #FF9800;
+    }
+  }
 }
 
 .info-list {
@@ -2163,6 +2412,10 @@ export default {
 
 .control-left {
   flex: 1;
+}
+
+.defense-switch {
+  transform: scale(0.9);
 }
 
 .control-title {
@@ -2686,6 +2939,36 @@ export default {
     margin-top: 16rpx;
     font-size: 24rpx;
     color: #666;
+  }
+}
+
+/* 申请监控弹窗 */
+.apply-monitor-popup {
+  width: 600rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  
+  .popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32rpx;
+    border-bottom: 1rpx solid #f0f0f0;
+    
+    .popup-title {
+      font-size: 32rpx;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+  
+  .popup-body {
+    padding: 32rpx;
+  }
+  
+  .popup-footer {
+    flex-direction: row-reverse;
   }
 }
 </style>

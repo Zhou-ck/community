@@ -71,8 +71,13 @@
             </view>
             
             <view class="header-info-col">
-              <view class="device-type-badge">
-                <text>{{ getDictLabel('dev_device_type', device.deviceType) }}</text>
+              <view class="device-badges">
+                <view class="device-type-badge">
+                  <text>{{ getDictLabel('dev_device_type', device.deviceType) }}</text>
+                </view>
+                <view class="source-type-badge" :class="{ 'self-purchased': device.sourceType === '1', 'community-assigned': device.sourceType === '2' }">
+                  <text>{{ getSourceTypeLabel(device.sourceType) }}</text>
+                </view>
               </view>
               <view class="mini-info-row">
                 <uni-icons type="location" size="12" color="#999"></uni-icons>
@@ -523,6 +528,15 @@ export default {
       return dictItem ? dictItem.dictLabel : dictValue
     },
     
+    // 获取设备来源标签
+    getSourceTypeLabel(sourceType) {
+      const sourceTypeMap = {
+        '1': '自购',
+        '2': '分配'
+      }
+      return sourceTypeMap[sourceType] || '未知'
+    },
+    
     
     
     
@@ -791,7 +805,8 @@ export default {
           imei: isImei ? deviceNumBering : null,
           deviceAlias: this.addForm.deviceAlias.trim(),
           installAddress: this.addForm.installAddress.trim() || null,
-          remark: this.addForm.remark.trim() || null
+          remark: this.addForm.remark.trim() || null,
+          sourceType: '1' // 设备来源：1-居民自购，2-社区分配，默认为居民自购
         })
         
         if (response.code === 200) {
@@ -1137,6 +1152,15 @@ export default {
   justify-content: center;
 }
 
+// 设备标签容器
+.device-badges {
+  display: flex;
+  gap: 8rpx;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
 .device-type-badge {
   align-self: flex-start;
   font-size: 20rpx;
@@ -1146,6 +1170,30 @@ export default {
   border-radius: 8rpx;
   display: inline-block;
   font-weight: 500;
+}
+
+// 设备来源标签
+.source-type-badge {
+  align-self: flex-start;
+  font-size: 18rpx;
+  padding: 3rpx 8rpx;
+  border-radius: 6rpx;
+  display: inline-block;
+  font-weight: 600;
+  
+  // 居民自购样式
+  &.self-purchased {
+    color: #3ec6c6;
+    background: rgba(62, 198, 198, 0.1);
+    border: 1rpx solid rgba(62, 198, 198, 0.3);
+  }
+  
+  // 社区分配样式
+  &.community-assigned {
+    color: #ff8c00;
+    background: rgba(255, 140, 0, 0.1);
+    border: 1rpx solid rgba(255, 140, 0, 0.3);
+  }
 }
 
 .mini-info-row {

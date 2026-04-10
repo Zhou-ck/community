@@ -1,5 +1,5 @@
 <template>
-  <view class="detail-container">
+  <view class="detail-container" :class="{ 'has-bottom-actions': hasBottomActions }">
     <!-- 顶部套餐信息卡片 -->
     <view class="package-header-card">
       <!-- 套餐名称和状态 -->
@@ -11,9 +11,23 @@
       </view>
       
       <!-- 使用人员 -->
-      <view class="header-member">
+      <!-- 单人：普通显示 -->
+      <view v-if="memberList.length <= 1" class="header-member">
         <text class="iconfont icon-yonghu"></text>
         <text class="member-name">{{ packageDetail.memberName || '-' }}</text>
+      </view>
+      <!-- 多人：分块切换 -->
+      <view v-else class="header-member-multi">
+        <view
+          v-for="(m, idx) in memberList"
+          :key="idx"
+          class="member-tab"
+          :class="{ active: String(m.instanceId) === String(instanceId) }"
+          @click="switchToMember(m)"
+        >
+          <text class="iconfont icon-yonghu"></text>
+          <text class="member-tab-name">{{ m.memberName }}</text>
+        </view>
       </view>
       
       <!-- 时间信息卡片 -->
@@ -87,6 +101,35 @@
       </view>
     </view>
 
+    <!-- 绑定设备信息 -->
+    <view  v-if="deviceList.length > 0" class="device-info-card">
+      <view class="device-header">
+        <uni-icons type="gear" size="18" color="#3ec6c6"></uni-icons>
+        <text class="device-title">绑定设备</text>
+        <text class="device-count">{{ deviceList.length }}台</text>
+      </view>
+      <view class="device-list">
+        <view 
+          v-for="(device, index) in deviceList" 
+          :key="index" 
+          class="device-item"
+        >
+          <view class="device-info">
+            <text class="device-name">{{ device.deviceAlias || device.deviceKey }}</text>
+            <view class="device-meta">
+              <text class="device-member" v-if="device.memberName">使用人：{{ device.memberName }}</text>
+              <text class="device-time" v-if="device.serviceStartTime">
+                服务期：{{ formatDate(device.serviceStartTime) }} 至 {{ formatDate(device.serviceExpireTime) }}
+              </text>
+            </view>
+          </view>
+          <view class="device-status" :class="[getDeviceStatusClass(device.allocationStatus)]">
+            {{ getDeviceStatusText(device.allocationStatus) }}
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- Tab切换 -->
     <view class="detail-tabs">
       <view 
@@ -119,7 +162,50 @@
             <text class="service-freq">{{ getFrequencyTypeText(service.frequencyType) || getFrequencyText(service.frequency) }}</text>
           </view>
           
-          <view class="service-stats">
+          <!-- 按需服务显示 -->
+          <view v-if="service.frequencyType === 'ON_DEMAND'" class="on-demand-stats">
+            <!-- 无限次数的按需服务 -->
+            <view v-if="service.totalCount === -1 && service.remainingCount === -1" class="on-demand-badge">
+              <text class="on-demand-text">按需服务</text>
+              <text class="on-demand-desc">无次数限制</text>
+            </view>
+            
+            <!-- 有限次数的按需服务 -->
+            <view v-else class="on-demand-limited">
+              <view class="on-demand-badge">
+                <text class="on-demand-text">按需服务</text>
+                <text class="on-demand-desc">限{{ service.totalCount }}次</text>
+              </view>
+              <view class="limited-stats">
+                <view class="stat-item-small">
+                  <text class="stat-value-small used">{{ service.usedCount }}</text>
+                  <text class="stat-label-small">已使用</text>
+                </view>
+                <view class="stat-item-small">
+                  <text class="stat-value-small remain" :class="{ warning: service.remainingCount <= 0 }">{{ service.remainingCount }}</text>
+                  <text class="stat-label-small">剩余</text>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 申请服务按钮 -->
+            <view class="on-demand-action" v-if="service.remainingCount > 0 || service.remainingCount === -1">
+              <view class="apply-service-btn" @click="showServiceApplyModal(service)">
+                <uni-icons type="plus" size="16" color="#fff"></uni-icons>
+                <text>申请服务</text>
+              </view>
+            </view>
+            
+            <!-- 次数用完提示 -->
+            <view class="on-demand-action" v-else>
+              <view class="apply-service-btn disabled">
+                <text>次数已用完</text>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 普通服务显示 -->
+          <view v-else class="service-stats">
             <view class="stat-item">
               <text class="stat-value">{{ service.totalCount }}</text>
               <text class="stat-label">总次数</text>
@@ -134,7 +220,8 @@
             </view>
           </view>
           
-          <view class="service-progress">
+          <!-- 普通服务才显示进度条 -->
+          <view v-if="service.frequencyType !== 'ON_DEMAND'" class="service-progress">
             <view class="progress-info">
               <text class="progress-label">使用进度</text>
               <text class="progress-percent">{{ getProgressPercent(service) }}</text>
@@ -238,11 +325,151 @@
         </view>
       </view>
     </scroll-view>
+    
+    <!-- 底部操作按钮 -->
+    <view class="bottom-actions" v-if="packageDetail.instanceStatus === 'ACTIVE' || packageDetail.instanceStatus === 'REFUND_PENDING'">
+      <template v-if="packageDetail.instanceStatus === 'ACTIVE'">
+        <view class="action-btn qrcode-btn" @click="viewQrCode">查看核销码</view>
+        <view class="action-btn refund-btn" @click="applyRefund">申请退订</view>
+      </template>
+      <view v-else-if="packageDetail.instanceStatus === 'REFUND_PENDING'" class="action-btn cancel-btn full-width" @click="cancelRefundApply">撤销申请</view>
+    </view>
+
+    <!-- 申请退订弹窗 -->
+    <uni-popup ref="refundApplyPopup" type="center">
+      <view class="refund-apply-popup">
+        <view class="refund-popup-header">
+          <text class="refund-popup-title">申请退订套餐</text>
+          <view class="refund-popup-close" @click="closeRefundPopup">
+            <uni-icons type="closeempty" size="20" color="#999"></uni-icons>
+          </view>
+        </view>
+        <view class="refund-popup-content">
+          <view class="refund-package-info">
+            <text class="package-name">{{ packageDetail.packageName }}</text>
+            <view class="package-member" v-if="packageDetail.memberName">
+              <text class="iconfont icon-yonghu"></text>
+              <text class="member-text">{{ packageDetail.memberName }}</text>
+            </view>
+          </view>
+          <view class="refund-warning">
+            <view class="warning-icon">
+              <text class="iconfont icon-tishi"></text>
+            </view>
+            <view class="warning-text">
+              <text class="warning-title">退订须知</text>
+              <view class="warning-list">
+                <text class="warning-item">• 提交退订申请后，需等待社区管理员审核</text>
+                <text class="warning-item">• 审核通过后套餐余量将清零</text>
+                <text class="warning-item">• 连续购买记录将中断</text>
+                <text class="warning-item">• 赠送服务将被撤销</text>
+              </view>
+            </view>
+          </view>
+          <view class="refund-reason-section">
+            <text class="reason-label">退订原因 <text class="required">*</text></text>
+            <textarea
+              class="reason-input"
+              v-model="refundReason"
+              placeholder="请输入退订原因（必填）"
+              maxlength="200"
+              :auto-height="false"
+            ></textarea>
+            <text class="reason-count">{{ refundReason.length }}/200</text>
+          </view>
+        </view>
+        <view class="refund-popup-footer">
+          <view class="refund-cancel-btn" @click="closeRefundPopup">取消</view>
+          <view class="refund-confirm-btn" @click="submitRefundApply">确认提交</view>
+        </view>
+      </view>
+    </uni-popup>
+
+    <!-- 服务申请弹窗 -->
+    <uni-popup ref="applyPopup" type="bottom" :safe-area="false">
+      <view class="apply-modal">
+        <view class="modal-header">
+          <text class="modal-title">申请服务</text>
+          <view class="close-btn" @click="closeApplyModal">
+            <uni-icons type="close" size="20" color="#999"></uni-icons>
+          </view>
+        </view>
+        
+        <view class="modal-content">
+          <view class="service-info">
+            <text class="service-name">{{ currentService && currentService.serviceName }}</text>
+            <text class="service-type">按需服务</text>
+          </view>
+          
+          <view class="form-section">
+            <view class="form-item">
+              <text class="form-label">预约日期</text>
+              <picker mode="date" :value="applyForm.appointmentDate" @change="onDateChange">
+                <view class="picker-input">
+                  <text v-if="applyForm.appointmentDate">{{ applyForm.appointmentDate }}</text>
+                  <text v-else class="placeholder">请选择预约日期</text>
+                  <uni-icons type="calendar" size="16" color="#999"></uni-icons>
+                </view>
+              </picker>
+            </view>
+            
+            <view class="form-item">
+              <text class="form-label">预约时段</text>
+              <picker :range="timeSlots" @change="onTimeSlotChange">
+                <view class="picker-input">
+                  <text v-if="applyForm.appointmentPeriod">{{ applyForm.appointmentPeriod }}</text>
+                  <text v-else class="placeholder">请选择预约时段</text>
+                  <uni-icons type="clock" size="16" color="#999"></uni-icons>
+                </view>
+              </picker>
+            </view>
+            
+            <view class="form-item">
+              <text class="form-label">是否紧急</text>
+              <switch :checked="applyForm.isUrgent === '1'" @change="onUrgentChange" color="#3ec6c6"></switch>
+            </view>
+            
+            <view class="form-item">
+              <text class="form-label">备注说明</text>
+              <textarea 
+                v-model="applyForm.remark" 
+                placeholder="请输入备注说明（选填）"
+                class="textarea-input"
+                maxlength="200"
+              ></textarea>
+            </view>
+          </view>
+        </view>
+        
+        <view class="modal-footer">
+          <view class="cancel-btn" @click="closeApplyModal">取消</view>
+          <view class="confirm-btn" @click="submitServiceApply">确认申请</view>
+        </view>
+      </view>
+    </uni-popup>
+
+    <!-- 套餐核销码弹窗 -->
+    <VerificationModal
+      :visible="showVerificationModal"
+      :code="verificationCode"
+      :loading="verificationCodeLoading"
+      :qrcodeUrl="packageQrcodeUrl"
+      :memberInfo="currentMemberInfo"
+      @close="closeVerificationModal"
+      @manual-confirm="handleManualConfirm"
+      @qrcode-load="handleQrcodeLoad"
+      @qrcode-error="handleQrcodeError"
+      @report-lost="handleReportLost"
+    />
   </view>
 </template>
 
 <script>
 import { getMyPackageInstance, myConsumePackage, listConsumeLog, myRefundApply, myCancelRefundApply } from '@/api/userpackage'
+import { applyOnDemandService } from '@/api/serviceorder'
+import { viewPackageQrCode, reportLostQrCode } from '@/api/packageQrCode'
+import verificationMixin from '@/mixins/verification-mixin.js'
+import VerificationModal from '@/components/verification-modal/verification-modal.vue'
 import {
   formatDate as _formatDate,
   getProgressValue as _getProgressValue,
@@ -257,24 +484,63 @@ import {
 } from '@/utils/service-helper'
 
 export default {
+  mixins: [verificationMixin],
+  components: { VerificationModal },
   data() {
     return {
       statusBarHeight: 0,
       instanceId: null,
+      allInstanceIds: [],
+      memberList: [], // 同订单所有成员 [{instanceId, memberName}]
       currentTab: 'service',
       packageDetail: {},
       serviceBalanceList: [],
       consumeRecords: [],
-      scheduleConfig: null // 存储固定执行时间配置
+      scheduleConfig: null,
+      deviceList: [],
+      currentMemberInfo: null,
+      showApplyModal: false,
+      refundReason: '',
+      refundingPackage: {},
+      currentService: null,
+      applyForm: {
+        appointmentDate: '',
+        appointmentPeriod: '',
+        isUrgent: '0',
+        remark: ''
+      },
+      timeSlots: [
+        '8:00~10:00',
+        '10:00~12:00',
+        '14:00~16:00',
+        '16:00~18:00'
+      ]
     }
   },
-  
+
+  computed: {
+    packageQrcodeUrl() {
+      if (!this.verificationCode) return ''
+      const size = 200
+      const encoded = encodeURIComponent(this.verificationCode.plainCode)
+      return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&margin=10`
+    },
+    
+    // 判断是否有底部操作按钮
+    hasBottomActions() {
+      return this.packageDetail.instanceStatus === 'ACTIVE' || this.packageDetail.instanceStatus === 'REFUND_PENDING'
+    }
+  },
+
   onLoad(options) {
     const systemInfo = uni.getSystemInfoSync()
     this.statusBarHeight = systemInfo.statusBarHeight
-    
-    if (options.instanceId) {
-      this.instanceId = options.instanceId
+
+    if (options.allInstanceIds) {
+      this.allInstanceIds = options.allInstanceIds.split(',').filter(Boolean)
+      this.instanceId = this.allInstanceIds[0] // already a string from URL params
+      this.memberList = uni.getStorageSync('detailMemberList') || []
+      uni.removeStorageSync('detailMemberList')
       this.loadDetail()
     }
   },
@@ -282,6 +548,13 @@ export default {
   methods: {
     formatDate(dateStr) { return _formatDate(dateStr) },
     getProgressValue(service) { return _getProgressValue(service) },
+
+    // 切换成员
+    switchToMember(member) {
+      if (String(member.instanceId) === String(this.instanceId)) return
+      this.instanceId = String(member.instanceId)
+      this.loadDetail()
+    },
     
     async loadDetail() {
       try {
@@ -304,6 +577,9 @@ export default {
         }
         
         await this.loadConsumeRecords()
+        
+        // 设备列表已包含在套餐详情接口返回数据中
+        this.deviceList = res.data.deviceAllocation ? [res.data.deviceAllocation] : []
       } catch (error) {
         console.error('加载详情失败:', error)
         uni.showToast({ title: '加载失败', icon: 'none' })
@@ -326,52 +602,55 @@ export default {
       }
     },
     
-    // 申请退订
+    // 申请退订 - 打开弹窗
     applyRefund() {
-      uni.showModal({
-        title: '申请退订套餐',
-        editable: true,
-        placeholderText: '请输入退订原因',
-        content: '提交退订申请后，需等待社区管理员审核。审核通过后套餐余量将清零，连续购买记录将中断，赠送服务将被撤销。',
-        success: async (res) => {
-          if (res.confirm) {
-            const reason = res.content || ''
-            if (!reason.trim()) {
-              uni.showToast({
-                title: '请输入退订原因',
-                icon: 'none'
-              })
-              return
-            }
-            
-            try {
-              uni.showLoading({ title: '提交中...' })
-              await myRefundApply({
-                instanceId: this.instanceId,
-                refundReason: reason
-              })
-              
-              uni.showToast({
-                title: '申请已提交',
-                icon: 'success'
-              })
-              
-              // 刷新详情
-              setTimeout(() => {
-                this.loadDetail()
-              }, 1500)
-            } catch (error) {
-              console.error('申请退订失败:', error)
-              uni.showToast({
-                title: error.msg || '申请失败',
-                icon: 'none'
-              })
-            } finally {
-              uni.hideLoading()
-            }
+      this.refundReason = ''
+      this.$refs.refundApplyPopup.open()
+    },
+
+    // 关闭退订弹窗
+    closeRefundPopup() {
+      this.$refs.refundApplyPopup.close()
+      this.refundReason = ''
+    },
+
+    // 提交退订申请
+    async submitRefundApply() {
+      if (!this.refundReason.trim()) {
+        uni.showToast({ title: '请输入退订原因', icon: 'none' })
+        return
+      }
+      const isMulti = this.allInstanceIds.length > 1
+      if (isMulti) {
+        uni.showModal({
+          title: '全部退订确认',
+          content: `此套餐包含多位成员（${this.packageDetail.memberName}），将同时退订所有成员，是否确认？`,
+          confirmText: '确认退订',
+          cancelText: '取消',
+          success: async (res) => {
+            if (res.confirm) await this._doRefund()
           }
-        }
-      })
+        })
+      } else {
+        await this._doRefund()
+      }
+    },
+
+    async _doRefund() {
+      try {
+        uni.showLoading({ title: '提交中...' })
+        await Promise.all(this.allInstanceIds.map(id =>
+          myRefundApply({ instanceId: id, refundReason: this.refundReason })
+        ))
+        this.closeRefundPopup()
+        uni.showToast({ title: '申请已提交', icon: 'success' })
+        setTimeout(() => { this.loadDetail() }, 1500)
+      } catch (error) {
+        console.error('申请退订失败:', error)
+        uni.showToast({ title: error.msg || '申请失败', icon: 'none' })
+      } finally {
+        uni.hideLoading()
+      }
     },
     
     // 撤销退订申请
@@ -451,7 +730,20 @@ export default {
       if (!this.scheduleConfig || !this.scheduleConfig.items) return null
       
       const scheduleItem = this.scheduleConfig.items.find(item => item.serviceId === service.serviceId)
-      return scheduleItem || null
+      
+      // 检查是否有有效的执行时间配置
+      if (!scheduleItem) return null
+      
+      // 检查是否有具体的时间配置
+      if (service.frequencyType === 'DAILY') {
+        // 每天类型需要有appointmentPeriod
+        return scheduleItem.appointmentPeriod ? scheduleItem : null
+      } else if (service.frequencyType === 'WEEKLY' || service.frequencyType === 'MONTHLY') {
+        // 每周/每月类型需要有dates数组且不为空
+        return (scheduleItem.dates && scheduleItem.dates.length > 0) ? scheduleItem : null
+      }
+      
+      return null
     },
     
     // 获取星期文本
@@ -481,6 +773,217 @@ export default {
       uni.navigateTo({
         url: `/pages/order/detail?orderId=${record.orderId}`
       })
+    },
+    
+    // 获取设备分配状态文本
+    getDeviceStatusText(status) {
+      const statusMap = {
+        '0': '待安装',
+        '1': '监控服务中',
+        '2': '服务已到期',
+        '3': '已归还',
+        '4': '已退订'
+      }
+      return statusMap[String(status)] || '未知'
+    },
+    
+    // 获取设备分配状态样式类
+    getDeviceStatusClass(status) {
+      const classMap = {
+        '0': 'status-pending',
+        '1': 'status-active',
+        '2': 'status-expired',
+        '3': 'status-returned',
+        '4': 'status-cancelled'
+      }
+      return classMap[String(status)] || ''
+    },
+    
+    // 显示服务申请弹窗
+    showServiceApplyModal(service) {
+      this.currentService = service
+      this.resetApplyForm()
+      this.$refs.applyPopup.open()
+    },
+    
+    // 关闭服务申请弹窗
+    closeApplyModal() {
+      this.$refs.applyPopup.close()
+      this.currentService = null
+      this.resetApplyForm()
+    },
+    
+    // 重置申请表单
+    resetApplyForm() {
+      this.applyForm = {
+        appointmentDate: '',
+        appointmentPeriod: '',
+        isUrgent: '0',
+        remark: ''
+      }
+    },
+    
+    // 日期选择
+    onDateChange(e) {
+      this.applyForm.appointmentDate = e.detail.value
+    },
+    
+    // 时段选择
+    onTimeSlotChange(e) {
+      this.applyForm.appointmentPeriod = this.timeSlots[e.detail.value]
+    },
+    
+    // 紧急状态切换
+    onUrgentChange(e) {
+      this.applyForm.isUrgent = e.detail.value ? '1' : '0'
+    },
+    
+    // 查看核销码
+    async viewQrCode() {
+      const memberId = this.packageDetail.memberId || this.$store.getters.id
+      const deptId = this.packageDetail.deptId || this.$store.getters.deptId
+      await this.fetchQrCode(memberId, deptId)
+    },
+
+    // 获取核销码
+    async fetchQrCode(memberId, deptId) {
+      if (!memberId || !deptId) {
+        uni.showToast({ title: '成员信息异常', icon: 'none' })
+        return
+      }
+
+      this.currentVerificationOrder = {
+        id: this.instanceId,
+        packageName: this.packageDetail.packageName,
+        userId: this.packageDetail.userId || '',
+        deptId: deptId
+      }
+      this.verificationCode = null
+      this.verificationCodeLoading = true
+      this.showVerificationModal = true
+
+      try {
+        uni.showLoading({ title: '加载中...' })
+        const res = await viewPackageQrCode(memberId, deptId)
+        if (res.data && res.data.qrContent) {
+          this.currentMemberInfo = {
+            memberName: res.data.memberName || '',
+            communityName: res.data.communityName || '',
+            memberId: res.data.memberId,
+            communityDeptId: res.data.communityDeptId,
+            qrId: res.data.qrId
+          }
+          this.verificationCode = { plainCode: res.data.qrContent, expireTime: null }
+        } else {
+          uni.showToast({ title: '暂无核销码信息', icon: 'none' })
+        }
+      } catch (error) {
+        console.error('获取核销码失败:', error)
+        uni.showToast({ title: error.msg || '获取核销码失败', icon: 'none' })
+      } finally {
+        this.verificationCodeLoading = false
+        uni.hideLoading()
+      }
+    },
+
+    // 处理挂失
+    async handleReportLost() {
+      if (!this.currentMemberInfo || !this.currentMemberInfo.qrId) {
+        uni.showToast({ title: '缺少必要信息，无法挂失', icon: 'none' })
+        return
+      }
+      uni.showModal({
+        title: '确认挂失',
+        content: '确定要挂失当前二维码吗？挂失后原二维码将失效，需要重新申请。',
+        confirmText: '确认挂失',
+        cancelText: '取消',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              uni.showLoading({ title: '处理中...' })
+              const response = await reportLostQrCode(this.currentMemberInfo.memberId, this.currentMemberInfo.communityDeptId)
+              if (response.code === 200) {
+                uni.showToast({ title: '挂失成功', icon: 'success' })
+                this.closeVerificationModal()
+              } else {
+                uni.showToast({ title: response.msg || '挂失失败', icon: 'none' })
+              }
+            } catch (error) {
+              uni.showToast({ title: error.msg || '挂失失败', icon: 'none' })
+            } finally {
+              uni.hideLoading()
+            }
+          }
+        }
+      })
+    },
+
+    // 提交服务申请
+    async submitServiceApply() {
+      // 表单验证
+      if (!this.applyForm.appointmentDate) {
+        uni.showToast({
+          title: '请选择预约日期',
+          icon: 'none'
+        })
+        return
+      }
+      
+      if (!this.applyForm.appointmentPeriod) {
+        uni.showToast({
+          title: '请选择预约时段',
+          icon: 'none'
+        })
+        return
+      }
+      
+      try {
+        uni.showLoading({ title: '提交中...' })
+        
+        const requestData = {
+          appointmentDate: this.applyForm.appointmentDate,
+          appointmentPeriod: this.applyForm.appointmentPeriod,
+          instanceId: this.instanceId,
+          isUrgent: this.applyForm.isUrgent,
+          remark: this.applyForm.remark,
+          serviceId: this.currentService.serviceId
+        }
+        
+        await applyOnDemandService(requestData)
+        
+        uni.showToast({
+          title: '申请成功',
+          icon: 'success'
+        })
+        
+        this.closeApplyModal()
+        
+        // 切换到消费记录tab并刷新数据
+        this.currentTab = 'consume'
+        
+        // 滚动到顶部
+        this.$nextTick(() => {
+          const scrollView = uni.createSelectorQuery().select('.detail-content')
+          scrollView.node((res) => {
+            if (res && res.node) {
+              res.node.scrollTop = 0
+            }
+          }).exec()
+        })
+        
+        setTimeout(() => {
+          this.loadConsumeRecords()
+        }, 1500)
+        
+      } catch (error) {
+        console.error('申请服务失败:', error)
+        uni.showToast({
+          title: error.msg || '申请失败',
+          icon: 'none'
+        })
+      } finally {
+        uni.hideLoading()
+      }
     }
   }
 }
@@ -492,7 +995,11 @@ export default {
   background: linear-gradient(180deg, #3ec6c6 0%, #2eb5b5 100%);
   display: flex;
   flex-direction: column;
-  padding-bottom: env(safe-area-inset-bottom);
+  
+  // 有底部按钮时的样式
+  &.has-bottom-actions {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
 }
 
 // 顶部套餐信息卡片
@@ -547,7 +1054,7 @@ export default {
     }
   }
   
-  // 使用人员
+  // 使用人员 - 单人
   .header-member {
     display: inline-flex;
     align-items: center;
@@ -569,6 +1076,61 @@ export default {
       color: #fff;
       font-weight: 700;
       letter-spacing: 2px;
+    }
+
+    .member-switch-icon {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+  }
+
+  // 使用人员 - 多人切换
+  .header-member-multi {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+
+    .member-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+
+      .iconfont {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .member-tab-name {
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 600;
+        letter-spacing: 1px;
+      }
+
+      &.active {
+        background-color: rgba(255, 255, 255, 0.35);
+        border-color: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+        .iconfont {
+          color: #fff;
+        }
+
+        .member-tab-name {
+          color: #fff;
+        }
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
     }
   }
   
@@ -690,6 +1252,141 @@ export default {
       .refund-value {
         flex: 1;
         color: #666;
+      }
+    }
+  }
+}
+
+// 绑定设备信息卡片
+.device-info-card {
+  margin: 0 15px 10px;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  
+  .device-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    
+    .iconfont {
+      font-size: 18px;
+      color: #3ec6c6;
+    }
+    
+    .device-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      flex: 1;
+    }
+    
+    .device-count {
+      font-size: 12px;
+      color: #999;
+      background-color: #f5f5f5;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+  }
+  
+  .device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+    .device-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: linear-gradient(135deg, #f8fffe 0%, #f5f9f9 100%);
+      border-radius: 10px;
+      border: 1px solid #e8f5f5;
+      
+      .device-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        
+        .iconfont {
+          font-size: 20px;
+          color: #fff;
+        }
+      }
+      
+      .device-info {
+        flex: 1;
+        min-width: 0;
+        
+        .device-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+          display: block;
+          margin-bottom: 6px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        
+        .device-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          
+          .device-member {
+            font-size: 12px;
+            color: #666;
+          }
+          
+          .device-time {
+            font-size: 11px;
+            color: #999;
+          }
+        }
+      }
+      
+      .device-status {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        flex-shrink: 0;
+        
+        &.status-pending {
+          background-color: #fff7e6;
+          color: #fa8c16;
+        }
+        
+        &.status-active {
+          background-color: #e6f7ff;
+          color: #1890ff;
+        }
+        
+        &.status-returned {
+          background-color: #f5f5f5;
+          color: #999;
+        }
+        
+        &.status-expired {
+          background-color: #fff1f0;
+          color: #ff4d4f;
+        }
+
+        &.status-cancelled {
+          background-color: #f5f5f5;
+          color: #999;
+        }
       }
     }
   }
@@ -852,6 +1549,110 @@ export default {
         padding: 6px 14px;
         border-radius: 20px;
         border: 1px solid #d4eded;
+      }
+    }
+    
+    .on-demand-stats {
+      padding: 20px;
+      background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
+      border-radius: 14px;
+      margin-bottom: 18px;
+      border: 1px solid #b8e5e5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      
+      .on-demand-badge {
+        text-align: center;
+        
+        .on-demand-text {
+          display: block;
+          font-size: 20px;
+          font-weight: 700;
+          color: #2eb5b5;
+          margin-bottom: 6px;
+        }
+        
+        .on-demand-desc {
+          font-size: 14px;
+          color: #3ec6c6;
+          font-weight: 500;
+        }
+      }
+      
+      .on-demand-limited {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        
+        .limited-stats {
+          display: flex;
+          gap: 20px;
+          
+          .stat-item-small {
+            text-align: center;
+            
+            .stat-value-small {
+              display: block;
+              font-size: 20px;
+              font-weight: 700;
+              color: #333;
+              margin-bottom: 4px;
+              
+              &.used {
+                color: #3ec6c6;
+              }
+              
+              &.remain {
+                color: #52c41a;
+                
+                &.warning {
+                  color: #ff4d4f;
+                }
+              }
+            }
+            
+            .stat-label-small {
+              font-size: 12px;
+              color: #666;
+            }
+          }
+        }
+      }
+      
+      .on-demand-action {
+        .apply-service-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 10px 20px;
+          background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+          border-radius: 20px;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(62, 198, 198, 0.3);
+          transition: all 0.3s ease;
+          
+          &:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(62, 198, 198, 0.2);
+          }
+          
+          &.disabled {
+            background: #d9d9d9;
+            color: #999;
+            box-shadow: none;
+            cursor: not-allowed;
+            
+            &:active {
+              transform: none;
+            }
+          }
+        }
       }
     }
     
@@ -1223,22 +2024,32 @@ export default {
 
 // 底部操作按钮
 .bottom-actions {
-  padding: 15px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 12px;
+  padding: 12px 15px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
   background-color: #fff;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 100;
   
   .action-btn {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     height: 48px;
     border-radius: 24px;
     font-size: 16px;
     font-weight: 500;
     
-    .iconfont {
-      font-size: 18px;
+    &.qrcode-btn {
+      background-color: #e6f7ff;
+      color: #1890ff;
+      border: 1px solid #91d5ff;
     }
     
     &.refund-btn {
@@ -1251,6 +2062,337 @@ export default {
       background-color: #f5f5f5;
       color: #666;
       border: 1px solid #d9d9d9;
+      
+      &.full-width {
+        flex: 1;
+      }
+    }
+  }
+}
+
+// 退订申请弹窗
+.refund-apply-popup {
+  width: 85vw;
+  max-width: 340px;
+  background-color: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+
+  .refund-popup-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    position: relative;
+
+    .refund-popup-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .refund-popup-close {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .refund-popup-content {
+    padding: 16px 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+
+    .refund-package-info {
+      padding: 12px 16px;
+      background-color: #f8f9fc;
+      border-radius: 10px;
+      margin-bottom: 16px;
+
+      .package-name {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      .package-member {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
+        border-radius: 8px;
+        border: 1px solid #b8e5e5;
+
+        .iconfont {
+          font-size: 16px;
+          color: #2eb5b5;
+        }
+
+        .member-text {
+          font-size: 16px;
+          font-weight: 700;
+          color: #2eb5b5;
+          letter-spacing: 1px;
+        }
+      }
+    }
+
+    .refund-warning {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      background-color: #fff7e6;
+      border-radius: 10px;
+      border: 1px solid #ffd591;
+      margin-bottom: 16px;
+
+      .warning-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+
+        .iconfont {
+          font-size: 22px;
+          color: #fa8c16;
+        }
+      }
+
+      .warning-text {
+        flex: 1;
+
+        .warning-title {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #fa8c16;
+          margin-bottom: 8px;
+        }
+
+        .warning-list {
+          .warning-item {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.8;
+          }
+        }
+      }
+    }
+
+    .refund-reason-section {
+      position: relative;
+
+      .reason-label {
+        display: block;
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+        margin-bottom: 10px;
+
+        .required {
+          color: #ff4d4f;
+        }
+      }
+
+      .reason-input {
+        width: 100%;
+        height: 100px;
+        padding: 12px;
+        background-color: #f8f9fc;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #333;
+        box-sizing: border-box;
+      }
+
+      .reason-count {
+        position: absolute;
+        right: 12px;
+        bottom: 10px;
+        font-size: 12px;
+        color: #999;
+      }
+    }
+  }
+
+  .refund-popup-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid #f0f0f0;
+
+    .refund-cancel-btn, .refund-confirm-btn {
+      flex: 1;
+      height: 44px;
+      line-height: 44px;
+      text-align: center;
+      border-radius: 22px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .refund-cancel-btn {
+      background-color: #f5f5f5;
+      color: #666;
+    }
+
+    .refund-confirm-btn {
+      background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+      color: #fff;
+    }
+  }
+}
+
+// 服务申请弹窗样式
+.apply-modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 0;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+    
+    .close-btn {
+      padding: 5px;
+    }
+  }
+  
+  .modal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    
+    .service-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: linear-gradient(135deg, #f8fffe 0%, #f5f9f9 100%);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #e8f5f5;
+      
+      .service-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .service-type {
+        font-size: 12px;
+        color: #3ec6c6;
+        background: #e8f5f5;
+        padding: 4px 10px;
+        border-radius: 10px;
+      }
+    }
+    
+    .form-section {
+      .form-item {
+        margin-bottom: 20px;
+        
+        .form-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 10px;
+        }
+        
+        .picker-input {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: #f8f9fa;
+          border-radius: 10px;
+          border: 1px solid #e8ecf1;
+          
+          .placeholder {
+            color: #999;
+          }
+        }
+        
+        .textarea-input {
+          width: 100%;
+          min-height: 80px;
+          padding: 12px 16px;
+          background: #f8f9fa;
+          border-radius: 10px;
+          border: 1px solid #e8ecf1;
+          font-size: 14px;
+          color: #333;
+          resize: none;
+          
+          &::placeholder {
+            color: #999;
+          }
+        }
+      }
+    }
+  }
+  
+  .modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid #f0f0f0;
+    flex-shrink: 0;
+    
+    .cancel-btn {
+      flex: 1;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      color: #666;
+      border-radius: 24px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .confirm-btn {
+      flex: 2;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+      color: #fff;
+      border-radius: 24px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(62, 198, 198, 0.3);
+      
+      &:active {
+        transform: scale(0.98);
+      }
     }
   }
 }

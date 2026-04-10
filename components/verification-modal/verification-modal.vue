@@ -4,7 +4,9 @@
 		<view class="verification-content" @click.stop>
 			<view class="verification-header">
 				<text class="verification-title">服务核销码</text>
-				<uni-icons type="closeempty" size="24" color="#999" @click="handleClose"></uni-icons>
+				<view class="close-btn" @click="handleClose">
+					<uni-icons type="closeempty" size="24" color="#999"></uni-icons>
+				</view>
 			</view>
 			
 			<view class="verification-body">
@@ -16,14 +18,7 @@
 				
 				<!-- 核销码内容 -->
 				<template v-else-if="code">
-					<view class="verification-tip">
-						<uni-icons type="info" size="18" color="#3ec6c6"></uni-icons>
-						<text>请将此核销码出示给服务人员</text>
-					</view>
-					
-					<view class="verification-code-display">
-						<text class="code-text">{{ code.plainCode }}</text>
-					</view>
+					<view class="qrcode-title">家人核销二维码</view>
 					
 					<view class="qrcode-container">
 						<image 
@@ -35,21 +30,26 @@
 						></image>
 					</view>
 					
+					<!-- 用户信息 -->
+					<view class="user-info" v-if="memberInfo">
+						<view class="info-row">
+							<text class="info-label">姓名：</text>
+							<text class="info-value">{{ memberInfo.memberName || '张思' }}</text>
+						</view>
+						<view class="info-row">
+							<text class="info-label">社区：</text>
+							<text class="info-value">{{ memberInfo.communityName || '中央城社区' }}</text>
+						</view>
+					</view>
+					
+					<!-- 提示信息 -->
 					<view class="qrcode-tip">
-						<uni-icons type="info" size="16" color="#909399"></uni-icons>
-						<text>请将核销码或二维码出示给服务人员</text>
+						<text>请妥善保管此二维码，丢失请联系社区补打</text>
 					</view>
 					
-					<view class="expire-time" v-if="code.expireTime">
-						<uni-icons type="clock" size="16" color="#999"></uni-icons>
-						<text>有效期至：{{ code.expireTime }}</text>
-					</view>
-					
-					<view class="divider"></view>
-					
-					<view class="manual-confirm-section">
-						<text class="manual-tip">如服务人员无法核销，可手动确认</text>
-						<button class="manual-confirm-btn" @click="handleManualConfirm">手动确认服务完成</button>
+					<!-- 挂失按钮 -->
+					<view class="report-lost-section">
+						<button class="report-lost-btn" @click="handleReportLost">挂失</button>
 					</view>
 				</template>
 				
@@ -82,6 +82,10 @@ export default {
 		qrcodeUrl: {
 			type: String,
 			default: ''
+		},
+		memberInfo: {
+			type: Object,
+			default: null
 		}
 	},
 	methods: {
@@ -96,6 +100,9 @@ export default {
 		},
 		handleQrcodeError(e) {
 			this.$emit('qrcode-error', e)
+		},
+		handleReportLost() {
+			this.$emit('report-lost')
 		}
 	}
 }
@@ -143,11 +150,16 @@ export default {
 				color: #333;
 			}
 			
-			.uni-icons {
+			.close-btn {
 				position: absolute;
 				right: 40rpx;
 				top: 50%;
 				transform: translateY(-50%);
+				width: 48rpx;
+				height: 48rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
 			}
 		}
 		
@@ -289,6 +301,82 @@ export default {
 				text {
 					font-size: 28rpx;
 					color: #999;
+				}
+			}
+			
+			// 新增样式
+			.qrcode-title {
+				font-size: 32rpx;
+				font-weight: 600;
+				color: #333;
+				text-align: center;
+				margin-bottom: 32rpx;
+			}
+			
+			.user-info {
+				margin: 32rpx 0;
+				padding: 24rpx;
+				background: #f8f9fc;
+				border-radius: 12rpx;
+				
+				.info-row {
+					display: flex;
+					align-items: center;
+					margin-bottom: 16rpx;
+					
+					&:last-child {
+						margin-bottom: 0;
+					}
+					
+					.info-label {
+						font-size: 28rpx;
+						color: #666;
+						min-width: 80rpx;
+					}
+					
+					.info-value {
+						font-size: 28rpx;
+						color: #333;
+						font-weight: 500;
+					}
+				}
+			}
+			
+			.qrcode-tip {
+				text-align: center;
+				margin: 24rpx 0;
+				padding: 16rpx 24rpx;
+				background: #f0f9ff;
+				border-radius: 12rpx;
+				
+				text {
+					font-size: 24rpx;
+					color: #666;
+					line-height: 1.5;
+				}
+			}
+			
+			.report-lost-section {
+				margin-top: 32rpx;
+				
+				.report-lost-btn {
+					width: 100%;
+					height: 88rpx;
+					line-height: 88rpx;
+					background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+					color: #fff;
+					border-radius: 100rpx;
+					font-size: 30rpx;
+					font-weight: 600;
+					border: none;
+					box-shadow: 0 6rpx 16rpx rgba(255, 77, 79, 0.25);
+					
+					&::after { border: none; }
+					
+					&:active {
+						opacity: 0.8;
+						transform: scale(0.98);
+					}
 				}
 			}
 		}

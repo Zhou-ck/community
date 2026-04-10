@@ -74,7 +74,8 @@ const FREQUENCY_TYPE_MAP = {
   'DAILY': '每天',
   'WEEKLY': '每周',
   'MONTHLY': '每月',
-  'TOTAL': '总计'
+  'TOTAL': '总计',
+  'ON_DEMAND': '按需服务'
 }
 
 const FREQUENCY_TEXT_MAP = {
@@ -154,8 +155,17 @@ export function getServiceIcon(iconPath) {
 }
 
 export function formatServiceCount(service) {
+  if (service.frequencyType === 'ON_DEMAND') {
+    return '不限'
+  }
   if (service.frequencyType === 'WEEKLY') {
     return `每周${service.frequencyLimit}次，共${service.totalCount}次`
   }
+  
+  // 当totalCount为null、undefined或0时，只显示频率类型
+  if (!service.totalCount || service.totalCount === null || service.totalCount === 0) {
+    return getFrequencyTypeText(service.frequencyType)
+  }
+  
   return `${getFrequencyTypeText(service.frequencyType)}${service.totalCount}次`
 }

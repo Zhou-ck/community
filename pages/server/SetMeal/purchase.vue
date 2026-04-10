@@ -55,10 +55,10 @@
       
       <!-- 被服务人员 -->
       <view class="form-item">
-        <view class="form-label required">被服务人员</view>
+        <view class="form-label required">被服务人员<text class="member-count-tip" v-if="maxMemberCount > 1">（最多选择{{ maxMemberCount }}人）</text></view>
         <view class="picker-input" @click="showMemberPicker">
-          <text :class="selectedMember ? '' : 'placeholder'">
-            {{ selectedMember ? selectedMember.label : '请选择家庭成员' }}
+          <text :class="selectedMembers.length > 0 ? '' : 'placeholder'">
+            {{ selectedMembersText || '请选择家庭成员' }}
           </text>
           <text class="iconfont icon-xiala"></text>
         </view>
@@ -68,7 +68,7 @@
       <view class="member-picker-mask" v-if="memberPickerVisible" @click="closeMemberPicker">
         <view class="member-picker-popup" @click.stop>
           <view class="picker-header">
-            <text class="picker-title">选择家庭成员</text>
+            <text class="picker-title">选择家庭成员<text class="picker-count">（{{ selectedMembers.length }}/{{ maxMemberCount }}）</text></text>
             <text class="iconfont icon-guanbi" @click="closeMemberPicker"></text>
           </view>
           <scroll-view class="picker-content" scroll-y>
@@ -77,18 +77,23 @@
               :key="index"
               class="member-option"
               :class="{ 
-                'disabled': member.disabled,
-                'selected': selectedMemberIndex === index
+                'disabled': member.disabled || (isMaxSelected && !isMemberSelected(index)),
+                'selected': isMemberSelected(index)
               }"
-              @click="selectMember(index)"
+              @click="toggleMemberSelect(index)"
             >
+              <view class="member-checkbox" :class="{ 'checked': isMemberSelected(index) }">
+                <uni-icons v-if="isMemberSelected(index)" type="checkmarkempty" size="14" color="#fff"></uni-icons>
+              </view>
               <text class="member-name">{{ member.label }}</text>
-              <text v-if="selectedMemberIndex === index" class="iconfont icon-duihao"></text>
             </view>
             <view v-if="familyMemberOptions.length === 0" class="empty-tip">
               暂无家庭成员
             </view>
           </scroll-view>
+          <view class="picker-footer">
+            <button class="confirm-select-btn" @click="confirmMemberSelect">确定</button>
+          </view>
         </view>
       </view>
       
@@ -552,6 +557,22 @@ export default {
     // 文档文件列表
     documentFiles() {
       return this.uploadedFiles.filter(file => !this.isImageFile(file))
+    },
+    
+    // 最大可选成员数量（根据memberCount字段）
+    maxMemberCount() {
+      return this.packageData.memberCount || 1
+    },
+    
+    // 是否已达到最大选择数量
+    isMaxSelected() {
+      return this.selectedMembers.length >= this.maxMemberCount
+    },
+    
+    // 已选成员的显示文本
+    selectedMembersText() {
+      if (this.selectedMembers.length === 0) return ''
+      return this.selectedMembers.map(m => m.name).join('、')
     }
   },
   data() {
@@ -580,6 +601,8 @@ export default {
       familyMemberOptions: [],
       selectedMember: null,
       selectedMemberIndex: -1,
+      selectedMembers: [], // 多选的成员列表
+      selectedMemberIndices: [], // 多选的成员索引列表
       purchasedMemberIds: [], // 已购买该套餐的成员ID列表
       memberPickerVisible: false, // 成员选择器显示状态
       
@@ -685,6 +708,10 @@ export default {
     
     // 显示成员选择器
     showMemberPicker() {
+      // 打开弹窗时，将已选成员同步到临时选择列表
+      this.selectedMemberIndices = this.selectedMembers.map(m => 
+        this.familyMemberOptions.findIndex(opt => opt.value === m.value)
+      ).filter(i => i >= 0)
       this.memberPickerVisible = true
     },
     
@@ -693,7 +720,60 @@ export default {
       this.memberPickerVisible = false
     },
     
-    // 选择成员
+    // 判断成员是否已选中
+    isMemberSelected(index) {
+      return this.selectedMemberIndices.includes(index)
+    },
+    
+    // 切换成员选择状态
+    toggleMemberSelect(index) {
+      const selectedOption = this.familyMemberOptions[index]
+      
+      // 检查是否选择了已购买的成员
+      if (selectedOption.disabled) {
+        uni.showToast({
+          title: '该成员已购买此套餐',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      
+      const idx = this.selectedMemberIndices.indexOf(index)
+      if (idx >= 0) {
+        // 已选中，取消选择
+        this.selectedMemberIndices.splice(idx, 1)
+      } else {
+        // 未选中，检查是否达到上限
+        if (this.selectedMemberIndices.length >= this.maxMemberCount) {
+          uni.showToast({
+            title: `最多只能选择${this.maxMemberCount}人`,
+            icon: 'none'
+          })
+          return
+        }
+        this.selectedMemberIndices.push(index)
+      }
+    },
+    
+    // 确认成员选择
+    confirmMemberSelect() {
+      this.selectedMembers = this.selectedMemberIndices.map(index => this.familyMemberOptions[index])
+      // 更新purchaseData中的memberId（多个用逗号分隔）
+      this.purchaseData.memberId = this.selectedMembers.map(m => m.value).join(',')
+      // 兼容单选逻辑
+      if (this.selectedMembers.length > 0) {
+        this.selectedMember = this.selectedMembers[0]
+        this.selectedMemberIndex = this.selectedMemberIndices[0]
+      } else {
+        this.selectedMember = null
+        this.selectedMemberIndex = -1
+      }
+      this.closeMemberPicker()
+      console.log('已选择成员:', this.selectedMembers)
+    },
+    
+    // 选择成员（保留兼容旧逻辑）
     selectMember(index) {
       const selectedOption = this.familyMemberOptions[index]
       
@@ -1432,7 +1512,7 @@ export default {
     // 获取服务信息文本
     getServiceInfoText(item) {
       if (item.frequencyType === 'DAILY') {
-        return `每天服务 | 共${item.totalCount}次`
+        return `每天服务`
       } else if (item.frequencyType === 'WEEKLY') {
         return `每周上限${item.frequencyLimit}次 | 共${item.totalCount}次`
       } else if (item.frequencyType === 'MONTHLY') {
@@ -2357,7 +2437,6 @@ export default {
 .member-option {
   display: flex;
   align-items: center;
-  justify-content: center;
   padding: 28rpx 32rpx;
   border-bottom: 1rpx solid #f5f5f5;
   transition: background 0.2s;
@@ -2374,13 +2453,6 @@ export default {
       color: #3ec6c6;
       font-weight: 600;
     }
-    
-    .iconfont {
-      color: #3ec6c6;
-      font-size: 32rpx;
-      position: absolute;
-      right: 32rpx;
-    }
   }
   
   &.disabled {
@@ -2392,11 +2464,56 @@ export default {
     }
   }
   
+  .member-checkbox {
+    width: 40rpx;
+    height: 40rpx;
+    border: 2rpx solid #ddd;
+    border-radius: 6rpx;
+    margin-right: 20rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+    &.checked {
+      background: #3ec6c6;
+      border-color: #3ec6c6;
+    }
+  }
+  
   .member-name {
     font-size: 28rpx;
     color: #333;
-    text-align: center;
+    flex: 1;
   }
+}
+
+.picker-footer {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #f0f0f0;
+  
+  .confirm-select-btn {
+    width: 100%;
+    height: 80rpx;
+    line-height: 80rpx;
+    background: #3ec6c6;
+    color: #fff;
+    border: none;
+    border-radius: 12rpx;
+    font-size: 30rpx;
+  }
+}
+
+.picker-count {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: normal;
+}
+
+.member-count-tip {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: normal;
 }
 
 .empty-tip {

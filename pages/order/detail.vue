@@ -110,11 +110,11 @@
         <view class="member-profile">
           <view class="member-avatar">
             <view class="avatar-circle">
-              <uni-icons type="person-filled" size="32" color="#3ec6c6"></uni-icons>
+              <uni-icons type="person-filled" size="36" color="#3ec6c6"></uni-icons>
             </view>
           </view>
           <view class="member-basic-info">
-            <view class="member-name">{{ servedMemberInfo.memberName }}</view>
+            <view class="member-name">{{ servedMemberInfo.memberName || '未填写姓名' }}</view>
             <view class="member-tags">
               <view class="tag age-tag" v-if="servedMemberInfo.age">
                 <uni-icons type="calendar" size="12" color="#666"></uni-icons>
@@ -124,7 +124,55 @@
                 <uni-icons type="heart" size="12" color="#666"></uni-icons>
                 <text>{{ servedMemberInfo.relationship }}</text>
               </view>
+              <view class="tag gender-tag" v-if="servedMemberInfo.sex">
+                <uni-icons type="person" size="12" color="#666"></uni-icons>
+                <text>{{ formatGender(servedMemberInfo.sex) }}</text>
+              </view>
             </view>
+          </view>
+        </view>
+
+        <!-- 详细信息列表 -->
+        <view class="member-details">
+          <!-- 身高体重信息 -->
+          <view class="detail-row" v-if="servedMemberInfo.height || servedMemberInfo.weight">
+            <view class="detail-item" v-if="servedMemberInfo.height">
+              <view class="detail-icon">
+                <uni-icons type="arrowup" size="14" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="detail-label">身高</text>
+              <text class="detail-value">{{ servedMemberInfo.height }}cm</text>
+            </view>
+            <view class="detail-item" v-if="servedMemberInfo.weight">
+              <view class="detail-icon">
+                <uni-icons type="loop" size="14" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="detail-label">体重</text>
+              <text class="detail-value">{{ servedMemberInfo.weight }}kg</text>
+            </view>
+          </view>
+
+
+          <!-- 联系方式 -->
+          <view class="member-contact" v-if="servedMemberInfo.phone">
+            <view class="contact-item" @click="makePhoneCall(servedMemberInfo.phone)">
+              <view class="contact-icon">
+                <uni-icons type="phone-filled" size="16" color="#3ec6c6"></uni-icons>
+              </view>
+              <text class="contact-text">{{ servedMemberInfo.phone }}</text>
+              <view class="contact-action">
+                <uni-icons type="right" size="14" color="#999"></uni-icons>
+              </view>
+            </view>
+          </view>
+
+          <!-- 备注信息 -->
+          <view class="member-remark" v-if="servedMemberInfo.remark">
+            <view class="remark-header">
+              <uni-icons type="compose" size="14" color="#666"></uni-icons>
+              <text class="remark-label">备注信息</text>
+            </view>
+            <text class="remark-content">{{ servedMemberInfo.remark }}</text>
           </view>
         </view>
       </view>
@@ -336,6 +384,11 @@
           <button class="action-btn secondary full" @click="goBack">返回列表</button>
         </template>
         
+        <!-- 待派单状态 -->
+        <template v-if="orderInfo.status === 'dispatching'">
+          <button class="action-btn secondary full" @click="goBack">返回列表</button>
+        </template>
+        
         <!-- 其他状态显示返回按钮 -->
         <template v-if="orderInfo.status === 'accepted'">
            <button class="action-btn secondary full" @click="goBack">返回列表</button>
@@ -531,6 +584,20 @@ export default {
     getStatusClass(status) {
       return ORDER_BG_CLASS_MAP[status] || 'bg-default'
     },
+
+    // 格式化性别显示
+    formatGender(sex) {
+      const genderMap = {
+        '1': '女',
+        '0': '男',
+        'female': '女',
+        'male': '男',
+        '女': '女',
+        '男': '男'
+      }
+      return genderMap[sex] || sex
+    },
+
 
     // 加载订单详情
     async loadOrderDetail() {
@@ -1913,13 +1980,138 @@ export default {
   }
 }
 
+/* 被服务人员卡片样式 */
+.served-member-card {
+  .member-profile {
+    display: flex;
+    gap: 24rpx;
+    align-items: flex-start;
+    margin-bottom: 24rpx;
+  }
+
+  .member-avatar {
+    flex-shrink: 0;
+  }
+
+  .avatar-circle {
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(62, 198, 198, 0.1) 0%, rgba(62, 198, 198, 0.05) 100%);
+    border: 3rpx solid rgba(62, 198, 198, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.15);
+  }
+
+  .member-basic-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16rpx;
+  }
+
+  .member-name {
+    font-size: 36rpx;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.3;
+  }
+
+  .member-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12rpx;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8rpx;
+    padding: 8rpx 16rpx;
+    background: rgba(62, 198, 198, 0.08);
+    border-radius: 20rpx;
+    font-size: 24rpx;
+    color: #666;
+    border: 1rpx solid rgba(62, 198, 198, 0.15);
+
+    &.age-tag {
+      background: rgba(255, 152, 0, 0.08);
+      border-color: rgba(255, 152, 0, 0.15);
+      color: #ff9800;
+    }
+
+    &.relation-tag {
+      background: rgba(233, 30, 99, 0.08);
+      border-color: rgba(233, 30, 99, 0.15);
+      color: #e91e63;
+    }
+
+    &.gender-tag {
+      background: rgba(103, 58, 183, 0.08);
+      border-color: rgba(103, 58, 183, 0.15);
+      color: #673ab7;
+    }
+  }
+}
+
+/* 被服务人员详细信息 */
+.member-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.detail-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.detail-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx;
+  background: #f8fafb;
+  border-radius: 16rpx;
+  border: 1rpx solid #e8f4f8;
+
+}
+
+.detail-icon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: rgba(62, 198, 198, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-left: auto;
+}
+
+
 /* 被服务人员联系信息 */
 .member-contact {
-  margin-top: 24rpx;
-  padding: 20rpx;
-  background: #f8f9fa;
-  border-radius: 12rpx;
-  border: 1rpx solid #e9ecef;
+  margin-top: 8rpx;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 .contact-item {
@@ -1957,5 +2149,34 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 被服务人员备注信息 */
+.member-remark {
+  margin-top: 8rpx;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff3d3 100%);
+  border-radius: 16rpx;
+  border: 1rpx solid #ffeaa7;
+}
+
+.remark-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.remark-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #d68910;
+}
+
+.remark-content {
+  font-size: 28rpx;
+  color: #8d6e63;
+  line-height: 1.6;
+  word-break: break-all;
 }
 </style>

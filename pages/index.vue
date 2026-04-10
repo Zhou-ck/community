@@ -328,7 +328,27 @@ export default {
     
     // 点击服务项目
     handleServiceClick(service) {
-      // 先检查是否登录
+      // 前六个服务（六助服务）无需登录，直接跳转
+      if (service.id <= 6) {
+        const serviceTypeMap = {
+          '助洁服务': '助洁服务',
+          '助行服务': '助行服务',
+          '助医服务': '助医服务',
+          '护理服务': '助浴服务',
+          '助餐服务': '助餐服务',
+          '紧急求助': '助急服务'
+        }
+        const categoryName = serviceTypeMap[service.name]
+        if (categoryName) {
+          uni.setStorageSync('targetCategory', categoryName)
+          uni.switchTab({ url: '/pages/work/index' })
+        } else {
+          uni.showToast({ title: `${service.name}功能开发中`, icon: 'none' })
+        }
+        return
+      }
+
+      // 其他服务需要登录
       if (!this.$store.getters.token) {
         uni.showModal({
           title: '提示',
@@ -337,15 +357,13 @@ export default {
           cancelText: '取消',
           success: (res) => {
             if (res.confirm) {
-              uni.navigateTo({
-                url: '/pages/login'
-              })
+              uni.navigateTo({ url: '/pages/login' })
             }
           }
         })
         return
       }
-      
+
       // 检查是否已加入社区
       if (!this.checkHasJoinedCommunity()) {
         uni.showModal({
@@ -364,36 +382,7 @@ export default {
         return
       }
       
-      // 前六个服务跳转到工作页面对应分类
-      if (service.id <= 6) {
-        // 服务名称与分类的映射关系
-        const serviceTypeMap = {
-          '助洁服务': '助洁服务',
-          '助行服务': '助行服务', 
-          '助医服务': '助医服务',
-          '护理服务': '助浴服务',
-          '助餐服务': '助餐服务',
-          '紧急求助': '助急服务'
-        };
-        
-        const categoryName = serviceTypeMap[service.name];
-        
-        if (categoryName) {
-          // 由于工作页面是tabbar页面，需要使用switchTab跳转
-          // 先存储目标分类到本地存储
-          uni.setStorageSync('targetCategory', categoryName);
-          
-          // 跳转到工作页面
-          uni.switchTab({
-            url: '/pages/work/index'
-          });
-        } else {
-          uni.showToast({
-            title: `${service.name}功能开发中`,
-            icon: 'none'
-          });
-        }
-      } else if (service.name === '志愿服务') {
+      if (service.name === '志愿服务') {
         // 跳转到志愿服务页面
         uni.navigateTo({
           url: '/pages/server/volunteer/index'
@@ -420,42 +409,6 @@ export default {
     
     // 点击居家养老服务
     handleHomeCareClick(service) {
-      // 先检查是否登录
-      if (!this.$store.getters.token) {
-        uni.showModal({
-          title: '提示',
-          content: '请先登录后再使用服务功能',
-          confirmText: '去登录',
-          cancelText: '取消',
-          success: (res) => {
-            if (res.confirm) {
-              uni.navigateTo({
-                url: '/pages/login'
-              })
-            }
-          }
-        })
-        return
-      }
-      
-      // 检查是否已加入社区
-      if (!this.checkHasJoinedCommunity()) {
-        uni.showModal({
-          title: '提示',
-          content: '您还未加入社区，请先加入社区后再预约服务',
-          confirmText: '去加入',
-          cancelText: '取消',
-          success: (res) => {
-            if (res.confirm) {
-              uni.navigateTo({
-                url: '/pages/my/joincommunity/index'
-              })
-            }
-          }
-        })
-        return
-      }
-      
       console.log('点击居家养老服务:', service)
       
       // 服务名称与分类的映射关系

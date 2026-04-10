@@ -255,14 +255,20 @@
       async register() {
         register(this.registerForm).then(res => {
           this.$modal.closeLoading()
-          
+          const username = this.registerForm.username
+          const phone = this.registerForm.phone
+          const password = this.registerForm.password
+          // 注册成功后，立即更新缓存为新账号信息
+          uni.setStorageSync('user_username', username)
+          uni.setStorageSync('user_phone', phone)
+          uni.setStorageSync('user_password_cache', password)
           // 注册成功后跳转到登录页面
           uni.showModal({
           	title: "系统提示",
-          	content: "恭喜你，您的账号 " + this.registerForm.username + " 注册成功！",
+          	content: "恭喜你，您的账号 " + username + " 注册成功！",
           	success: function (res) {
           		if (res.confirm) {
-                uni.redirectTo({ url: `/pages/login` });
+                uni.redirectTo({ url: `/pages/login?username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}` });
           		}
           	}
           })

@@ -74,7 +74,17 @@
         <view class="empty-icon-box">
           <uni-icons type="calendar-filled" size="50" color="#d9d9d9"></uni-icons>
         </view>
-        <text class="empty-text">{{ searchKeyword ? '未找到相关服务' : '暂无服务项' }}</text>
+        <template v-if="!$store.getters.token">
+          <text class="empty-text">请先登录后使用服务功能</text>
+          <view class="empty-action-btn" @click="goLogin">去登录</view>
+        </template>
+        <template v-else-if="!joinedCommunity">
+          <text class="empty-text">请先加入社区后查看服务项</text>
+          <view class="empty-action-btn" @click="goJoinCommunity">去加入社区</view>
+        </template>
+        <template v-else>
+          <text class="empty-text">{{ searchKeyword ? '未找到相关服务' : '暂无服务项' }}</text>
+        </template>
       </view>
     </view>
   </view>
@@ -123,12 +133,6 @@ export default {
     // 获取状态栏高度
     const systemInfo = uni.getSystemInfoSync();
     this.statusBarHeight = systemInfo.statusBarHeight;
-    
-    // 检查是否已加入社区
-    if (!this.checkHasJoinedCommunity()) {
-      this.showJoinCommunityModal();
-      return;
-    }
     
     this.loadDataFromCache();
   },
@@ -259,6 +263,16 @@ export default {
     // 返回上一页
     goBack() {
       uni.navigateBack();
+    },
+    
+    // 去登录
+    goLogin() {
+      uni.navigateTo({ url: '/pages/login' })
+    },
+    
+    // 去加入社区
+    goJoinCommunity() {
+      uni.navigateTo({ url: '/pages/my/joincommunity/index' })
     },
     
     // 搜索输入
@@ -582,6 +596,16 @@ export default {
   .empty-text {
     font-size: 28rpx;
     color: #999;
+  }
+  
+  .empty-action-btn {
+    margin-top: 24rpx;
+    padding: 16rpx 60rpx;
+    background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+    color: #fff;
+    font-size: 28rpx;
+    border-radius: 40rpx;
+    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
   }
 }
 </style>

@@ -239,14 +239,28 @@
 							</view>
 						</view>
 						<view class="form-item column">
-							<text class="label">喜好</text>
+							<text class="label">饮食忌口</text>
 							<view class="likes-container">
-								<view class="likes-tags">
+								<!-- 字典预设选项：点击选中/取消 -->
+								<view class="preset-tags" v-if="dietaryOptions.length > 0">
+									<view
+										class="preset-tag"
+										v-for="(opt, idx) in dietaryOptions"
+										:key="idx"
+										:class="{ 'preset-tag-active': formData.likesArray.includes(opt) }"
+										@click="togglePreset(opt)"
+									>
+										<uni-icons v-if="formData.likesArray.includes(opt)" type="checkmarkempty" size="12" color="#3ec6c6" style="margin-right:6rpx;"></uni-icons>
+										<text>{{ opt }}</text>
+									</view>
+								</view>
+								<!-- 自定义输入的标签（不在预设里的） -->
+								<view class="likes-tags" v-if="customLikesArray.length > 0">
 									<view 
 										class="like-tag" 
-										v-for="(like, index) in formData.likesArray" 
+										v-for="(like, index) in customLikesArray" 
 										:key="index"
-										@click="removeLike(index)"
+										@click="removeCustomLike(like)"
 									>
 										<text>{{ like }}</text>
 										<uni-icons type="closeempty" size="12" color="#3ec6c6"></uni-icons>
@@ -256,7 +270,7 @@
 									<input 
 										type="text" 
 										v-model="newLikeText" 
-										placeholder="输入喜好后回车或点击添加" 
+										placeholder="输入忌口后回车或点击添加" 
 										placeholder-class="placeholder"
 										@confirm="addLike"
 										@input="onLikeInput"
@@ -288,6 +302,7 @@
 
 <script>
 import { listFamilymemberNoPage, addFamilymember, updateFamilymember, delFamilymember } from '@/api/familymember'
+import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId, bindFamilyMemberByDevice, delFamilyMemberDevice } from '@/api/familyMemberDevice'
 import { listProfiles, updateProfiles, addProfiles } from '@/api/profiles'
 import { resetDeviceNetwork } from '@/api/device'
@@ -322,9 +337,13 @@ export default {
 				remark: '',
 				likes: '', // 喜好列表
 				likesArray: [], // 喜好标签数组
-				photo: '' // 照片地址
+				photo: '', // 照片地址
+				dietary_restrictions: '', // 饮食忌口(JSON数组)
+				dietaryArray: [] // 饮食忌口标签数组
 			},
 			newLikeText: '', // 新增喜好的输入文本
+			newDietaryText: '', // 新增饮食忌口的自定义输入
+			dietaryOptions: [], // 字典加载的饮食忌口预设选项
 			originalFormData: null, // 保存原始数据用于对比
 			relationList: ['本人', '爷爷', '奶奶', '外公', '外婆', '父亲', '母亲', '叔叔', '阿姨', '舅舅', '舅妈', '姑姑', '姑父', '姨妈', '姨父', '配偶', '兄弟', '姐妹', '朋友','其他']
 		}
@@ -345,10 +364,16 @@ export default {
 		// 是否已达到选择上限
 		isSelectionLimitReached() {
 			return this.selectedMembers.length >= this.maxSelectableCount
+		},
+
+		// 自定义输入的忌口（不在预设字典里的）
+		customLikesArray() {
+			return this.formData.likesArray.filter(item => !this.dietaryOptions.includes(item))
 		}
 	},
 	onLoad(options) {
 		this.getSystemInfo()
+		this.loadDietaryOptions()
 		// 获取设备ID参数
 		if (options.deviceId) {
 			this.deviceId = options.deviceId
@@ -364,6 +389,18 @@ export default {
 		this.loadMembers()
 	},
 	methods: {
+		// 加载饮食忌口字典
+		async loadDietaryOptions() {
+			try {
+				const res = await getDicts('dietary_restriction')
+				if (res.code === 200) {
+					this.dietaryOptions = (res.data || []).map(item => item.dictLabel)
+				}
+			} catch (e) {
+				console.error('加载饮食忌口字典失败:', e)
+			}
+		},
+
 		// 获取系统信息
 		getSystemInfo() {
 			const systemInfo = uni.getSystemInfoSync()
@@ -688,6 +725,26 @@ export default {
 			} catch (error) {
 				// 解析失败，按分隔符拆分
 				return likes.split(/[、,，]/).map(item => item.trim()).filter(item => item !== '')
+			}
+		},
+
+		// 删除自定义忌口标签
+		removeCustomLike(like) {
+			const index = this.formData.likesArray.indexOf(like)
+			if (index >= 0) this.formData.likesArray.splice(index, 1)
+		},
+
+		// 切换预设标签
+		togglePreset(opt) {
+			const index = this.formData.likesArray.indexOf(opt)
+			if (index >= 0) {
+				this.formData.likesArray.splice(index, 1)
+			} else {
+				if (this.formData.likesArray.length >= 10) {
+					uni.showToast({ title: '最多只能添加10个', icon: 'none' })
+					return
+				}
+				this.formData.likesArray.push(opt)
 			}
 		},
 
@@ -1910,6 +1967,29 @@ export default {
 		// 喜好标签相关样式
 		.likes-container {
 			width: 100%;
+			
+			.preset-tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 16rpx;
+				margin-bottom: 20rpx;
+				
+				.preset-tag {
+					padding: 10rpx 20rpx;
+					background: #f5f7fa;
+					border: 2rpx solid #e0e0e0;
+					border-radius: 30rpx;
+					font-size: 26rpx;
+					color: #666;
+					transition: all 0.2s;
+					
+					&.preset-tag-active {
+						background: #f0fcfc;
+						border-color: #3ec6c6;
+						color: #3ec6c6;
+					}
+				}
+			}
 			
 			.likes-tags {
 				display: flex;

@@ -287,6 +287,45 @@
         </view>
       </view>
 
+      <!-- 服务照片卡片 -->
+      <view class="info-card" v-if="extraOrderInfo && (extraOrderInfo.photoUrlsBefore && extraOrderInfo.photoUrlsBefore.length > 0 || extraOrderInfo.photoUrls && extraOrderInfo.photoUrls.length > 0)">
+        <view class="card-header">
+          <view class="header-title">
+            <uni-icons type="image" size="18" color="#333" class="header-icon"></uni-icons>
+            <text>服务照片</text>
+          </view>
+          <text class="order-no" v-if="extraOrderInfo.remark">{{ extraOrderInfo.remark }}</text>
+        </view>
+        <!-- 服务前 -->
+        <view class="photo-group" v-if="extraOrderInfo.photoUrlsBefore && extraOrderInfo.photoUrlsBefore.length > 0">
+          <view class="photo-group-label before">服务前</view>
+          <view class="photo-grid">
+            <image
+              v-for="(url, i) in extraOrderInfo.photoUrlsBefore"
+              :key="i"
+              :src="fullUrl(url)"
+              class="photo-item"
+              mode="aspectFill"
+              @click="previewPhotos(extraOrderInfo.photoUrlsBefore, i)"
+            ></image>
+          </view>
+        </view>
+        <!-- 服务后 -->
+        <view class="photo-group" v-if="extraOrderInfo.photoUrls && extraOrderInfo.photoUrls.length > 0">
+          <view class="photo-group-label after">服务后</view>
+          <view class="photo-grid">
+            <image
+              v-for="(url, i) in extraOrderInfo.photoUrls"
+              :key="i"
+              :src="fullUrl(url)"
+              class="photo-item"
+              mode="aspectFill"
+              @click="previewPhotos(extraOrderInfo.photoUrls, i)"
+            ></image>
+          </view>
+        </view>
+      </view>
+
       <!-- 评价记录卡片 -->
       <view class="info-card" v-if="evaluationList.length > 0">
         <view class="card-header">
@@ -438,9 +477,11 @@
 import { getServiceorder, cancelServiceorder, delServiceorder, getModificationHistory, completeServiceorder, evaluationServiceorder, getEvaluationListByOrderId } from '@/api/service'
 import { getFamilymember } from '@/api/familymember'
 import { ORDER_STATUS_MAP, ORDER_STATUS_CODE_MAP, ORDER_BG_CLASS_MAP, getServiceIcon } from '@/utils/service-helper'
+import { getExtraOrderInfo } from '@/api/verification'
 import verificationMixin from '@/mixins/verification-mixin.js'
 import VerificationModal from '@/components/verification-modal/verification-modal.vue'
 import ReviewModal from '@/components/review-modal/review-modal.vue'
+
 import config from '@/config.js'
 
 export default {
@@ -478,9 +519,11 @@ export default {
       // 音频播放相关
       innerAudioContext: null, // 音频上下文
       currentPlayingOrderId: null, // 当前正在播放的订单ID
-      
+
       // 被服务人员信息
-      servedMemberInfo: null // 被服务人员详细信息
+      servedMemberInfo: null,
+      // 服务照片
+      extraOrderInfo: null
     }
   },
   onLoad(options) {
@@ -615,6 +658,8 @@ export default {
           this.loadEvaluationList()
           // 加载被服务人员信息
           this.loadServedMemberInfo()
+          // 加载服务照片
+          this.loadExtraOrderInfo()
         } else {
           uni.showToast({
             title: response.msg || '获取订单详情失败',
@@ -679,6 +724,32 @@ export default {
         console.error('加载被服务人员信息失败:', error)
         this.servedMemberInfo = null
       }
+    },
+
+    // 加载服务照片
+    async loadExtraOrderInfo() {
+      if (!this.orderId) return
+      try {
+        const res = await getExtraOrderInfo(this.orderId)
+        if (res.code === 200 && res.data) {
+          this.extraOrderInfo = res.data
+        }
+      } catch (e) {
+        console.error('加载服务照片失败:', e)
+      }
+    },
+
+    // 拼接完整图片URL，兼容后端返回绝对路径或相对路径
+    fullUrl(url) {
+      if (!url) return ''
+      if (url.startsWith('http://') || url.startsWith('https://')) return url
+      return this.config.baseUrl + (url.startsWith('/') ? url : '/' + url)
+    },
+
+    // 预览服务照片
+    previewPhotos(urls, index) {
+      const fullUrls = urls.map(u => this.fullUrl(u))
+      uni.previewImage({ current: fullUrls[index], urls: fullUrls })
     },
 
     formatOrderData(order) {
@@ -2178,5 +2249,47 @@ export default {
   color: #8d6e63;
   line-height: 1.6;
   word-break: break-all;
+}
+
+/* 服务照片 */
+.photo-group {
+  margin-bottom: 20rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.photo-group-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+  margin-bottom: 16rpx;
+
+  &.before {
+    background: rgba(250, 140, 22, 0.1);
+    color: #fa8c16;
+  }
+
+  &.after {
+    background: rgba(62, 198, 198, 0.1);
+    color: #3ec6c6;
+  }
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+}
+
+.photo-item {
+  width: 100%;
+  height: 200rpx;
+  border-radius: 12rpx;
+  background: #f5f5f5;
 }
 </style>

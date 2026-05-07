@@ -18,7 +18,7 @@
             </view>
             <view v-if="name" class="user-info">
               <text class="user-name">{{ name }}</text>
-              <text class="user-desc">智慧养老服务用户</text>
+              <text class="user-desc" @touchstart="startLongPress" @touchend="cancelLongPress" @touchcancel="cancelLongPress">智慧养老服务用户</text>
             </view>
           </view>
         </view>
@@ -55,7 +55,7 @@
 
       <!-- 功能菜单 -->
       <view class="menu-container">
-        <view class="menu-item" @click="handleAlarmreceiver">
+        <view v-if="showDevTools" class="menu-item" @click="handleAlarmreceiver">
           <view class="menu-icon-wrapper" style="background-color: #87CEFA;">
            <uni-icons type="personadd" size="20" color="#fff"></uni-icons>
           </view>
@@ -66,7 +66,7 @@
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
         </view>
         
-        <view class="menu-item" @click="handleBalancePackage">
+        <view v-if="showDevTools" class="menu-item" @click="handleBalancePackage">
           <view class="menu-icon-wrapper" style="background-color: #E3F2FD;">
             <uni-icons type="wallet" size="20" color="#2196F3"></uni-icons>
           </view>
@@ -88,7 +88,7 @@
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
         </view>
         
-        <view class="menu-item" @click="handleDevice">
+        <view v-if="showDevTools" class="menu-item" @click="handleDevice">
           <view class="menu-icon-wrapper" style="background-color: #FFF3E0;">
             <text class="iconfontA icon-shebeiguanli" style="color: #FF9800; font-size: 20px;"></text>
           </view>
@@ -129,7 +129,9 @@
 <script>
   export default {
     data() {
-      return {}
+      return {
+        showDevTools: false
+      }
     },
     computed: {
       name() {
@@ -140,6 +142,14 @@
       }
     },
     methods: {
+      startLongPress() {
+        this._longPressTimer = setTimeout(() => {
+          this.showDevTools = true;
+        }, 2000);
+      },
+      cancelLongPress() {
+        clearTimeout(this._longPressTimer);
+      },
       // 检查登录状态
       checkLogin() {
         if (!this.$store.getters.token) {
@@ -341,6 +351,7 @@ page {
 .content-section {
   margin-top: -40rpx;
   padding: 0 30rpx;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
   position: relative;
   z-index: 3;
 }

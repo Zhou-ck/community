@@ -204,7 +204,7 @@
 			
 			<!-- 当天睡眠状态图（有实际睡眠数据时才显示） -->
 			<view class="" v-if="dayTenDatas.length>0 && hasSleepData">
-				<sleepCanvasss  :sleepDatas="dayTenDatas" />
+				<sleepCanvasss  :sleepDatas="dayTenDatas" :startTimeStamp="startTimeStamp" :endTimeStamp="endTimeStamp" />
 			</view>
 			
 			<!-- 今天 - 昨天 对比数据展示 -->
@@ -1031,12 +1031,11 @@
 				let yesterdayEndTimeStamp = this.timeStampEnd - oneDayTimeStamp;
 				//2.构建查询参数
 				const query={
-				    deviceKey: this.deviceKey,//devicekey
-				    productKey: this.productKey,//productkey
-				    selectTime:  new Date(this.chooseDate).getTime(),//用户选中的日期
-					isShare: this.isShare,//是否是被分享的设备
-				    startTimeStamps:yesterdayStartTimeStamp,//前一天开始的时间戳
-				    endTimeStamps:todayEndTimeStamp//当天结束的时间戳
+				    deviceKey: this.deviceKey,
+				    productKey: this.productKey,
+					deviceId: this.queryparams.deviceId,
+				    startTimeStamps:yesterdayStartTimeStamp,
+				    endTimeStamps:todayEndTimeStamp
 				}
 				//3.发送请求
 				let res = await listReportsleep(query);//获取两天的睡眠报告数据
@@ -1228,15 +1227,17 @@
 			
 			/** 获取当天所有睡眠的十分钟数据 */
 			async getNSleepCanvasNewTenDatas(){
-				//1.当天00:00:00的时间戳
-				const starTimeStamp = this.timeStampStart;
-				//2.当天23:59:59的时间戳
-				const endTimeStamp = this.timeStampEnd;
+				//1.当天20:00:00的时间戳
+				const starTimeStamp = new Date(this.chooseDate + ' 20:00:00').getTime();
+				//2.次日09:00:00的时间戳
+				const nextDayDate = new Date(new Date(this.chooseDate + ' 00:00:00').getTime() + 24 * 60 * 60 * 1000);
+				const nextDayStr = `${nextDayDate.getFullYear()}-${String(nextDayDate.getMonth()+1).padStart(2,'0')}-${String(nextDayDate.getDate()).padStart(2,'0')}`;
+				const endTimeStamp = new Date(nextDayStr + ' 09:00:00').getTime();
 				
 				// 验证时间戳有效性
-				if (!this.timeStampStart || isNaN(starTimeStamp) || isNaN(endTimeStamp)) {
+				if (!this.chooseDate || isNaN(starTimeStamp) || isNaN(endTimeStamp)) {
 					console.error('[getNSleepCanvasNewTenDatas] 无效的时间戳:', {
-						timeStampStart: this.timeStampStart,
+						chooseDate: this.chooseDate,
 						starTimeStamp,
 						endTimeStamp
 					});
@@ -1249,9 +1250,7 @@
 					pageSize: 300,
 					deviceKey: this.deviceKey,
 					productKey: this.productKey,
-					isShare: this.isShare,
-					date: this.queryParams.date,
-					selectTime: new Date(this.chooseDate).getTime(),
+					deviceId: this.queryparams.deviceId,
 					sleepStartTimestamp: starTimeStamp,
 					sleepEndTimestamp: endTimeStamp
 				}

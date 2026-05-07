@@ -2,7 +2,7 @@
 module.exports = {
   baseUrl: 'https://community.katlot.cn',
   // baseUrl: 'http://192.168.96.105:8125',
-  // baseUrl: 'http://192.168.1.235:8125',
+  // baseUrl: 'http://192.168.1.250:8125',
   // baseUrl: 'http://kaf95d89.natappfree.cc', 
   // baseUrl: 'http://60.214.209.203:8125',
 	 // baseUrl: 'http://katsc.nat300.top',

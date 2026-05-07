@@ -193,6 +193,16 @@
           <uni-icons type="tune" size="20" color="#3ec6c6"></uni-icons>
         </view>
       </view>
+      <!-- 实时检测 - AEP设备（水浸/门磁/烟感/燃气/红外/温湿度/一氧化碳/SOS拉绳） -->
+      <view class="function-card" @click="handleAepRealTimeClick" v-if="showAepRealTimeMonitor">
+        <view class="card-content">
+          <text class="card-title">实时检测</text>
+          <text class="card-subtitle">查看设备状态信息</text>
+        </view>
+        <view class="card-icon cyan-bg">
+          <uni-icons type="eye" size="20" color="#3ec6c6"></uni-icons>
+        </view>
+      </view>
       <!-- 实时检测 -->
       <view class="function-card" @click="handleRealTimeCheckClick" v-if="showRealTimeMonitor">
         <view class="card-content">
@@ -312,9 +322,9 @@
               <text class="tip-title">报警规则说明</text>
             </view>
             <view class="tip-content">
-              <text class="tip-item">• 每项报警可独立配置通知方式</text>
-              <text class="tip-item">• 实际发送 = 设备配置 ∩ 接警人设置（取交集）</text>
-              <text class="tip-item">• 只有设备和接警人都开启的方式才会发送</text>
+              <text class="tip-item">每项报警可独立配置通知方式</text>
+              <text class="tip-item">实际发送 = 设备配置 ∩ 接警人设置（取交集）</text>
+              <text class="tip-item">只有设备和接警人都开启的方式才会发送</text>
             </view>
           </view>
           
@@ -339,26 +349,26 @@
                 <view class="method-buttons">
                   <view 
                     class="method-btn" 
-                    :class="{ active: alarm.phoneAlarm }"
-                    @click="toggleAlarmMethod(alarm, 'phoneAlarm')"
+                    :class="{ active: alarm.callOpen }"
+                    @click="toggleAlarmMethod(alarm, 'callOpen')"
                   >
-                    <uni-icons type="phone" size="16" :color="alarm.phoneAlarm ? '#3ec6c6' : '#999'"></uni-icons>
+                    <uni-icons type="phone" size="16" :color="alarm.callOpen ? '#3ec6c6' : '#999'"></uni-icons>
                     <text>电话</text>
                   </view>
                   <view 
                     class="method-btn" 
-                    :class="{ active: alarm.smsAlarm }"
-                    @click="toggleAlarmMethod(alarm, 'smsAlarm')"
+                    :class="{ active: alarm.smsOpen }"
+                    @click="toggleAlarmMethod(alarm, 'smsOpen')"
                   >
-                    <uni-icons type="chatbubble" size="16" :color="alarm.smsAlarm ? '#3ec6c6' : '#999'"></uni-icons>
+                    <uni-icons type="chatbubble" size="16" :color="alarm.smsOpen ? '#3ec6c6' : '#999'"></uni-icons>
                     <text>短信</text>
                   </view>
                   <view 
                     class="method-btn" 
-                    :class="{ active: alarm.wechatAlarm }"
-                    @click="toggleAlarmMethod(alarm, 'wechatAlarm')"
+                    :class="{ active: alarm.wxOpen }"
+                    @click="toggleAlarmMethod(alarm, 'wxOpen')"
                   >
-                    <uni-icons type="chat" size="16" :color="alarm.wechatAlarm ? '#3ec6c6' : '#999'"></uni-icons>
+                    <uni-icons type="chat" size="16" :color="alarm.wxOpen ? '#3ec6c6' : '#999'"></uni-icons>
                     <text>微信</text>
                   </view>
                 </view>
@@ -378,6 +388,30 @@
                      scroll-y="true"
                      :style="'max-height: ' + scrollViewHeight + 'px;'">
           <view class="param-setting-list">
+            <!-- 业务配置模块（仅跌倒检测设备） -->
+            <view v-if="deviceInfo && String(deviceInfo.deviceType) === '2'" class="business-config-section">
+              <view class="business-config-header">
+                <text class="business-config-title">业务参数</text>
+              </view>
+              <text class="business-config-desc">业务参数由后端业务逻辑使用，不会下发到硬件</text>
+              <view class="business-config-item">
+                <text class="business-config-label">跌倒误报缓冲时长(秒):</text>
+                <view class="business-stepper-wrap">
+                  <view class="biz-stepper">
+                    <view class="biz-stepper-btn" :class="{ disabled: fallFalseAlarmBufferSec <= 0 }" @click="fallFalseAlarmBufferSec = Math.max(0, Number(fallFalseAlarmBufferSec) - 1)">
+                      <text>-</text>
+                    </view>
+                    <input class="biz-stepper-input" type="number" v-model="fallFalseAlarmBufferSec" />
+                    <view class="biz-stepper-btn" @click="fallFalseAlarmBufferSec = Number(fallFalseAlarmBufferSec) + 1">
+                      <text>+</text>
+                    </view>
+                  </view>
+                  <text class="business-config-hint" @click="showFallBufferTip">?</text>
+                </view>
+              </view>
+              <button class="business-save-btn" @click="saveBusinessParams" :loading="businessParamsSaving">保存业务参数</button>
+            </view>
+
             <view v-for="prop in paramProps" :key="prop.identifier" class="param-setting-item">
               <view class="param-info">
                 <view class="param-name-container">
@@ -492,6 +526,41 @@
       </view>
     </uni-popup>
 
+    <!-- AEP实时检测弹窗 -->
+    <uni-popup ref="aepRealtimePopup" type="center" :mask-click="true">
+      <view class="aep-realtime-popup">
+        <view class="popup-header">
+          <text class="popup-title">实时检测</text>
+          <uni-icons type="close" size="24" color="#666" @click="$refs.aepRealtimePopup.close()"></uni-icons>
+        </view>
+        <view class="aep-realtime-body">
+          <view v-if="aepRealtimeLoading" class="aep-realtime-loading">
+            <uni-icons type="spinner-cycle" size="32" color="#3ec6c6"></uni-icons>
+            <text>加载中...</text>
+          </view>
+          <view v-else class="aep-realtime-content">
+            <view class="aep-realtime-item">
+              <text class="aep-realtime-label">IMEI</text>
+              <text class="aep-realtime-value">{{ aepRealtimeData.imei || '-' }}</text>
+            </view>
+            <view class="aep-realtime-item">
+              <text class="aep-realtime-label">电量</text>
+              <view class="aep-battery-row">
+                <view class="aep-battery-bar">
+                  <view class="aep-battery-fill" :style="{ width: (aepRealtimeData.batteryPercentage || 0) + '%', background: getBatteryColor(aepRealtimeData.batteryPercentage) }"></view>
+                </view>
+                <text class="aep-realtime-value">{{ aepRealtimeData.batteryPercentage !== undefined ? aepRealtimeData.batteryPercentage + '%' : '-' }}</text>
+              </view>
+            </view>
+            <view class="aep-realtime-item">
+              <text class="aep-realtime-label">信号强度(RSSI)</text>
+              <text class="aep-realtime-value">{{ aepRealtimeData.rssi !== undefined ? aepRealtimeData.rssi + ' dBm' : '-' }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </uni-popup>
+
     <!-- 申请监控弹窗 -->
     <uni-popup ref="applyMonitorPopup" type="center" :mask-click="false">
       <view class="apply-monitor-popup">
@@ -602,7 +671,14 @@ export default {
         applyReason: ''
       },
       // 申请监控提交状态
-      applyMonitorSubmitting: false
+      applyMonitorSubmitting: false,
+      // 跌倒误报缓冲时长（秒）
+      fallFalseAlarmBufferSec: 0,
+      // 业务参数保存状态
+      businessParamsSaving: false,
+      // AEP实时检测数据
+      aepRealtimeData: {},
+      aepRealtimeLoading: false
     }
   },
   
@@ -754,6 +830,13 @@ export default {
     showCancelMonitor() {
       if (!this.deviceInfo) return false
       return String(this.deviceInfo.sourceType) === '1' && String(this.deviceInfo.communityMonitorStatus) === '3'
+    },
+    
+    // 是否显示AEP设备实时检测（水浸/门磁/烟感/燃气/红外/温湿度/一氧化碳/SOS拉绳）
+    showAepRealTimeMonitor() {
+      if (!this.deviceInfo) return false
+      const type = String(this.deviceInfo.deviceType)
+      return ['13', '14', '15', '16', '17', '18', '19', '23'].includes(type)
     }
   },
   
@@ -871,6 +954,19 @@ export default {
         const response = await getDevice(this.deviceId)
         if (response.code === 200) {
           this.deviceInfo = response.data
+          // 初始化跌倒误报缓冲时长
+          if (String(response.data.deviceType) === '2' && response.data.businessParams) {
+            try {
+              const bp = typeof response.data.businessParams === 'string'
+                ? JSON.parse(response.data.businessParams)
+                : response.data.businessParams
+              this.fallFalseAlarmBufferSec = bp.fallFalseAlarmBufferSec !== undefined ? Number(bp.fallFalseAlarmBufferSec) : 0
+            } catch (e) {
+              this.fallFalseAlarmBufferSec = 0
+            }
+          } else {
+            this.fallFalseAlarmBufferSec = 0
+          }
           this.loadAlarmSwitches()
           // 参数设置将在打开弹窗时动态加载
           // 同步加载已绑定的家人和接警人数量
@@ -921,10 +1017,9 @@ export default {
             name: item.name,
             desc: item.desc || `${item.name}功能开关`,
             open: item.open,
-            // 兼容后端字段名：callOpen/smsOpen/wxOpen 或 phoneAlarm/smsAlarm/wechatAlarm
-            phoneAlarm: item.callOpen !== undefined ? item.callOpen : (item.phoneAlarm || false),
-            smsAlarm: item.smsOpen !== undefined ? item.smsOpen : (item.smsAlarm || false),
-            wechatAlarm: item.wxOpen !== undefined ? item.wxOpen : (item.wechatAlarm || false)
+            callOpen: item.callOpen !== undefined ? item.callOpen : (item.phoneAlarm || false),
+            smsOpen: item.smsOpen !== undefined ? item.smsOpen : (item.smsAlarm || false),
+            wxOpen: item.wxOpen !== undefined ? item.wxOpen : (item.wechatAlarm || false)
           }))
           
           // 使用 $set 确保响应式更新
@@ -975,7 +1070,7 @@ export default {
       alarm[method] = !alarm[method]
       
       // 提示用户设备优先逻辑
-      const methodName = method === 'phoneAlarm' ? '电话' : method === 'smsAlarm' ? '短信' : '微信'
+      const methodName = method === 'callOpen' ? '电话' : method === 'smsOpen' ? '短信' : '微信'
       const status = alarm[method] ? '开启' : '关闭'
       
       uni.showToast({
@@ -1004,9 +1099,9 @@ export default {
           '18': '../../my/static/wenshidu.png',     // 温湿度(Wd)
           '19': '../../my/static/yiyanghuatan.png', // 一氧化碳(Td)
           '20': '../../my/static/breath.png',       // 其它设备(Od)，暂用呼吸图标
-          '21': '../../my/static/watch.png',        // 手表(Za)，暂用呼吸图标
-          '22': '../../my/static/watch.png',        // 手表(Zb)，暂用呼吸图标
-          '23': '../../my/static/watch.png'         // 手表(Zc)，暂用呼吸图标
+          '21': '../../my/static/watch.png',        // 手表(Za)
+          '22': '../../my/static/watch.png',        // 手表(Zb)
+          '23': '../../my/static/sos.png'         // 拉绳(Ls)
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -1047,6 +1142,38 @@ export default {
         '3': 'apply-reviewing'
       }
       return classMap[String(status)] || 'not-monitored'
+    },
+    
+    // 处理AEP设备实时检测点击
+    async handleAepRealTimeClick() {
+      if (!this.deviceInfo) return
+      this.aepRealtimeData = {}
+      this.aepRealtimeLoading = true
+      this.$refs.aepRealtimePopup.open()
+      try {
+        const res = await getDevice(this.deviceId)
+        if (res.code === 200 && res.data) {
+          this.aepRealtimeData = {
+            imei: res.data.imei,
+            batteryPercentage: res.data.batteryPercentage,
+            rssi: res.data.rssi
+          }
+        } else {
+          this.aepRealtimeData = { imei: this.deviceInfo.imei }
+        }
+      } catch (e) {
+        this.aepRealtimeData = { imei: this.deviceInfo.imei }
+      } finally {
+        this.aepRealtimeLoading = false
+      }
+    },
+    
+    // 根据电量返回颜色
+    getBatteryColor(val) {
+      if (val === undefined || val === null) return '#3ec6c6'
+      if (val <= 20) return '#f44336'
+      if (val <= 50) return '#ff9800'
+      return '#4caf50'
     },
     
     // 处理申请监控点击
@@ -2167,6 +2294,44 @@ export default {
       }
     },
     
+    // 显示跌倒缓冲时长说明
+    showFallBufferTip() {
+      uni.showModal({
+        title: '跌倒误报缓冲时长',
+        content: '设备检测到跌倒事件后，将等待该时长再判断是否真实跌倒，以减少误报。设为 0 表示不缓冲、立即上报报警。',
+        showCancel: false,
+        confirmText: '知道了'
+      })
+    },
+
+    // 保存业务参数
+    async saveBusinessParams() {
+      const sec = Number(this.fallFalseAlarmBufferSec)
+      if (isNaN(sec) || sec < 0) {
+        uni.showToast({ title: '请输入有效的缓冲时长', icon: 'none' })
+        return
+      }
+      this.businessParamsSaving = true
+      try {
+        const response = await updateDevice({
+          deviceId: this.deviceInfo.deviceId,
+          productKey: this.deviceInfo.productKey,
+          deviceKey: this.deviceInfo.deviceKey,
+          businessParams: JSON.stringify({ fallFalseAlarmBufferSec: sec })
+        })
+        if (response.code === 200) {
+          this.deviceInfo.businessParams = JSON.stringify({ fallFalseAlarmBufferSec: sec })
+          uni.showToast({ title: '业务参数已保存', icon: 'success' })
+        } else {
+          uni.showToast({ title: response.msg || '保存失败', icon: 'none' })
+        }
+      } catch (e) {
+        uni.showToast({ title: '网络错误', icon: 'none' })
+      } finally {
+        this.businessParamsSaving = false
+      }
+    },
+
     // 删除设备
     deleteDevice() {
       uni.showModal({
@@ -2921,6 +3086,121 @@ export default {
   font-size: 28rpx;
 }
 
+/* 业务配置模块 */
+.business-config-section {
+  background: #f0f9ff;
+  border: 2rpx solid #bae6fd;
+  border-radius: 16rpx;
+  padding: 28rpx 24rpx 20rpx;
+  margin-bottom: 8rpx;
+}
+
+.business-config-header {
+  margin-bottom: 6rpx;
+}
+
+.business-config-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.business-config-desc {
+  font-size: 22rpx;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 20rpx;
+}
+
+.business-config-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.business-config-label {
+  font-size: 26rpx;
+  color: #333;
+  flex: 1;
+}
+
+.business-stepper-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-shrink: 0;
+}
+
+/* 紧凑步进器 */
+.biz-stepper {
+  display: flex;
+  align-items: center;
+  border: 2rpx solid #bae6fd;
+  border-radius: 8rpx;
+  overflow: hidden;
+  background: #fff;
+  height: 56rpx;
+}
+
+.biz-stepper-btn {
+  width: 48rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0f2fe;
+
+  text {
+    font-size: 30rpx;
+    color: #0369a1;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  &.disabled {
+    opacity: 0.35;
+  }
+
+  &:active:not(.disabled) {
+    background: #bae6fd;
+  }
+}
+
+.biz-stepper-input {
+  width: 80rpx;
+  height: 56rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+  border: none;
+  background: #fff;
+  padding: 0;
+}
+
+.business-config-hint {
+  font-size: 22rpx;
+  color: #94a3b8;
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #cbd5e1;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 36rpx;
+}
+
+.business-save-btn {
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  background: #3ec6c6;
+  color: #fff;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
 /* Loading Mask */
 .loading-mask {
   position: fixed;
@@ -2971,4 +3251,97 @@ export default {
     flex-direction: row-reverse;
   }
 }
+
+/* AEP实时检测弹窗 */
+.aep-realtime-popup {
+  width: 560rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  
+  .popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32rpx;
+    border-bottom: 1rpx solid #f0f0f0;
+    
+    .popup-title {
+      font-size: 32rpx;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+}
+
+.aep-realtime-body {
+  padding: 32rpx;
+  min-height: 200rpx;
+}
+
+.aep-realtime-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  padding: 40rpx 0;
+  
+  text {
+    font-size: 24rpx;
+    color: #999;
+  }
+}
+
+.aep-realtime-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.aep-realtime-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.aep-realtime-label {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.aep-realtime-value {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.aep-battery-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.aep-battery-bar {
+  width: 120rpx;
+  height: 20rpx;
+  background: #f0f0f0;
+  border-radius: 10rpx;
+  overflow: hidden;
+  position: relative;
+}
+
+.aep-battery-fill {
+  height: 100%;
+  border-radius: 10rpx;
+  transition: width 0.3s ease;
+}
+
 </style>

@@ -63,7 +63,12 @@
             "subPackages" : true
         },
         "usingComponents" : true,
-		"libVersion": "2.19.2"
+		"libVersion": "2.19.2",
+		"permission": {
+			"scope.userLocation": {
+				"desc": "获取当前连接的WiFi信息需要位置权限"
+			}
+		}
     },
     "vueVersion" : "2",
     "h5" : {

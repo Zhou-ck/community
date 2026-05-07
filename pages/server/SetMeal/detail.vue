@@ -49,10 +49,7 @@
           <text class="info-label">支付金额</text>
           <text class="info-value price">¥{{ packageDetail.payAmount }}</text>
         </view>
-        <view class="info-item">
-          <text class="info-label">连续期数</text>
-          <text class="info-value period">第{{ packageDetail.consecutiveCount || 1 }}期</text>
-        </view>
+
         <view class="info-item" v-if="packageDetail.deptName">
           <text class="info-label">所属社区</text>
           <text class="info-value">{{ packageDetail.deptName }}</text>
@@ -177,11 +174,11 @@
                 <text class="on-demand-desc">限{{ service.totalCount }}次</text>
               </view>
               <view class="limited-stats">
-                <view class="stat-item-small">
+                <view class="stat-item-small" @click="showServiceOrders(service, 'used', true)">
                   <text class="stat-value-small used">{{ service.usedCount }}</text>
                   <text class="stat-label-small">已使用</text>
                 </view>
-                <view class="stat-item-small">
+                <view class="stat-item-small" @click="onDemandRemainClick(service)">
                   <text class="stat-value-small remain" :class="{ warning: service.remainingCount <= 0 }">{{ service.remainingCount }}</text>
                   <text class="stat-label-small">剩余</text>
                 </view>
@@ -206,15 +203,15 @@
           
           <!-- 普通服务显示 -->
           <view v-else class="service-stats">
-            <view class="stat-item">
+            <view class="stat-item" @click="showServiceOrders(service, 'all')">
               <text class="stat-value">{{ service.totalCount }}</text>
               <text class="stat-label">总次数</text>
             </view>
-            <view class="stat-item">
+            <view class="stat-item" @click="showServiceOrders(service, 'used')">
               <text class="stat-value used">{{ service.usedCount }}</text>
               <text class="stat-label">已使用</text>
             </view>
-            <view class="stat-item">
+            <view class="stat-item" @click="showServiceOrders(service, 'remain')">
               <text class="stat-value remain" :class="{ warning: service.remainingCount <= 3 && service.remainingCount > 0, danger: service.remainingCount <= 0 }">{{ service.remainingCount }}</text>
               <text class="stat-label">剩余</text>
             </view>
@@ -280,10 +277,33 @@
 
       <!-- 消费记录 -->
       <view v-if="currentTab === 'consume'" class="consume-record-section">
-        <view class="record-card-list" v-if="consumeRecords.length > 0">
-          <view 
-            v-for="(record, index) in consumeRecords" 
-            :key="index" 
+        <!-- 状态筛选栏 -->
+        <view class="consume-filter-bar">
+          <view
+            v-for="f in consumeFilters"
+            :key="f.key"
+            class="filter-tab"
+            :class="{ active: consumeFilterKey === f.key }"
+            @click="consumeFilterKey = f.key"
+          >
+            <text>{{ f.label }}</text>
+            <text class="filter-count">{{ f.count }}</text>
+          </view>
+          <!-- 待派单/服务中 显示"查看今日"按钮 -->
+          <view
+            v-if="consumeFilterKey === 'dispatching' || consumeFilterKey === 'serving'"
+            class="filter-tab today-btn"
+            :class="{ active: showTodayOnly }"
+            @click="showTodayOnly = !showTodayOnly"
+          >
+            <text>今日</text>
+          </view>
+        </view>
+
+        <view class="record-card-list" v-if="filteredConsumeRecords.length > 0">
+          <view
+            v-for="(record, index) in filteredConsumeRecords"
+            :key="index"
             class="record-card"
             @click="goToOrderDetail(record)"
           >
@@ -319,7 +339,7 @@
           </view>
         </view>
         
-        <view v-if="consumeRecords.length === 0" class="empty-data-small">
+        <view v-if="filteredConsumeRecords.length === 0" class="empty-data-small">
           <text class="iconfont icon-zanwushuju"></text>
           <text>暂无使用记录</text>
         </view>
@@ -327,7 +347,7 @@
     </scroll-view>
     
     <!-- 底部操作按钮 -->
-    <view class="bottom-actions" v-if="packageDetail.instanceStatus === 'ACTIVE' || packageDetail.instanceStatus === 'REFUND_PENDING'">
+    <view class="bottom-actions" v-if="(packageDetail.instanceStatus === 'ACTIVE' || packageDetail.instanceStatus === 'REFUND_PENDING') && !serviceOrdersVisible && !applyModalVisible && !refundPopupVisible && !showVerificationModal">
       <template v-if="packageDetail.instanceStatus === 'ACTIVE'">
         <view class="action-btn qrcode-btn" @click="viewQrCode">查看核销码</view>
         <view class="action-btn refund-btn" @click="applyRefund">申请退订</view>
@@ -336,7 +356,7 @@
     </view>
 
     <!-- 申请退订弹窗 -->
-    <uni-popup ref="refundApplyPopup" type="center">
+    <uni-popup ref="refundApplyPopup" type="center" @change="onRefundPopupChange">
       <view class="refund-apply-popup">
         <view class="refund-popup-header">
           <text class="refund-popup-title">申请退订套餐</text>
@@ -361,8 +381,6 @@
               <view class="warning-list">
                 <text class="warning-item">• 提交退订申请后，需等待社区管理员审核</text>
                 <text class="warning-item">• 审核通过后套餐余量将清零</text>
-                <text class="warning-item">• 连续购买记录将中断</text>
-                <text class="warning-item">• 赠送服务将被撤销</text>
               </view>
             </view>
           </view>
@@ -386,7 +404,7 @@
     </uni-popup>
 
     <!-- 服务申请弹窗 -->
-    <uni-popup ref="applyPopup" type="bottom" :safe-area="false">
+    <uni-popup ref="applyPopup" type="bottom" :safe-area="false" @change="onApplyPopupChange">
       <view class="apply-modal">
         <view class="modal-header">
           <text class="modal-title">申请服务</text>
@@ -404,7 +422,7 @@
           <view class="form-section">
             <view class="form-item">
               <text class="form-label">预约日期</text>
-              <picker mode="date" :value="applyForm.appointmentDate" @change="onDateChange">
+              <picker mode="date" :value="applyForm.appointmentDate" :start="applyStartDate" :end="applyEndDate" @change="onDateChange">
                 <view class="picker-input">
                   <text v-if="applyForm.appointmentDate">{{ applyForm.appointmentDate }}</text>
                   <text v-else class="placeholder">请选择预约日期</text>
@@ -415,7 +433,7 @@
             
             <view class="form-item">
               <text class="form-label">预约时段</text>
-              <picker :range="timeSlots" @change="onTimeSlotChange">
+              <picker :range="availableTimeSlots" @change="onTimeSlotChange">
                 <view class="picker-input">
                   <text v-if="applyForm.appointmentPeriod">{{ applyForm.appointmentPeriod }}</text>
                   <text v-else class="placeholder">请选择预约时段</text>
@@ -445,6 +463,57 @@
           <view class="cancel-btn" @click="closeApplyModal">取消</view>
           <view class="confirm-btn" @click="submitServiceApply">确认申请</view>
         </view>
+      </view>
+    </uni-popup>
+
+    <!-- 服务订单列表弹窗 -->
+    <uni-popup ref="serviceOrdersPopup" type="bottom" :safe-area="false" @change="onServiceOrdersPopupChange">
+      <view class="service-orders-modal">
+        <!-- 拖动条 -->
+        <view class="drag-bar"></view>
+        <view class="som-header">
+          <view class="som-title-center">
+            <text class="som-title">{{ serviceOrdersTitle }}</text>
+            <view class="som-count-badge">{{ serviceOrdersPopupList.length }}条</view>
+          </view>
+          <view class="som-close" @click="closeServiceOrdersPopup">
+            <uni-icons type="closeempty" size="22" color="#bbb"></uni-icons>
+          </view>
+        </view>
+        <scroll-view class="som-scroll" scroll-y="true">
+          <view v-if="serviceOrdersPopupList.length > 0" class="som-list">
+            <view
+              v-for="(record, index) in serviceOrdersPopupList"
+              :key="index"
+              class="som-item"
+              @click="goToOrderDetail(record)"
+            >
+              <view class="som-item-left">
+                <view class="som-date-row">
+                  <text class="iconfont icon-shijian som-date-icon"></text>
+                  <text class="som-date">{{ formatDate(record.appointmentDate) }}</text>
+                  <text class="som-period" v-if="record.appointmentPeriod">{{ record.appointmentPeriod }}</text>
+                </view>
+                <view class="som-provider-row">
+                  <text class="som-provider-label">服务商</text>
+                  <text class="som-provider-value" :class="{ unassigned: !record.providerName }">
+                    {{ record.providerName || '未分配' }}
+                  </text>
+                </view>
+              </view>
+              <view class="som-right">
+                <view class="som-status" :class="[getOrderStatusClass(record.orderStatus)]">
+                  {{ getOrderStatusText(record.orderStatus) }}
+                </view>
+                <text class="iconfont icon-right som-arrow"></text>
+              </view>
+            </view>
+          </view>
+          <view v-else class="empty-data-small">
+            <text class="iconfont icon-zanwushuju"></text>
+            <text>暂无相关记录</text>
+          </view>
+        </scroll-view>
       </view>
     </uni-popup>
 
@@ -500,6 +569,8 @@ export default {
       deviceList: [],
       currentMemberInfo: null,
       showApplyModal: false,
+      // 退订申请弹窗
+      refundPopupVisible: false,
       refundReason: '',
       refundingPackage: {},
       currentService: null,
@@ -514,7 +585,16 @@ export default {
         '10:00~12:00',
         '14:00~16:00',
         '16:00~18:00'
-      ]
+      ],
+      // 服务申请弹窗
+      applyModalVisible: false,
+      // 服务订单弹窗
+      serviceOrdersTitle: '',
+      serviceOrdersPopupList: [],
+      serviceOrdersVisible: false,
+      // 消费记录筛选
+      consumeFilterKey: 'dispatching',
+      showTodayOnly: false
     }
   },
 
@@ -528,7 +608,83 @@ export default {
     
     // 判断是否有底部操作按钮
     hasBottomActions() {
-      return this.packageDetail.instanceStatus === 'ACTIVE' || this.packageDetail.instanceStatus === 'REFUND_PENDING'
+      const isStatusMatch = this.packageDetail.instanceStatus === 'ACTIVE' || this.packageDetail.instanceStatus === 'REFUND_PENDING'
+      const isPopupHidden = !this.serviceOrdersVisible && !this.applyModalVisible && !this.refundPopupVisible && !this.showVerificationModal
+      return isStatusMatch && isPopupHidden
+    },
+
+    // 申请服务的开始可选日期
+    applyStartDate() {
+      if (!this.packageDetail.startTime) return ''
+      return this.packageDetail.startTime.slice(0, 10)
+    },
+
+    // 申请服务的结束可选日期
+    applyEndDate() {
+      if (!this.packageDetail.expireTime) return ''
+      return this.packageDetail.expireTime.slice(0, 10)
+    },
+
+    // 可选时段：如果选择今天，过滤已经过去的时段
+    availableTimeSlots() {
+      const today = new Date().toISOString().slice(0, 10)
+      if (this.applyForm.appointmentDate !== today) return this.timeSlots
+      const nowHour = new Date().getHours()
+      return this.timeSlots.filter(slot => {
+        // 取时段结束时间，如 '8:00~10:00' 取 10
+        const endTime = slot.split('~')[1]
+        const endHour = parseInt(endTime)
+        return endHour > nowHour
+      })
+    },
+
+    // 消费记录筛选
+    consumeFilters() {
+      // 待派单: 0,7  服务中: 1,2,8  已完成: 3
+      const dispatchingStatuses = ['0', '7']
+      const servingStatuses = ['1', '2', '8']
+      const completedStatuses = ['3']
+      return [
+        {
+          key: 'dispatching',
+          label: '待派单',
+          count: this.consumeRecords.filter(r => dispatchingStatuses.includes(String(r.orderStatus))).length
+        },
+        {
+          key: 'serving',
+          label: '服务中',
+          count: this.consumeRecords.filter(r => servingStatuses.includes(String(r.orderStatus))).length
+        },
+        {
+          key: 'completed',
+          label: '已完成',
+          count: this.consumeRecords.filter(r => completedStatuses.includes(String(r.orderStatus))).length
+        }
+      ]
+    },
+
+    filteredConsumeRecords() {
+      const map = {
+        dispatching: ['0', '7'],
+        serving: ['1', '2', '8'],
+        completed: ['3']
+      }
+      const statuses = map[this.consumeFilterKey] || []
+      let result = this.consumeRecords.filter(r => statuses.includes(String(r.orderStatus)))
+      if (this.showTodayOnly && (this.consumeFilterKey === 'dispatching' || this.consumeFilterKey === 'serving')) {
+        const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+        result = result.filter(r => r.appointmentDate && r.appointmentDate.slice(0, 10) === today)
+      }
+      // 按预约日期升序排序，无日期的排在最后
+      result.sort((a, b) => {
+        const da = a.appointmentDate ? a.appointmentDate.slice(0, 10) : ''
+        const db = b.appointmentDate ? b.appointmentDate.slice(0, 10) : ''
+        if (!da && !db) return 0
+        if (!da) return 1
+        if (!db) return -1
+        return da > db ? 1 : da < db ? -1 : 0
+      })
+      return result
     }
   },
 
@@ -605,13 +761,20 @@ export default {
     // 申请退订 - 打开弹窗
     applyRefund() {
       this.refundReason = ''
+      this.refundPopupVisible = true
       this.$refs.refundApplyPopup.open()
     },
 
     // 关闭退订弹窗
     closeRefundPopup() {
+      this.refundPopupVisible = false
       this.$refs.refundApplyPopup.close()
       this.refundReason = ''
+    },
+
+    // 退订弹窗状态改变
+    onRefundPopupChange(e) {
+      this.refundPopupVisible = e.show
     },
 
     // 提交退订申请
@@ -799,18 +962,83 @@ export default {
       return classMap[String(status)] || ''
     },
     
+    // 点击统计数字显示该服务订单列表
+    showServiceOrders(service, type, isOnDemand) {
+      const titleMap = { all: '全部订单', used: '已使用订单', remain: '剩余订单' }
+      this.serviceOrdersTitle = `${service.serviceName} · ${titleMap[type]}`
+
+      const sortByDate = arr => [...arr].sort((a, b) => {
+        const da = a.appointmentDate ? a.appointmentDate.slice(0, 10) : ''
+        const db = b.appointmentDate ? b.appointmentDate.slice(0, 10) : ''
+        return da < db ? -1 : da > db ? 1 : 0
+      })
+
+      const records = this.consumeRecords.filter(r => r.serviceId === service.serviceId)
+
+      if (type === 'all') {
+        this.serviceOrdersPopupList = sortByDate(records)
+      } else if (type === 'used') {
+        if (isOnDemand) {
+          // 按需服务已使用：包含已完成(3) + 服务中(1,2,8)，过滤无日期记录
+          const usedStatuses = ['1', '2', '3', '8']
+          this.serviceOrdersPopupList = sortByDate(records.filter(r => usedStatuses.includes(String(r.orderStatus)) && r.appointmentDate))
+        } else {
+          // 普通服务已使用：仅已完成(3)
+          this.serviceOrdersPopupList = sortByDate(records.filter(r => String(r.orderStatus) === '3'))
+        }
+      } else {
+        // 剩余：排除已完成
+        this.serviceOrdersPopupList = sortByDate(records.filter(r => String(r.orderStatus) !== '3'))
+      }
+
+      this.serviceOrdersVisible = true
+      this.$refs.serviceOrdersPopup.open()
+    },
+
+    closeServiceOrdersPopup() {
+      this.serviceOrdersVisible = false
+      this.$refs.serviceOrdersPopup.close()
+    },
+
+    onServiceOrdersPopupChange(e) {
+      if (!e.show) this.serviceOrdersVisible = false
+    },
+
+    // 按需服务点击剩余
+    onDemandRemainClick(service) {
+      if (service.remainingCount <= 0) return
+      uni.showModal({
+        title: '提示',
+        content: '按需服务需要配置服务日期和时间，是否现在配置？',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            this.showServiceApplyModal(service)
+          }
+        }
+      })
+    },
+
     // 显示服务申请弹窗
     showServiceApplyModal(service) {
       this.currentService = service
       this.resetApplyForm()
+      this.applyModalVisible = true
       this.$refs.applyPopup.open()
     },
     
     // 关闭服务申请弹窗
     closeApplyModal() {
+      this.applyModalVisible = false
       this.$refs.applyPopup.close()
       this.currentService = null
       this.resetApplyForm()
+    },
+    
+    // 申请弹窗状态改变
+    onApplyPopupChange(e) {
+      this.applyModalVisible = e.show
     },
     
     // 重置申请表单
@@ -826,11 +1054,15 @@ export default {
     // 日期选择
     onDateChange(e) {
       this.applyForm.appointmentDate = e.detail.value
+      // 切换日期后，如果已选时段不在可选范围内则清空
+      if (this.applyForm.appointmentPeriod && !this.availableTimeSlots.includes(this.applyForm.appointmentPeriod)) {
+        this.applyForm.appointmentPeriod = ''
+      }
     },
     
     // 时段选择
     onTimeSlotChange(e) {
-      this.applyForm.appointmentPeriod = this.timeSlots[e.detail.value]
+      this.applyForm.appointmentPeriod = this.availableTimeSlots[e.detail.value]
     },
     
     // 紧急状态切换
@@ -1859,6 +2091,48 @@ export default {
 // 消费记录区域
 .consume-record-section {
   padding: 16px;
+
+  .consume-filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+
+    .filter-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 9px 0;
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8e8e8;
+      font-size: 13px;
+      color: #999;
+      transition: all 0.2s;
+
+      .filter-count {
+        font-size: 11px;
+        background: #f0f0f0;
+        color: #bbb;
+        padding: 1px 6px;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+
+      &.active {
+        background: linear-gradient(135deg, #3ec6c6, #2eb5b5);
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(62, 198, 198, 0.3);
+
+        .filter-count {
+          background: rgba(255, 255, 255, 0.3);
+          color: #fff;
+        }
+      }
+    }
+  }
   
   .record-card-list {
     display: flex;
@@ -2272,9 +2546,12 @@ export default {
     flex-shrink: 0;
     
     .modal-title {
+      flex: 1;
+      text-align: center;
       font-size: 18px;
       font-weight: 700;
       color: #333;
+      margin-left: 30px; // 抵消右侧关闭按钮的宽度，确保文字视觉居中
     }
     
     .close-btn {
@@ -2396,4 +2673,181 @@ export default {
     }
   }
 }
+// 服务订单列表弹窗
+.service-orders-modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  height: 65vh;
+  display: flex;
+  flex-direction: column;
+
+  .drag-bar {
+    width: 36px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  .som-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px 14px;
+    border-bottom: 1px solid #f5f5f5;
+    flex-shrink: 0;
+    position: relative;
+
+    .som-title-wrap,
+    .som-title-center {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .som-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #222;
+      }
+
+      .som-count-badge {
+        font-size: 11px;
+        color: #3ec6c6;
+        background: #e8f5f5;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+    }
+
+    .som-close {
+      position: absolute;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      border-radius: 50%;
+    }
+  }
+
+  .som-scroll {
+    flex: 1;
+    height: 0;
+  }
+
+  .som-list {
+    padding: 12px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .som-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    &:active {
+      background: #f8fffe;
+      border-color: #d4eded;
+    }
+
+    .som-item-left {
+      flex: 1;
+      min-width: 0;
+
+      .som-date-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+
+        .som-date-icon {
+          font-size: 14px;
+          color: #3ec6c6;
+        }
+
+        .som-date {
+          font-size: 15px;
+          font-weight: 700;
+          color: #222;
+        }
+
+        .som-period {
+          font-size: 12px;
+          color: #fff;
+          background: linear-gradient(135deg, #3ec6c6, #2eb5b5);
+          padding: 2px 8px;
+          border-radius: 8px;
+        }
+      }
+
+      .som-provider-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .som-provider-label {
+          font-size: 12px;
+          color: #bbb;
+          background: #f5f5f5;
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+
+        .som-provider-value {
+          font-size: 13px;
+          color: #555;
+          font-weight: 500;
+
+          &.unassigned {
+            color: #bbb;
+          }
+        }
+      }
+    }
+
+    .som-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-left: 12px;
+
+      .som-status {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 10px;
+        white-space: nowrap;
+
+        &.order-pending    { background: #fff7e6; color: #ff9900; }
+        &.order-accepted   { background: #e6f7ff; color: #2979ff; }
+        &.order-in-service { background: #e6fff9; color: #0ac160; }
+        &.order-completed  { background: #f6ffed; color: #52c41a; }
+        &.order-cancelled  { background: #f5f5f5; color: #999; }
+        &.order-rejected   { background: #fff1f0; color: #ff5722; }
+        &.order-closed     { background: #f5f5f5; color: #999; }
+        &.order-dispatching{ background: #fff7e6; color: #fa8c16; }
+        &.order-verifying  { background: #f6ffed; color: #52c41a; }
+      }
+
+      .som-arrow {
+        font-size: 12px;
+        color: #ccc;
+      }
+    }
+  }
+}
+
 </style>

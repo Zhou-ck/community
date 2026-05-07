@@ -15,3 +15,11 @@ export function residentConfirm(orderId) {
     method: 'post'
   })
 }
+
+// 获取订单额外信息
+export function getExtraOrderInfo(orderId) {
+  return request({
+    url: '/services/verification/extra/order/' + orderId,
+    method: 'get'
+  })
+}

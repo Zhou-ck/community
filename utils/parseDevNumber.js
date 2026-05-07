@@ -57,7 +57,7 @@ export function parseDeviceNumber(deviceNumBering) {
         resDeviceNumber.deviceType = '21';
     } else if (deviceTypeStr === 'Zb') {//手表(BP100C)
         resDeviceNumber.deviceType = '22';
-    } else if (deviceTypeStr === 'Zc') {//手表(AC型)
+    } else if (deviceTypeStr === 'Ls') {//SOS拉绳紧急按钮
         resDeviceNumber.deviceType = '23';
     }
     
@@ -93,11 +93,11 @@ export function parseDeviceNumberIsImei(deviceNumBering) {
  *   - 14: 门磁
  *   - 17: 红外
  *   - 18: 温湿度
+ *   - 23: SOS拉绳紧急按钮
  * 
  * 手表设备-无参数设置（使用iwown接口）:
  *   - 21: 手表(H102C)
  *   - 22: 手表(BP100C)
- *   - 23: 手表(AC型)
  */
 const DEVICE_TYPES = {
     // KAT设备（有参数设置）
@@ -105,9 +105,9 @@ const DEVICE_TYPES = {
     // AEP设备-有参数设置
     AEP_WITH_PARAMS: ['15', '16', '19'],
     // AEP设备-无参数设置
-    AEP_NO_PARAMS: ['13', '14', '17', '18'],
+    AEP_NO_PARAMS: ['13', '14', '17', '18', '23'],
     // 手表设备-无参数设置（使用iwown接口）
-    WATCH_NO_PARAMS: ['21', '22', '23']
+    WATCH_NO_PARAMS: ['21', '22']
 };
 
 /** 判断设备是否需要配网模块
@@ -141,7 +141,7 @@ export const deviceTypeMaxBindCountMap = {
     '20': 0,  // 其它
     '21': 0,  // 手表(H102C)
     '22': 0,  // 手表(BP100C)
-    '23': 0   // 手表(AC型)
+    '23': 0   // SOS拉绳紧急按钮
 };
 
 /**
@@ -161,8 +161,7 @@ export const deviceTypesDisableBindFamily = [
     '19',  // 一氧化碳
     '20',  // 其它
     '21',  // 手表(H102C)
-    '22',  // 手表(BP100C)
-    '23'   // 手表(AC型)
+    '22'   // 手表(BP100C)
 ];
 
 /**

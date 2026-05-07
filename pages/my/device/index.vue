@@ -351,7 +351,7 @@ export default {
         { dictValue: '19', dictLabel: '一氧化碳' },
         { dictValue: '21', dictLabel: '手表(H102C)' },
         { dictValue: '22', dictLabel: '手表(AB型)' },
-        { dictValue: '23', dictLabel: '手表(AC型)' }
+        { dictValue: '23', dictLabel: 'SOS拉绳紧急按钮' }
       ],
       // 字典数据
       dictData: {
@@ -500,7 +500,7 @@ export default {
           '19': '../static/yiyanghuatan.png', // 一氧化碳 Td
           '21': '../static/watch.png',   // 手表(AA型) Za - 待添加图标
           '22': '../static/watch.png',   // 手表(AB型) Zb - 待添加图标
-          '23': '../static/watch.png'    // 手表(AC型) Zc - 待添加图标
+          '23': '../static/sos.png'    // 拉绳 - Ls
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -732,7 +732,7 @@ export default {
         const deviceType = this.addForm.deviceType
         
         // 判断用户选择的设备类型
-        const isWatchType = ['21', '22', '23'].includes(deviceType)
+        const isWatchType = ['21', '22'].includes(deviceType)
         const isAepType = ['13', '14', '15', '16', '17', '18', '19'].includes(deviceType)
         
         if (isImei) {

@@ -74,7 +74,7 @@
         <view class="empty-icon-box">
           <uni-icons type="calendar-filled" size="50" color="#d9d9d9"></uni-icons>
         </view>
-        <template v-if="!$store.getters.token">
+        <template v-if="!isLoggedIn">
           <text class="empty-text">请先登录后使用服务功能</text>
           <view class="empty-action-btn" @click="goLogin">去登录</view>
         </template>
@@ -113,6 +113,11 @@ export default {
   
   computed: {
     ...mapGetters(['joinedCommunity']),
+    
+    // 双重判断：store token 或 storage token
+    isLoggedIn() {
+      return !!this.$store.getters.token || !!uni.getStorageSync('App-Token')
+    },
     
     // 过滤后的服务列表
     filteredServiceList() {

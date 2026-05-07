@@ -611,35 +611,6 @@ export default {
     
     // 提交订单
     async submitOrder() {
-      // 零散订单限制检查
-      if (!this.isEditMode) {
-        uni.showModal({
-          title: '无法提交预约',
-          content: '目前暂停零散订单预约服务，请购买服务套餐后使用套餐内的服务次数进行预约。',
-          confirmText: '我知道了',
-          showCancel: false,
-          success: (res) => {
-            if (res.confirm) {
-              // 可以选择跳转到套餐页面
-              uni.showModal({
-                title: '提示',
-                content: '是否前往查看服务套餐？',
-                confirmText: '去看看',
-                cancelText: '稍后再说',
-                success: (modalRes) => {
-                  if (modalRes.confirm) {
-                    uni.navigateTo({
-                      url: '/pages/server/SetMeal/index'
-                    });
-                  }
-                }
-              });
-            }
-          }
-        });
-        return;
-      }
-      
       // 检查数据是否有变更（仅在编辑模式下）
       if (this.isEditMode && this.originalBookingData) {
         const isDataChanged = JSON.stringify(this.bookingData) !== JSON.stringify(this.originalBookingData)
@@ -825,27 +796,10 @@ export default {
       }
     },
     
-    // 显示零散订单限制提示
-    showOrderRestrictionModal() {
-      uni.showModal({
-        title: '服务预约提示',
-        content: '为了更好地为您提供服务，目前暂停零散订单预约，请购买服务套餐后使用。感谢您的理解与支持！',
-        confirmText: '我知道了',
-        showCancel: false,
-        success: (res) => {
-          if (res.confirm) {
-            // 用户点击确认后，可以继续浏览页面但无法提交
-            console.log('用户已知晓零散订单限制');
-          }
-        }
-      });
-    }
+
   },
   
   onLoad(options) {
-    // 显示零散订单限制提示
-    this.showOrderRestrictionModal();
-    
     this.getMinDate();
     
     // 加载家庭成员列表

@@ -66,18 +66,18 @@
 		  sleepDatas: {
 		    type: Array,
 		    required: true,
-		    default: [] // 设置默认值为空对象
-		  }/* ,
+		    default: []
+		  },
 		  startTimeStamp:{
 			  type: Number,
-			  required: true,
-			  default: new Date().getTime() // 设置默认值为空对象
+			  required: false,
+			  default: 0
 		  },
 		  endTimeStamp:{
 			  type: Number,
-			  required: true,
-			  default: new Date().getTime() // 设置默认值为空对象
-		  } */
+			  required: false,
+			  default: 0
+		  }
 		},
 		watch:{
 			sleepDatas(newValue,oldValue){
@@ -139,15 +139,18 @@
 				return `${hours}小时${minutes}分钟`;
 			},
 			startTime(){
-				// console.log(this.sleepData);
+				if(this.startTimeStamp > 0) {
+					return formatDateMonthDayHourMinute(new Date(this.startTimeStamp));
+				}
 				let r = '';
 				if(this.sleepData.length == 0) return `${r}`;
 				r = formatDateMonthDayHourMinute(new Date(this.sleepData[0].startTimestamp));
 				return `${r}`;
 			},
 			endTime(){
-				// console.log(this.sleepData);
-				
+				if(this.endTimeStamp > 0) {
+					return formatDateMonthDayHourMinute(new Date(this.endTimeStamp));
+				}
 				let r = '';
 				if(this.sleepData.length == 0) return `${r}`;
 				r = formatDateMonthDayHourMinute(new Date(this.sleepData[this.sleepData.length-1].endTimestamp));

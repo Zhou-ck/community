@@ -216,11 +216,11 @@
 							<input type="text" v-model="formData.bmi" disabled placeholder="-" placeholder-class="placeholder" />
 						</view>
 						<view class="form-item">
-							<text class="label required">电话</text>
+							<text class="label">电话</text>
 							<input type="number" v-model="formData.phone" maxlength="11" placeholder="请输入联系电话" placeholder-class="placeholder" />
 						</view>
 						<view class="form-item">
-							<text class="label required">身份证</text>
+							<text class="label">身份证</text>
 							<input type="idcard" v-model="formData.idCard" maxlength="18" placeholder="请输入身份证号" placeholder-class="placeholder" />
 						</view>
 						<view class="form-item">
@@ -566,22 +566,16 @@ export default {
 				})
 				return
 			}
-			if (!this.formData.phone) {
-				uni.showToast({
-					title: '请输入联系电话',
-					icon: 'none'
-				})
-				return
-			}
-
-			// 验证手机号格式
-			const phoneReg = /^1[3-9]\d{9}$/
-			if (!phoneReg.test(this.formData.phone)) {
-				uni.showToast({
-					title: '请输入正确的手机号',
-					icon: 'none'
-				})
-				return
+			// 验证手机号格式（如果填写了）
+			if (this.formData.phone) {
+				const phoneReg = /^1[3-9]\d{9}$/
+				if (!phoneReg.test(this.formData.phone)) {
+					uni.showToast({
+						title: '请输入正确的手机号',
+						icon: 'none'
+					})
+					return
+				}
 			}
 
 			// 验证身高

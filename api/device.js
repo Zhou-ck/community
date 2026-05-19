@@ -73,6 +73,23 @@ export function resetDeviceNetwork(data) {
   })
 }
 
+// 发送页面切换指令（跳转到设备端指定页面）
+export function sendPageSwitch({ deviceKey, productKey, tgt }) {
+  return request({
+    url: '/devices/device/invoke/service',
+    method: 'post',
+    data: {
+      ack: 0,
+      deviceKey,
+      function: 'src',
+      id: String(Date.now()),
+      productKey,
+      propertyValue: { tgt },
+      type: null
+    }
+  })
+}
+
 // 查询设备管理列表 参数:imei
 export function getAepDevice(query) {
   return request({

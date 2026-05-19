@@ -600,7 +600,7 @@
 </template>
 
 <script>
-import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei } from '@/api/device'
+import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch } from '@/api/device'
 import { submitMonitorApply, cancelMonitorApplyByDeviceId } from '@/api/monitorApply'
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
@@ -1766,8 +1766,20 @@ export default {
         uni.showLoading({ title: '设置中...' })
         
         let res
-        // 根据设备类型选择不同的设置方式
-        if (this.isAepDevice) {
+        // 页面切换指令（KAT设备service调用）
+        if (prop.identifier === 'pageSwitch') {
+          const tgt = parseInt(prop.tempValue)
+          if (isNaN(tgt) || tgt < 1 || tgt > 5) {
+            uni.hideLoading()
+            uni.showToast({ title: '请选择切换页面', icon: 'none' })
+            return
+          }
+          res = await sendPageSwitch({
+            deviceKey: this.deviceInfo.deviceKey,
+            productKey: this.deviceInfo.productKey,
+            tgt: tgt
+          })
+        } else if (this.isAepDevice) {
           // AEP设备使用专门的接口，需要传递dpId
           res = await deviceCommandLwm2mProfile({
             deviceId: this.aepDeviceId,
@@ -2062,6 +2074,27 @@ export default {
             stepperStep: stepperConfig.step
           }
         })
+        
+        // 注入页面切换参数（仅KAT设备：类型1/2/4）
+        if (this.isKatDevice) {
+          mapped.push({
+            identifier: 'pageSwitch',
+            name: '页面切换',
+            desc: '切换设备端显示页面',
+            uiType: 'enum',
+            unit: '',
+            value: '1',
+            tempValue: '1',
+            enumLabels: ['首页', '日记', '周记', '月记', '个人信息'],
+            enumValues: ['1', '2', '3', '4', '5'],
+            enumDisplay: '首页',
+            tempEnumDisplay: '首页',
+            stepperMin: 0,
+            stepperMax: 0,
+            stepperStep: 1
+          })
+        }
+        
         this.$set(this, 'paramProps', mapped)
       } catch (e) {
         this.$set(this, 'paramProps', [])

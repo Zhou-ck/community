@@ -1906,20 +1906,21 @@ export default {
     async loadParamSettings() {
       try {
         let tm = this.deviceInfo && this.deviceInfo.thingModel
-        if (!tm) {
-          this.$set(this, 'paramProps', [])
-          return
+        if (tm && typeof tm === 'string') {
+          try { tm = JSON.parse(tm) } catch (e) { tm = null }
         }
-        if (typeof tm === 'string') {
-          try { tm = JSON.parse(tm) } catch (e) { /* JSON解析失败 */ }
-        }
-        let props = (tm && Array.isArray(tm.properties)) ? tm.properties
+        const props = (tm && Array.isArray(tm.properties)) ? tm.properties
                    : (tm && tm.model && Array.isArray(tm.model.properties)) ? tm.model.properties
                    : []
         const writables = props.filter(p => p && p.accessMode === 'w')
         
-        // 获取实时数据
-        const realTimeData = await this.loadRealTimeData()
+        // 获取实时数据（失败不影响后续流程）
+        let realTimeData = {}
+        try {
+          realTimeData = await this.loadRealTimeData() || {}
+        } catch (e) {
+          // 实时数据获取失败，使用空对象继续
+        }
         
         const mapped = writables.map(p => {
           const type = (p && p.dataType && p.dataType.type) ? p.dataType.type : 'string'
@@ -2097,7 +2098,27 @@ export default {
         
         this.$set(this, 'paramProps', mapped)
       } catch (e) {
-        this.$set(this, 'paramProps', [])
+        // 异常时至少保留KAT设备的页面切换参数
+        if (this.isKatDevice) {
+          this.$set(this, 'paramProps', [{
+            identifier: 'pageSwitch',
+            name: '页面切换',
+            desc: '切换设备端显示页面',
+            uiType: 'enum',
+            unit: '',
+            value: '1',
+            tempValue: '1',
+            enumLabels: ['首页', '日记', '周记', '月记', '个人信息'],
+            enumValues: ['1', '2', '3', '4', '5'],
+            enumDisplay: '首页',
+            tempEnumDisplay: '首页',
+            stepperMin: 0,
+            stepperMax: 0,
+            stepperStep: 1
+          }])
+        } else {
+          this.$set(this, 'paramProps', [])
+        }
       }
     },
     

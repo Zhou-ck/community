@@ -412,7 +412,7 @@
               <button class="business-save-btn" @click="saveBusinessParams" :loading="businessParamsSaving">保存业务参数</button>
             </view>
 
-            <view v-for="prop in paramProps" :key="prop.identifier" class="param-setting-item">
+            <view v-for="prop in visibleParamProps" :key="prop.identifier" class="param-setting-item">
               <view class="param-info">
                 <view class="param-name-container">
                   <text class="param-name">{{ prop.name }}</text>
@@ -422,7 +422,7 @@
                   <!-- 布尔开关 -->
                   <switch v-if="prop.uiType === 'bool'"
                     :checked="!!prop.tempValue"
-                    @change="onParamSwitchChange(prop, $event)"
+                    @change="prop.identifier === 'pageRotation' ? onPageRotationSwitchChange(prop, $event) : onParamSwitchChange(prop, $event)"
                     color="#3ec6c6"
                     class="param-switch"
                   />
@@ -431,6 +431,8 @@
                     class="param-value-input"
                     type="number"
                     v-model="prop.tempValue"
+                    :min="prop.numberMin"
+                    :max="prop.numberMax"
                     placeholder="请输入数值" />
                   <!-- 枚举选择 -->
                   <picker v-else-if="prop.uiType === 'enum'" mode="selector" :range="prop.enumLabels" @change="onParamPickerChange(prop, $event)">
@@ -453,8 +455,8 @@
                     v-model="prop.tempValue"
                     placeholder="请输入" />
                   
-                  <!-- 设置按钮（开关类型和步进器不显示） -->
-                  <button v-if="prop.uiType !== 'bool' && prop.uiType !== 'stepper'" class="param-set-btn" @click="applyParamSetting(prop)">设置</button>
+                  <!-- 设置按钮（开关类型和步进器不显示，noButton 标记的也不显示） -->
+                  <button v-if="prop.uiType !== 'bool' && prop.uiType !== 'stepper' && !prop.noButton" class="param-set-btn" @click="applyParamSetting(prop)">设置</button>
                 </view>
               </view>
             </view>
@@ -774,6 +776,12 @@ export default {
     isKatDevice() {
       if (!this.deviceInfo) return false
       return isKatDevice(String(this.deviceInfo.deviceType))
+    },
+
+    // 可见参数列表（过滤 hidden=true 的项）
+    visibleParamProps() {
+      if (!this.paramProps) return []
+      return this.paramProps.filter(p => !p.hidden)
     },
     
     // 是否为有参数设置的AEP设备
@@ -1740,8 +1748,36 @@ export default {
       prop.tempEnumDisplay = prop.enumLabels[idx]
     },
 
+    // 页面轮换开关变更（处理持久化 + 显隐控制）
+    onPageRotationSwitchChange(prop, e) {
+      const enabled = !!e.detail.value
+      prop.tempValue = enabled
+
+      // 更新5个停留时间输入框的显示状态
+      if (this.paramProps) {
+        this.paramProps.forEach(p => {
+          if (p.identifier && p.identifier.startsWith('pageRotationTime_')) {
+            p.hidden = !enabled
+          }
+        })
+      }
+
+      // 持久化开关状态（按设备隔离）
+      const rotationStorageKey = 'pageRotationState_' + (this.deviceInfo && this.deviceInfo.deviceKey || '')
+      try {
+        uni.setStorageSync(rotationStorageKey, { enabled: enabled })
+      } catch (err) {
+        console.error('页面轮换状态保存失败', err)
+      }
+    },
+
     // 应用参数设置（点击设置按钮时调用）
     async applyParamSetting(prop) {
+      // 页面轮换停留时间：暂不操作（等后端）
+      if (prop.identifier && prop.identifier.startsWith('pageRotationTime_')) {
+        return
+      }
+
       try {
         let value = prop.tempValue
         
@@ -2095,12 +2131,89 @@ export default {
             stepperStep: 1
           })
         }
-        
+
+        // 注入页面轮换开关（仅KAT设备）
+        if (this.isKatDevice) {
+          const rotationStorageKey = 'pageRotationState_' + (this.deviceInfo && this.deviceInfo.deviceKey || '')
+          let rotationEnabled = false
+          try {
+            const stored = uni.getStorageSync(rotationStorageKey)
+            if (stored && typeof stored === 'object') {
+              rotationEnabled = !!stored.enabled
+            }
+          } catch (e) {}
+
+          mapped.push({
+            identifier: 'pageRotation',
+            name: '页面轮换',
+            desc: '开启后设备将自动轮换显示页面',
+            uiType: 'bool',
+            unit: '',
+            value: rotationEnabled,
+            tempValue: rotationEnabled,
+            hidden: false,
+            enumLabels: [],
+            enumValues: [],
+            enumDisplay: '',
+            tempEnumDisplay: '',
+            stepperMin: 0,
+            stepperMax: 0,
+            stepperStep: 1
+          })
+
+          // 注入5个页面停留时间输入框（默认隐藏）
+          const pageNames = [
+            { id: '1', name: '首页' },
+            { id: '2', name: '日记' },
+            { id: '3', name: '周记' },
+            { id: '4', name: '月记' },
+            { id: '5', name: '个人信息' }
+          ]
+          pageNames.forEach(page => {
+            mapped.push({
+              identifier: 'pageRotationTime_' + page.id,
+              name: page.name + '停留时间',
+              desc: '',
+              uiType: 'number',
+              unit: '秒',
+              value: '',
+              tempValue: '',
+              hidden: !rotationEnabled,
+              enumLabels: [],
+              enumValues: [],
+              enumDisplay: '',
+              tempEnumDisplay: '',
+              noButton: true,
+              numberMin: 1,
+              numberMax: 120,
+              stepperMin: 1,
+              stepperMax: 120,
+              stepperStep: 1
+            })
+          })
+        }
+
         this.$set(this, 'paramProps', mapped)
       } catch (e) {
-        // 异常时至少保留KAT设备的页面切换参数
+        // 异常时至少保留KAT设备的页面切换+页面轮换参数
         if (this.isKatDevice) {
-          this.$set(this, 'paramProps', [{
+          const rotationStorageKey = 'pageRotationState_' + (this.deviceInfo && this.deviceInfo.deviceKey || '')
+          let rotationEnabled = false
+          try {
+            const stored = uni.getStorageSync(rotationStorageKey)
+            if (stored && typeof stored === 'object') {
+              rotationEnabled = !!stored.enabled
+            }
+          } catch (e) {}
+
+          const pageNames = [
+            { id: '1', name: '首页' },
+            { id: '2', name: '日记' },
+            { id: '3', name: '周记' },
+            { id: '4', name: '月记' },
+            { id: '5', name: '个人信息' }
+          ]
+          const pageSwitchParam = {
             identifier: 'pageSwitch',
             name: '页面切换',
             desc: '切换设备端显示页面',
@@ -2115,7 +2228,45 @@ export default {
             stepperMin: 0,
             stepperMax: 0,
             stepperStep: 1
-          }])
+          }
+          const rotationSwitchParam = {
+            identifier: 'pageRotation',
+            name: '页面轮换',
+            desc: '开启后设备将自动轮换显示页面',
+            uiType: 'bool',
+            unit: '',
+            value: rotationEnabled,
+            tempValue: rotationEnabled,
+            hidden: false,
+            enumLabels: [],
+            enumValues: [],
+            enumDisplay: '',
+            tempEnumDisplay: '',
+            stepperMin: 0,
+            stepperMax: 0,
+            stepperStep: 1
+          }
+          const durationParams = pageNames.map(page => ({
+            identifier: 'pageRotationTime_' + page.id,
+            name: page.name + '停留时间',
+            desc: '',
+            uiType: 'number',
+            unit: '秒',
+            value: '',
+            tempValue: '',
+            hidden: !rotationEnabled,
+            enumLabels: [],
+            enumValues: [],
+            enumDisplay: '',
+            tempEnumDisplay: '',
+            noButton: true,
+            numberMin: 1,
+            numberMax: 120,
+            stepperMin: 1,
+            stepperMax: 120,
+            stepperStep: 1
+          }))
+          this.$set(this, 'paramProps', [pageSwitchParam, rotationSwitchParam, ...durationParams])
         } else {
           this.$set(this, 'paramProps', [])
         }

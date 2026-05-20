@@ -2305,7 +2305,6 @@ export default {
             enumValues: [],
             enumDisplay: '',
             tempEnumDisplay: '',
-            noButton: true,
             numberMin: 1,
             numberMax: 120,
             stepperMin: 1,

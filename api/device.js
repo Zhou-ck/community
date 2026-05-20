@@ -90,6 +90,23 @@ export function sendPageSwitch({ deviceKey, productKey, tgt }) {
   })
 }
 
+// 发送页面轮换开关指令（开启/关闭设备端页面轮换）
+export function sendPageRotationSwitch({ deviceKey, productKey, enabled }) {
+  return request({
+    url: '/devices/device/invoke/service',
+    method: 'post',
+    data: {
+      ack: 0,
+      deviceKey,
+      function: 'swi',
+      id: String(Date.now()),
+      productKey,
+      propertyValue: { rot: enabled ? 1 : 0 },
+      type: null
+    }
+  })
+}
+
 // 查询设备管理列表 参数:imei
 export function getAepDevice(query) {
   return request({

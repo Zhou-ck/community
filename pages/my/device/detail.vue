@@ -602,7 +602,7 @@
 </template>
 
 <script>
-import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch } from '@/api/device'
+import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch, sendPageRotationSwitch } from '@/api/device'
 import { submitMonitorApply, cancelMonitorApplyByDeviceId } from '@/api/monitorApply'
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
@@ -1748,26 +1748,53 @@ export default {
       prop.tempEnumDisplay = prop.enumLabels[idx]
     },
 
-    // 页面轮换开关变更（处理持久化 + 显隐控制）
-    onPageRotationSwitchChange(prop, e) {
+    // 页面轮换开关变更（发送后端 + 持久化 + 显隐控制）
+    async onPageRotationSwitchChange(prop, e) {
       const enabled = !!e.detail.value
-      prop.tempValue = enabled
+      const prevValue = prop.tempValue
 
-      // 更新5个停留时间输入框的显示状态
-      if (this.paramProps) {
-        this.paramProps.forEach(p => {
-          if (p.identifier && p.identifier.startsWith('pageRotationTime_')) {
-            p.hidden = !enabled
-          }
-        })
-      }
-
-      // 持久化开关状态（按设备隔离）
-      const rotationStorageKey = 'pageRotationState_' + (this.deviceInfo && this.deviceInfo.deviceKey || '')
       try {
-        uni.setStorageSync(rotationStorageKey, { enabled: enabled })
+        uni.showLoading({ title: '设置中...' })
+
+        const res = await sendPageRotationSwitch({
+          deviceKey: this.deviceInfo.deviceKey,
+          productKey: this.deviceInfo.productKey,
+          enabled
+        })
+
+        if (res.code === 200) {
+          prop.value = enabled
+          prop.tempValue = enabled
+
+          // 更新5个停留时间输入框的显示状态
+          if (this.paramProps) {
+            this.paramProps.forEach(p => {
+              if (p.identifier && p.identifier.startsWith('pageRotationTime_')) {
+                p.hidden = !enabled
+              }
+            })
+          }
+
+          // 持久化开关状态（按设备隔离）
+          const rotationStorageKey = 'pageRotationState_' + (this.deviceInfo && this.deviceInfo.deviceKey || '')
+          try {
+            uni.setStorageSync(rotationStorageKey, { enabled })
+          } catch (err) {
+            console.error('页面轮换状态保存失败', err)
+          }
+
+          uni.showToast({ title: enabled ? '页面轮换已开启' : '页面轮换已关闭', icon: 'success' })
+        } else {
+          // 恢复原值
+          prop.tempValue = prevValue
+          uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
+        }
       } catch (err) {
-        console.error('页面轮换状态保存失败', err)
+        prop.tempValue = prevValue
+        console.error('页面轮换设置失败:', err)
+        uni.showToast({ title: '网络错误', icon: 'none' })
+      } finally {
+        uni.hideLoading()
       }
     },
 

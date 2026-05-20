@@ -290,6 +290,18 @@
         </view>
       </view>
       
+      
+      <!-- 重置设备 -->
+      <view class="function-card" @click="resetDevice">
+        <view class="card-content">
+          <text class="card-title warning-text">重置设备</text>
+          <text class="card-subtitle">恢复设备出厂设置</text>
+        </view>
+        <view class="card-icon orange-bg">
+          <uni-icons type="refresh" size="20" color="#e6a23c"></uni-icons>
+        </view>
+      </view>
+
       <!-- 删除设备 -->
       <view class="function-card" @click="deleteDevice">
         <view class="card-content">
@@ -602,7 +614,7 @@
 </template>
 
 <script>
-import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch, sendPageRotationSwitch, sendPageRotationTime } from '@/api/device'
+import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch, sendPageRotationSwitch, sendPageRotationTime, sendDeviceReset } from '@/api/device'
 import { submitMonitorApply, cancelMonitorApplyByDeviceId } from '@/api/monitorApply'
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
@@ -2623,6 +2635,40 @@ export default {
           title: '网络错误',
           icon: 'none'
         })
+      } finally {
+        uni.hideLoading()
+      }
+    },
+
+    // 重置设备（确认对话框）
+    resetDevice() {
+      uni.showModal({
+        title: '确认重置',
+        content: `确定要重置设备"${this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey}"吗？设备将恢复出厂设置。`,
+        success: async (res) => {
+          if (res.confirm) {
+            await this.performDeviceReset()
+          }
+        }
+      })
+    },
+
+    // 执行重置设备
+    async performDeviceReset() {
+      try {
+        uni.showLoading({ title: '重置中...' })
+        const response = await sendDeviceReset({
+          deviceKey: this.deviceInfo.deviceKey,
+          productKey: this.deviceInfo.productKey
+        })
+        if (response.code === 200) {
+          uni.showToast({ title: '重置成功', icon: 'success' })
+        } else {
+          uni.showToast({ title: response.msg || '重置失败', icon: 'none' })
+        }
+      } catch (error) {
+        console.error('重置设备失败:', error)
+        uni.showToast({ title: '网络错误', icon: 'none' })
       } finally {
         uni.hideLoading()
       }

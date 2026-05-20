@@ -134,6 +134,23 @@ export function sendPageRotationTime({ deviceKey, productKey, pageId, duration }
   })
 }
 
+// 发送设备重置指令
+export function sendDeviceReset({ deviceKey, productKey }) {
+  return request({
+    url: '/devices/device/invoke/service',
+    method: 'post',
+    data: {
+      ack: 0,
+      deviceKey,
+      function: 'res',
+      id: String(Date.now()),
+      productKey,
+      propertyValue: { reset: 1 },
+      type: null
+    }
+  })
+}
+
 // 查询设备管理列表 参数:imei
 export function getAepDevice(query) {
   return request({

@@ -107,6 +107,33 @@ export function sendPageRotationSwitch({ deviceKey, productKey, enabled }) {
   })
 }
 
+// 发送页面停留时间指令（批量：5个页面各自独立接口）
+// pageId: 1=首页(ind→it), 2=日记(day→dt), 3=周记(week→wt), 4=月记(moon→mt), 5=个人信息(idc→idt)
+const PAGE_ROTATION_TIME_CONFIG = {
+  1: { func: 'ind', key: 'it' },
+  2: { func: 'day', key: 'dt' },
+  3: { func: 'week', key: 'wt' },
+  4: { func: 'moon', key: 'mt' },
+  5: { func: 'idc', key: 'idt' }
+}
+
+export function sendPageRotationTime({ deviceKey, productKey, pageId, duration }) {
+  const cfg = PAGE_ROTATION_TIME_CONFIG[pageId]
+  return request({
+    url: '/devices/device/invoke/service',
+    method: 'post',
+    data: {
+      ack: 0,
+      deviceKey,
+      function: cfg.func,
+      id: String(Date.now()),
+      productKey,
+      propertyValue: { [cfg.key]: duration },
+      type: null
+    }
+  })
+}
+
 // 查询设备管理列表 参数:imei
 export function getAepDevice(query) {
   return request({

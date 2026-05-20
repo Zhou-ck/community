@@ -602,7 +602,7 @@
 </template>
 
 <script>
-import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch, sendPageRotationSwitch } from '@/api/device'
+import { getDevice, updateDevice, delDevice, sendOneCommand, getRealTimeData, getAepDeviceInfo, deviceCommandLwm2mProfile, getIwownDeviceByImei, sendPageSwitch, sendPageRotationSwitch, sendPageRotationTime } from '@/api/device'
 import { submitMonitorApply, cancelMonitorApplyByDeviceId } from '@/api/monitorApply'
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
@@ -1800,13 +1800,33 @@ export default {
 
     // 应用参数设置（点击设置按钮时调用）
     async applyParamSetting(prop) {
-      // 页面轮换停留时间：暂不操作（等后端）
-      if (prop.identifier && prop.identifier.startsWith('pageRotationTime_')) {
-        return
-      }
-
       try {
         let value = prop.tempValue
+
+        // 页面轮换停留时间设置（5个独立接口）
+        if (prop.identifier && prop.identifier.startsWith('pageRotationTime_')) {
+          const pageId = parseInt(prop.identifier.replace('pageRotationTime_', ''))
+          const duration = parseInt(value)
+          if (isNaN(duration) || duration < 1 || duration > 120) {
+            uni.showToast({ title: '请输入1-120秒', icon: 'none' })
+            return
+          }
+          uni.showLoading({ title: '设置中...' })
+          const res = await sendPageRotationTime({
+            deviceKey: this.deviceInfo.deviceKey,
+            productKey: this.deviceInfo.productKey,
+            pageId,
+            duration
+          })
+          uni.hideLoading()
+          if (res.code === 200) {
+            prop.value = value
+            uni.showToast({ title: '设置成功', icon: 'success' })
+          } else {
+            uni.showToast({ title: res.msg || '设置失败', icon: 'none' })
+          }
+          return
+        }
         
         // 数值类型验证
         if (prop.uiType === 'number') {
@@ -2210,7 +2230,6 @@ export default {
               enumValues: [],
               enumDisplay: '',
               tempEnumDisplay: '',
-              noButton: true,
               numberMin: 1,
               numberMax: 120,
               stepperMin: 1,

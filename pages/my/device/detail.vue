@@ -1521,7 +1521,7 @@ export default {
       if (!this.deviceInfo) return
       
       uni.navigateTo({
-        url: `/pages/my/watch/realtime?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+        url: `/subpackages/watch/realtime?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
       })
     },
     
@@ -1530,7 +1530,7 @@ export default {
       if (!this.deviceInfo) return
       
       uni.navigateTo({
-        url: `/pages/my/watch/health?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+        url: `/subpackages/watch/health?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
       })
     },
     
@@ -1539,7 +1539,7 @@ export default {
       if (!this.deviceInfo) return
       
       uni.navigateTo({
-        url: `/pages/my/watch/callhistory?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+        url: `/subpackages/watch/callhistory?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
       })
     },
     
@@ -1548,7 +1548,7 @@ export default {
       if (!this.deviceInfo) return
       
       uni.navigateTo({
-        url: `/pages/my/watch/config?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+        url: `/subpackages/watch/config?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
       })
     },
     
@@ -1557,7 +1557,7 @@ export default {
       if (!this.deviceInfo) return
       
       uni.navigateTo({
-        url: `/pages/my/watch/Sleep-index?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
+        url: `/subpackages/watch/Sleep-index?imei=${this.deviceInfo.imei}&deviceId=${this.deviceInfo.deviceId}&deviceAlias=${encodeURIComponent(this.deviceInfo.deviceAlias || this.deviceInfo.deviceKey)}`
       })
     },
     

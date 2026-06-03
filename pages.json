@@ -272,9 +272,15 @@
 					"navigationBarTitleText" : "内容设置",
 					"enablePullDownRefresh": true
 				}
-			},
+			}
+		]
+
+	}, 
+	{
+		"root": "subpackages/watch",
+		"pages": [
 			{
-				"path": "watch/realtime",
+				"path": "realtime",
 				"style": 
 				{
 					"navigationBarTitleText" : "实时数据",
@@ -283,7 +289,7 @@
 				}
 			},
 			{
-				"path": "watch/health",
+				"path": "health",
 				"style": 
 				{
 					"navigationBarTitleText" : "健康数据总览",
@@ -292,41 +298,34 @@
 				}
 			},
 			{
-				"path": "watch/callhistory",
+				"path": "callhistory",
 				"style": 
 				{
 					"navigationBarTitleText" : "通话记录"
 				}
 			},
 			{
-				"path": "watch/config",
+				"path": "config",
 				"style": 
 				{
 					"navigationBarTitleText" : "配置手表"
 				}
 			},
 			{
-				"path": "watch/Sleep-index",
+				"path": "Sleep-index",
 				"style": 
 				{
 					"navigationBarTitleText" : "睡眠报告"
 				}
 			},
 			{
-				"path": "watch/SleepStageChart",
+				"path": "SleepStageChart",
 				"style": 
 				{
 					"navigationBarTitleText" : "报告详情"
 				}
 			}
-
-			
-			
-			
-			
-			
 		]
-
 	}, 
 	{
 		"root": "pages/server",

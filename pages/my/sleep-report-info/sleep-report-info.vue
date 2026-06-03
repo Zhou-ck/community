@@ -111,11 +111,11 @@
 </template>
 
 <script>
-import shuimianyuanhuantu from '@/components/charts/shuimianyuanhuantu.vue'
-import huxilvtu from '@/components/charts/huxilvtu.vue'
-import xinlvtu from '@/components/charts/xinlvtu.vue'
-import huodongztu from '@/components/charts/huodongztu.vue'
-import sleepCanvas from '@/components/charts/sleep-canvas.vue'
+import shuimianyuanhuantu from '@/pages/my/components/charts/shuimianyuanhuantu.vue'
+import huxilvtu from '@/pages/my/components/charts/huxilvtu.vue'
+import xinlvtu from '@/pages/my/components/charts/xinlvtu.vue'
+import huodongztu from '@/pages/my/components/charts/huodongztu.vue'
+import sleepCanvas from '@/pages/my/components/charts/sleep-canvas.vue'
 
 export default {
 	name: 'SleepReportInfo',

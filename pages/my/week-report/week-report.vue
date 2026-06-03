@@ -136,12 +136,12 @@
 <script>
     import { formatDatesDay,formatDate } from '@/utils/getdate.js'
     import { fenGeWeekReports, sortTenData, huoQuShuiMianShiDuan, huoQuShuiMianShiDuanFormat } from '@/utils/handleSleepReport.js'
-    import zhoushuimiantu from '@/components/charts/zhoushuimiantu.vue'
-    import zaichuangshichangtu from '@/components/charts/zaichuangshichangtu.vue'
-    import fanzhuan from '@/components/charts/fanzhuan.vue'
-    import ahizhexiantu from '@/components/charts/ahizhexiantu.vue'
-    import huxizhexiantu from '@/components/charts/huxizhexiantu.vue'
-    import xinlvzhexiantu from '@/components/charts/xinlvzhexiantu.vue'
+    import zhoushuimiantu from '@/pages/my/components/charts/zhoushuimiantu.vue'
+    import zaichuangshichangtu from '@/pages/my/components/charts/zaichuangshichangtu.vue'
+    import fanzhuan from '@/pages/my/components/charts/fanzhuan.vue'
+    import ahizhexiantu from '@/pages/my/components/charts/ahizhexiantu.vue'
+    import huxizhexiantu from '@/pages/my/components/charts/huxizhexiantu.vue'
+    import xinlvzhexiantu from '@/pages/my/components/charts/xinlvzhexiantu.vue'
     import { listReportsleep } from '@/api/reportsleep.js'
     import { listTensleep } from '@/api/tensleep.js'
     export default {

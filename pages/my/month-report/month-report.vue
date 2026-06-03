@@ -144,11 +144,11 @@
 	import {listTensleep} from '@/api/tensleep.js'
     import { sleepReportHandler, sleepReportHandlerAvg, fenGeMonthReports, sortTenData, huoQuShuiMianShiDuan, huoQuShuiMianShiDuanFormat } from '@/utils/handleSleepReport.js'
 
-	import yuefanzhuan from '@/components/charts/yuefanzhuan.vue'
-	import yueahizhexiantu from '@/components/charts/yueahizhexiantu.vue'
-	import yuezaichuangshichangtu from '@/components/charts/yuezaichuangshichangtu.vue'
-	import yuexinlvzhexiantu from '@/components/charts/yuexinlvzhexiantu.vue'
-	import yuehuxizhexiantu from '@/components/charts/yuehuxizhexiantu.vue'
+	import yuefanzhuan from '@/pages/my/components/charts/yuefanzhuan.vue'
+	import yueahizhexiantu from '@/pages/my/components/charts/yueahizhexiantu.vue'
+	import yuezaichuangshichangtu from '@/pages/my/components/charts/yuezaichuangshichangtu.vue'
+	import yuexinlvzhexiantu from '@/pages/my/components/charts/yuexinlvzhexiantu.vue'
+	import yuehuxizhexiantu from '@/pages/my/components/charts/yuehuxizhexiantu.vue'
 
 
 	export default {

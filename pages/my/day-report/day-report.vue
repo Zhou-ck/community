@@ -525,7 +525,7 @@
 	import {listTensleep} from '@/api/tensleep.js'
 	import {listDevice} from '@/api/device.js'
 	
-	import yuanhuantuVue from '@/components/charts/yuanhuantu.vue'
+	import yuanhuantuVue from '@/pages/my/components/charts/yuanhuantu.vue'
 	import leidatuVue from './leidatu.vue'
 	
 	import {formatDatesDay, formatDatesMinute, formatDate} from '@/utils/getdate.js'

@@ -399,9 +399,16 @@
     <!-- 底部操作栏 -->
     <view class="bottom-actions-wrapper" v-if="orderInfo">
       <view class="bottom-actions">
-        <!-- 服务中状态 - 只显示查看核销码 -->
+        <!-- 服务中状态 -->
         <template v-if="orderInfo.status === 'serving'">
-          <button class="action-btn primary full" @click="showVerificationCode(orderInfo)">查看核销码</button>
+          <button class="action-btn primary" @click="openRescheduleModal">申请改期</button>
+          <button class="action-btn primary" @click="showVerificationCode(orderInfo)">查看核销码</button>
+        </template>
+
+        <!-- 待核销状态 -->
+        <template v-if="orderInfo.status === 'verifying'">
+          <button class="action-btn primary" @click="openRescheduleModal">申请改期</button>
+          <button class="action-btn primary" @click="showVerificationCode(orderInfo)">查看核销码</button>
         </template>
 
         <!-- 待接单状态 -->
@@ -470,17 +477,26 @@
       @toggle-tag="handleToggleTag"
       @submit="submitReview"
     />
+
+    <!-- 改期弹窗组件 -->
+    <RescheduleModal
+      :visible="showRescheduleModal"
+      :orderInfo="orderInfo"
+      @close="showRescheduleModal = false"
+      @success="onRescheduleSuccess"
+    />
   </view>
 </template>
 
 <script>
-import { getServiceorder, cancelServiceorder, delServiceorder, getModificationHistory, completeServiceorder, evaluationServiceorder, getEvaluationListByOrderId } from '@/api/service'
+import { getServiceorder, cancelServiceorder, delServiceorder, getModificationHistory, completeServiceorder, evaluationServiceorder, getEvaluationListByOrderId, checkPendingModification } from '@/api/service'
 import { getFamilymember } from '@/api/familymember'
 import { ORDER_STATUS_MAP, ORDER_STATUS_CODE_MAP, ORDER_BG_CLASS_MAP, getServiceIcon } from '@/utils/service-helper'
 import { getExtraOrderInfo } from '@/api/verification'
 import verificationMixin from '@/mixins/verification-mixin.js'
 import VerificationModal from '@/components/verification-modal/verification-modal.vue'
 import ReviewModal from '@/components/review-modal/review-modal.vue'
+import RescheduleModal from '@/components/reschedule-modal/reschedule-modal.vue'
 
 import config from '@/config.js'
 
@@ -488,7 +504,8 @@ export default {
   mixins: [verificationMixin],
   components: {
     VerificationModal,
-    ReviewModal
+    ReviewModal,
+    RescheduleModal
   },
   data() {
     return {
@@ -500,6 +517,9 @@ export default {
       modificationHistory: [],
       statusMap: ORDER_STATUS_MAP,
       
+      // 改期相关
+      showRescheduleModal: false,
+
       // 评价相关
       showReviewModal: false,
       reviewMode: 'edit',
@@ -854,6 +874,40 @@ export default {
       uni.navigateTo({
         url: `/pages/server/booking/index?orderId=${this.orderId}&mode=edit`
       })
+    },
+
+    // 打开改期弹窗
+    async openRescheduleModal() {
+      const orderId = this.orderInfo ? this.orderInfo.id : null
+      if (!orderId) {
+        uni.showToast({ title: '订单信息异常', icon: 'none' })
+        return
+      }
+
+      try {
+        const res = await checkPendingModification(orderId)
+        if (res.code === 200 && res.data === true) {
+          uni.showModal({
+            title: '提示',
+            content: '该订单已有待审核的改期申请，请等待商家处理',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+          return
+        }
+        this.showRescheduleModal = true
+      } catch (e) {
+        console.error('检查改期申请失败:', e)
+        // 检查失败不阻塞，直接打开弹窗
+        this.showRescheduleModal = true
+      }
+    },
+
+    // 改期提交成功
+    onRescheduleSuccess() {
+      this.showRescheduleModal = false
+      // 刷新订单详情和改期记录
+      this.loadOrderDetail()
     },
 
     // 取消订单

@@ -105,3 +105,20 @@ export function getEvaluationListByOrderId(orderId) {
     method: 'get'
   })
 }
+
+// 检查是否有待审核的改期申请
+export function checkPendingModification(orderId) {
+  return request({
+    url: '/services/appointment/modification/hasPending/' + orderId,
+    method: 'get'
+  })
+}
+
+// 居民端提交改期申请
+export function submitResidentReschedule(data) {
+  return request({
+    url: '/services/appointment/modification/resident/submit',
+    method: 'post',
+    data: data
+  })
+}

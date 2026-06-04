@@ -261,26 +261,36 @@
           </view>
         </view>
         <view class="modification-list">
-          <view class="modification-item" v-for="(item, index) in modificationHistory" :key="item.requestId">
+          <view class="modification-item" v-for="(item, index) in modificationHistory" :key="item.requestId || item.request_id">
             <view class="modification-header">
-              <text class="modification-time">{{ item.requestTime }}</text>
-              <text class="modification-badge">第{{ index + 1 }}次改期</text>
+              <text class="modification-time">{{ item.requestTime || item.request_time }}</text>
+              <view class="modification-tags">
+                <text class="modification-badge" :class="{ rejected: isRejected(item) }">
+                  第{{ modificationHistory.length - index }}次改期
+                  <text v-if="isRejected(item)"> · 已拒绝</text>
+                </text>
+                <text class="modification-source" v-if="item.requestSource || item.request_source">{{ getSourceText(item.requestSource || item.request_source) }}</text>
+              </view>
             </view>
             <view class="modification-content">
               <view class="modification-row">
                 <text class="label">原预约时间：</text>
-                <text class="value old">{{ item.oldAppointmentDate }} {{ item.oldAppointmentPeriod }}</text>
+                <text class="value old">{{ item.oldAppointmentDate || item.old_appointment_date }} {{ item.oldAppointmentPeriod || item.old_appointment_period }}</text>
               </view>
-              <view class="modification-arrow">
+              <view class="modification-arrow" :class="{ rejected: isRejected(item) }">
                 <uni-icons type="arrowdown" size="16" color="#999"></uni-icons>
               </view>
-              <view class="modification-row">
+              <view class="modification-row" v-if="(item.newAppointmentDate || item.new_appointment_date) || (item.newAppointmentPeriod || item.new_appointment_period)">
                 <text class="label">新预约时间：</text>
-                <text class="value new">{{ item.newAppointmentDate }} {{ item.newAppointmentPeriod }}</text>
+                <text class="value new" :class="{ rejected: isRejected(item) }">{{ item.newAppointmentDate || item.new_appointment_date }} {{ item.newAppointmentPeriod || item.new_appointment_period }}</text>
               </view>
-              <view class="modification-reason" v-if="item.requestReason">
+              <view class="modification-reason" v-if="item.requestReason || item.request_reason">
                 <text class="reason-label">改期原因：</text>
-                <text class="reason-text">{{ item.requestReason }}</text>
+                <text class="reason-text">{{ item.requestReason || item.request_reason }}</text>
+              </view>
+              <view class="modification-reason rejection" v-if="isRejected(item) && getRejectReason(item)">
+                <text class="reason-label">拒绝原因：</text>
+                <text class="reason-text">{{ getRejectReason(item) }}</text>
               </view>
             </view>
           </view>
@@ -646,6 +656,22 @@ export default {
 
     getStatusClass(status) {
       return ORDER_BG_CLASS_MAP[status] || 'bg-default'
+    },
+
+    // 获取改期申请来源文本
+    getSourceText(source) {
+      const map = { 1: '社区', 2: '商家', 3: '居民', '1': '社区', '2': '商家', '3': '居民' }
+      return map[source] || ''
+    },
+
+    // 判断改期是否已被拒绝
+    isRejected(item) {
+      return item.requestStatus === 2 || item.requestStatus === '2'
+    },
+
+    // 获取拒绝原因
+    getRejectReason(item) {
+      return item.reviewRemark || ''
     },
 
     // 格式化性别显示
@@ -1958,6 +1984,25 @@ export default {
   background: rgba(62, 198, 198, 0.1);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
+
+  &.rejected {
+    color: #fa8c16;
+    background: rgba(250, 140, 22, 0.1);
+  }
+}
+
+.modification-tags {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.modification-source {
+  font-size: 22rpx;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
 }
 
 .modification-content {
@@ -1987,6 +2032,11 @@ export default {
     
     &.new {
       color: #3ec6c6;
+
+      &.rejected {
+        color: #bbb;
+        text-decoration: line-through;
+      }
     }
   }
 }
@@ -1995,6 +2045,10 @@ export default {
   display: flex;
   justify-content: center;
   padding: 4rpx 0;
+
+  &.rejected {
+    opacity: 0.4;
+  }
 }
 
 .modification-reason {
@@ -2014,6 +2068,16 @@ export default {
     font-size: 26rpx;
     color: #666;
     line-height: 1.5;
+  }
+
+  &.rejection {
+    .reason-label {
+      color: #fa8c16;
+    }
+
+    .reason-text {
+      color: #fa8c16;
+    }
   }
 }
 

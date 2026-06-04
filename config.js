@@ -1,5 +1,6 @@
 // 应用全局配置
 module.exports = {
+	//baseUrl: 'http://192.168.1.197:8125',
   baseUrl: 'https://community.katlot.cn',
   // baseUrl: 'http://192.168.96.105:8125',
   // baseUrl: 'http://192.168.1.250:8125',

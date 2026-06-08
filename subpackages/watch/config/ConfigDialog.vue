@@ -138,7 +138,7 @@ export default {
   align-items: center;
   padding: 40rpx 32rpx 32rpx;
   position: relative;
-  background: linear-gradient(135deg, #4dd9d9 0%, #3ec6c6 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #E07A4F 100%);
 }
 
 .popup-header .popup-title {
@@ -202,8 +202,8 @@ export default {
 }
 
 .popup-footer .btn-submit {
-  background: linear-gradient(135deg, #4dd9d9 0%, #3ec6c6 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #E07A4F 100%);
   color: #fff;
-  box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.35);
+  box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.35);
 }
 </style>

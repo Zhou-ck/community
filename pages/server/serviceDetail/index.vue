@@ -23,7 +23,7 @@
         <!-- 服务标签 -->
         <view class="service-tags">
           <view class="tag-item subsidy" v-if="serviceData.subsidySupport === '1'">
-            <uni-icons type="checkmarkempty" size="12" color="#52c41a"></uni-icons>
+            <uni-icons type="checkmarkempty" size="12" color="#5AAB7A"></uni-icons>
             <text>可补贴</text>
           </view>
           <view class="tag-item duration" v-if="serviceData.serviceDuration">
@@ -54,7 +54,7 @@
         <view class="section-header">
           <view class="section-title">
             <view class="title-icon">
-              <uni-icons type="info-filled" size="18" color="#3ec6c6"></uni-icons>
+              <uni-icons type="info-filled" size="18" color="#E07A4F"></uni-icons>
             </view>
             <text>服务描述</text>
           </view>
@@ -69,7 +69,7 @@
         <view class="section-header">
           <view class="section-title">
             <view class="title-icon">
-              <uni-icons type="list" size="18" color="#3ec6c6"></uni-icons>
+              <uni-icons type="list" size="18" color="#E07A4F"></uni-icons>
             </view>
             <text>服务内容</text>
           </view>
@@ -84,7 +84,7 @@
         <view class="section-header">
           <view class="section-title">
             <view class="title-icon">
-              <uni-icons type="notification-filled" size="18" color="#3ec6c6"></uni-icons>
+              <uni-icons type="notification-filled" size="18" color="#E07A4F"></uni-icons>
             </view>
             <text>服务须知</text>
           </view>
@@ -93,25 +93,25 @@
           <view class="notice-list">
             <view class="notice-item">
               <view class="notice-icon">
-                <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+                <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
               </view>
               <text class="notice-text">请提前预约服务时间，我们会尽快安排服务人员</text>
             </view>
             <view class="notice-item">
               <view class="notice-icon">
-                <uni-icons type="phone" size="16" color="#3ec6c6"></uni-icons>
+                <uni-icons type="phone" size="16" color="#E07A4F"></uni-icons>
               </view>
               <text class="notice-text">如需取消或修改预约，请提前联系客服</text>
             </view>
             <view class="notice-item">
               <view class="notice-icon">
-                <uni-icons type="star" size="16" color="#3ec6c6"></uni-icons>
+                <uni-icons type="star" size="16" color="#E07A4F"></uni-icons>
               </view>
               <text class="notice-text">服务完成后请及时评价，帮助我们提升服务质量</text>
             </view>
             <view class="notice-item" v-if="serviceData.subsidySupport === '1'">
               <view class="notice-icon">
-                <uni-icons type="wallet" size="16" color="#3ec6c6"></uni-icons>
+                <uni-icons type="wallet" size="16" color="#E07A4F"></uni-icons>
               </view>
               <text class="notice-text">补贴金额将在订单完成后自动计算并抵扣</text>
             </view>
@@ -331,21 +331,21 @@ export default {
 
       .price-symbol {
         font-size: 28rpx;
-        color: #ff4d4f;
+        color: #D95C5C;
         font-weight: bold;
       }
 
       .price-amount {
         font-size: 48rpx;
-        color: #ff4d4f;
+        color: #D95C5C;
         font-weight: bold;
         margin: 0 4rpx;
-        font-family: 'DIN', sans-serif;
+        font-family: inherit;
       }
 
       .price-unit {
         font-size: 24rpx;
-        color: #ff7875;
+        color: #E07070;
       }
     }
   }
@@ -476,7 +476,7 @@ export default {
       .title-icon {
         width: 40rpx;
         height: 40rpx;
-        background: rgba(62, 198, 198, 0.1);
+        background: rgba(224, 122, 79, 0.1);
         border-radius: 10rpx;
         display: flex;
         align-items: center;
@@ -503,7 +503,7 @@ export default {
   
   &.notice-section {
     background: linear-gradient(135deg, #f8fdfd 0%, #f0fafa 100%);
-    border: 2rpx solid rgba(62, 198, 198, 0.1);
+    border: 2rpx solid rgba(224, 122, 79, 0.1);
     
     .notice-list {
       display: flex;
@@ -523,7 +523,7 @@ export default {
       .notice-icon {
         width: 36rpx;
         height: 36rpx;
-        background: rgba(62, 198, 198, 0.1);
+        background: rgba(224, 122, 79, 0.1);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -580,14 +580,14 @@ export default {
 
       .current-price {
         font-size: 40rpx;
-        color: #ff4d4f;
+        color: #D95C5C;
         font-weight: bold;
-        font-family: 'DIN', sans-serif;
+        font-family: inherit;
       }
 
       .actual-price {
         font-size: 24rpx;
-        color: #52c41a;
+        color: #5AAB7A;
         font-weight: 500;
         background: #f6ffed;
         padding: 4rpx 12rpx;
@@ -600,13 +600,13 @@ export default {
     min-width: 280rpx;
     height: 88rpx;
     line-height: 88rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #2ab5b5 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #2ab5b5 100%);
     color: #fff;
     font-size: 32rpx;
     font-weight: 600;
     border-radius: 44rpx;
     border: none;
-    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.35);
+    box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -615,7 +615,7 @@ export default {
   
   .booking-btn-hover {
     transform: scale(0.96);
-    box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.4);
+    box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.4);
   }
 }
 </style>

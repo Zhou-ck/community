@@ -3,8 +3,8 @@
     <view class="form-item">
       <text class="form-label">陌生来电拦截</text>
       <radio-group @change="update('forbid', $event.detail.value)">
-        <label><radio value="1" :checked="value.forbid == 1" color="#3ec6c6" />拦截</label>
-        <label><radio value="2" :checked="value.forbid == 2" color="#3ec6c6" />不拦截</label>
+        <label><radio value="1" :checked="value.forbid == 1" color="#E07A4F" />拦截</label>
+        <label><radio value="2" :checked="value.forbid == 2" color="#E07A4F" />不拦截</label>
       </radio-group>
     </view>
     <view class="divider">联系人列表</view>

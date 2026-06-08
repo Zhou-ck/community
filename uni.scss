@@ -72,6 +72,92 @@ $all-font-size-medium: 32rpx;
 $all-font-size-small-pro: 26rpx;
 $all-font-size-small: 24rpx;
 
+/* ====== 品牌色体系 ====== */
+$brand-primary:       #E07A4F;
+$brand-primary-dark:  #C96A42;
+$brand-primary-light: #FFF0E8;
+$brand-primary-disabled: #F0B899;
+
+$brand-secondary:       #4A9E8E;
+$brand-secondary-dark:  #3D8A7C;
+$brand-secondary-light: #EDF5F3;
+
+/* ====== 语义色 ====== */
+$brand-warn:    #E8A84C;
+$brand-error:   #D95C5C;
+$brand-success: #5AAB7A;
+
+/* ====== 覆盖 uView 主色 ====== */
+$u-primary:        $brand-primary;
+$u-primary-dark:   $brand-primary-dark;
+$u-primary-disabled: $brand-primary-disabled;
+$u-primary-light:    $brand-primary-light;
+
+/* ====== 覆盖 uni-ui 主色 ====== */
+$uni-primary: $brand-primary;
+
+/* ====== 统一交互反馈 ====== */
+$press-duration: 200ms;
+$press-timing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+@mixin press($scale: 0.97, $opacity: 0.8) {
+  cursor: pointer;
+  transition: all $press-duration $press-timing;
+  
+  &:active {
+    transform: scale($scale);
+    opacity: $opacity;
+  }
+}
+
+@mixin press-card {
+  @include press(0.995, 1);
+  
+  &:active {
+    background: rgba(0, 0, 0, 0.02);
+  }
+}
+
+@mixin press-link {
+  @include press(1, 0.6);
+}
+
+@mixin press-btn {
+  @include press(0.96, 0.9);
+  
+  &:active {
+    box-shadow: none;
+  }
+}
+
+/* ====== 字号阶梯 ====== */
+$text-xs:  20rpx;   /* 标签/角标 */
+$text-sm:  24rpx;   /* 次要正文 */
+$text-base: 26rpx;  /* 标准正文 */
+$text-md:  28rpx;   /* 强调正文 */
+$text-lg:  32rpx;   /* 小标题 */
+$text-xl:  36rpx;   /* 模块标题 */
+$text-2xl: 40rpx;   /* 页面大标题 */
+$text-3xl: 48rpx;   /* 数字/大号展示 */
+
+/* ====== 行高体系 ====== */
+$lh-tight:  1.2;
+$lh-normal: 1.5;
+$lh-loose:  1.8;
+
+/* ====== 字间距 mixin ====== */
+@mixin letter-spacing-heading {
+  letter-spacing: 2rpx;
+}
+
+@mixin letter-spacing-tag {
+  letter-spacing: 1rpx;
+}
+
+@mixin letter-spacing-btn {
+  letter-spacing: 2rpx;
+}
+
 /* 自定义全局样式 */
 $all-box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 $all-padding-box: 10rpx 15rpx;

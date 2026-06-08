@@ -76,7 +76,7 @@
               <text>{{ getMemberCountText(item) }}</text>
             </view>
             <view class="info-tag gift-tag" v-if="item.hasGiftRule === '1'">
-              <text class="iconfont icon-liwu"></text>
+              <uni-icons type="gift-filled" size="24rpx" color="#E07A4F"></uni-icons>
               <text>连续购有赠</text>
             </view>
             <view class="info-tag" v-if="item.packageItems && item.packageItems.length > 0">
@@ -88,7 +88,7 @@
         
         <view class="package-footer">
           <view class="package-status" :class="item.status === '0' ? 'status-active' : 'status-inactive'">
-            <text class="iconfont" :class="item.status === '0' ? 'icon-duihao' : 'icon-guanbi'"></text>
+            <uni-icons :type="item.status === '0' ? 'checkmarkempty' : 'close'" size="24rpx" :color="item.status === '0' ? '#5AAB7A' : '#999'"></uni-icons>
             {{ item.status === '0' ? '可购买' : '已下架' }}
           </view>
           <view class="buy-btn" @click.stop="buyPackage(item)" v-if="item.status === '0'">
@@ -158,7 +158,7 @@
           
           <!-- 退订申请提示 -->
           <view class="refund-tip" v-if="item.instanceStatus === 'REFUND_PENDING'">
-            <text class="iconfont icon-tishi"></text>
+            <uni-icons type="info" size="24rpx" color="#E07A4F"></uni-icons>
             <text>退订申请审核中...</text>
           </view>
         </view>
@@ -170,7 +170,7 @@
             <!-- 使用中状态不显示查看详情按钮 -->
             <view v-if="item.instanceStatus !== 'ACTIVE'" class="view-detail" @click.stop="viewMyPackageDetail(item)">
               <text>查看详情</text>
-              <text class="iconfont icon-youjiantou"></text>
+              <uni-icons type="arrowright" size="24rpx" color="#999"></uni-icons>
             </view>
             <!-- 使用中状态，显示"查看核销码"和"申请退订"按钮 -->
             <template v-if="item.instanceStatus === 'ACTIVE'">
@@ -259,7 +259,7 @@
           <!-- 赠送规则 -->
           <view class="gift-section" v-if="selectedPackage.giftRules && selectedPackage.giftRules.length > 0">
             <view class="section-title gift-title">
-              <text class="iconfont icon-liwu"></text>
+              <uni-icons type="gift-filled" size="24rpx" color="#E07A4F"></uni-icons>
               <text>连续购买赠送</text>
             </view>
             <view class="gift-list">
@@ -300,7 +300,7 @@
           </view>
           <view class="refund-warning">
             <view class="warning-icon">
-              <text class="iconfont icon-tishi"></text>
+              <uni-icons type="info" size="28rpx" color="#E8A84C"></uni-icons>
             </view>
             <view class="warning-text">
               <text class="warning-title">退订须知</text>
@@ -1152,7 +1152,7 @@ export default {
     transition: all 0.3s;
     
     &.active {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 600;
     }
     
@@ -1161,7 +1161,7 @@ export default {
       bottom: 0;
       width: 40px;
       height: 3px;
-      background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+      background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
       border-radius: 2px;
     }
   }
@@ -1199,11 +1199,11 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
+        background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
         
         .iconfont {
           font-size: 60px;
-          color: #3ec6c6;
+          color: #E07A4F;
           opacity: 0.3;
         }
       }
@@ -1230,9 +1230,9 @@ export default {
           }
           
           &.recommend {
-            background: linear-gradient(135deg, rgba(62, 198, 198, 0.9) 0%, rgba(46, 181, 181, 0.9) 100%);
+            background: linear-gradient(135deg, rgba(224, 122, 79, 0.9) 0%, rgba(46, 181, 181, 0.9) 100%);
             border-radius: 12px 12px 12px 0;
-            box-shadow: 0 2px 8px rgba(62, 198, 198, 0.4);
+            box-shadow: 0 2px 8px rgba(224, 122, 79, 0.4);
           }
           
           &.gift {
@@ -1311,7 +1311,7 @@ export default {
         align-items: center;
         gap: 4px;
         font-size: 12px;
-        color: #3ec6c6;
+        color: #E07A4F;
         background-color: #e8f5f5;
         padding: 4px 10px;
         border-radius: 12px;
@@ -1327,10 +1327,10 @@ export default {
         }
         
         &.member-tag {
-          color: #3ec6c6;
+          color: #E07A4F;
           background: linear-gradient(135deg, #e8f5f5 0%, #f0f9f9 100%);
           font-weight: 500;
-          border: 1px solid rgba(62, 198, 198, 0.3);
+          border: 1px solid rgba(224, 122, 79, 0.3);
           position: relative;
           overflow: hidden;
           
@@ -1350,8 +1350,8 @@ export default {
           }
           
           .iconfont {
-            color: #3ec6c6;
-            filter: drop-shadow(0 1px 2px rgba(62, 198, 198, 0.2));
+            color: #E07A4F;
+            filter: drop-shadow(0 1px 2px rgba(224, 122, 79, 0.2));
           }
         }
       }
@@ -1377,7 +1377,7 @@ export default {
         }
         
         &.status-active {
-          color: #52c41a;
+          color: #5AAB7A;
           background-color: #f6ffed;
         }
         
@@ -1392,12 +1392,12 @@ export default {
         align-items: center;
         gap: 4px;
         padding: 8px 20px;
-        background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+        background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
         color: #fff;
         border-radius: 20px;
         font-size: 14px;
         font-weight: 500;
-        box-shadow: 0 4px 12px rgba(62, 198, 198, 0.3);
+        box-shadow: 0 4px 12px rgba(224, 122, 79, 0.3);
         
         .iconfont {
           font-size: 14px;
@@ -1439,11 +1439,11 @@ export default {
       }
       
       &.status-using {
-        background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+        background: linear-gradient(135deg, #5AAB7A 0%, #7ABC94 100%);
       }
       
       &.status-refund-pending {
-        background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+        background: linear-gradient(135deg, #E8A84C 0%, #ffb74d 100%);
       }
       
       &.status-expired {
@@ -1451,11 +1451,11 @@ export default {
       }
       
       &.status-refunded {
-        background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+        background: linear-gradient(135deg, #D95C5C 0%, #E07070 100%);
       }
       
       &.status-rejected {
-        background: linear-gradient(135deg, #f5222d 0%, #ff4d4f 100%);
+        background: linear-gradient(135deg, #f5222d 0%, #D95C5C 100%);
       }
       
       &.status-cancelled {
@@ -1529,7 +1529,7 @@ export default {
             font-weight: 600;
             
             &.highlight {
-              color: #3ec6c6;
+              color: #E07A4F;
             }
           }
         }
@@ -1584,8 +1584,8 @@ export default {
           font-weight: 600;
           transition: all 0.2s;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-          background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
-          color: #3ec6c6;
+          background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
+          color: #E07A4F;
           border: 1px solid #b8e5e5;
           
           &:active {
@@ -1611,7 +1611,7 @@ export default {
           
           &.refund-btn {
             background: linear-gradient(135deg, #fff1f0 0%, #ffe7e6 100%);
-            color: #ff4d4f;
+            color: #D95C5C;
             border: 1px solid #ffccc7;
           }
           
@@ -1622,8 +1622,8 @@ export default {
           }
           
           &.qrcode-btn {
-            background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
-            color: #3ec6c6;
+            background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
+            color: #E07A4F;
             border: 1px solid #b3e0e0;
           }
         }
@@ -1667,7 +1667,7 @@ export default {
   
   .empty-btn {
     padding: 10px 30px;
-    background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     color: #fff;
     border-radius: 20px;
     font-size: 14px;
@@ -1790,14 +1790,14 @@ export default {
           }
           
           &.member-count {
-            background: linear-gradient(135deg, #3ec6c6, #2ba8a8);
+            background: linear-gradient(135deg, #E07A4F, #2ba8a8);
             color: #fff;
             padding: 2px 8px;
             border-radius: 8px;
             font-weight: 600;
             font-size: 12px;
             display: inline-block;
-            box-shadow: 0 1px 4px rgba(62, 198, 198, 0.3);
+            box-shadow: 0 1px 4px rgba(224, 122, 79, 0.3);
             width: auto;
             max-width: fit-content;
           }
@@ -1813,7 +1813,7 @@ export default {
         color: #333;
         margin-bottom: 12px;
         padding-left: 12px;
-        border-left: 4px solid #3ec6c6;
+        border-left: 4px solid #E07A4F;
       }
       
       .service-list {
@@ -1838,7 +1838,7 @@ export default {
           
           .service-count {
             font-size: 14px;
-            color: #3ec6c6;
+            color: #E07A4F;
             font-weight: 600;
           }
         }
@@ -1953,7 +1953,7 @@ export default {
       height: 48px;
       line-height: 48px;
       text-align: center;
-      background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+      background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
       color: #fff;
       border-radius: 24px;
       font-size: 16px;
@@ -2068,7 +2068,7 @@ export default {
         margin-bottom: 10px;
         
         .required {
-          color: #ff4d4f;
+          color: #D95C5C;
         }
       }
       
@@ -2120,7 +2120,7 @@ export default {
     }
     
     .refund-confirm-btn {
-      background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+      background: linear-gradient(135deg, #D95C5C 0%, #E07070 100%);
       color: #fff;
     }
   }
@@ -2217,7 +2217,7 @@ export default {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+      background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
       display: flex;
       align-items: center;
       justify-content: center;

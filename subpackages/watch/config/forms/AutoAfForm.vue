@@ -15,8 +15,8 @@
     <view class="form-item">
       <text class="form-label">RRI类型</text>
       <radio-group @change="update('rri_type', $event.detail.value)">
-        <label><radio value="0" :checked="value.rri_type == 0" color="#3ec6c6" />普通RRI</label>
-        <label><radio value="1" :checked="value.rri_type == 1" color="#3ec6c6" />心情RRI</label>
+        <label><radio value="0" :checked="value.rri_type == 0" color="#E07A4F" />普通RRI</label>
+        <label><radio value="1" :checked="value.rri_type == 1" color="#E07A4F" />心情RRI</label>
       </radio-group>
     </view>
   </view>

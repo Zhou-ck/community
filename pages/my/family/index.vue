@@ -2,7 +2,7 @@
 	<view class="family-container">
 		<!-- 顶部提示 -->
 		<view class="tip-box" v-if="deviceId || memberList.length > 0">
-			<uni-icons type="info" size="16" color="#3ec6c6"></uni-icons>
+			<uni-icons type="info" size="16" color="#E07A4F"></uni-icons>
 			<text class="tip-text" v-if="deviceId && bindMode === 'replace'">
 				请选择要绑定到设备的家庭成员（最多{{ maxSelectableCount }}人）
 			</text>
@@ -23,13 +23,7 @@
 			:refresher-triggered="isRefreshing"
 			@refresherrefresh="onRefresh"
 		>
-			<view v-if="memberList.length === 0" class="empty-state">
-				<view class="empty-icon-box">
-					<uni-icons type="staff-filled" size="60" color="#e0e0e0"></uni-icons>
-				</view>
-				<text class="empty-text">暂无家庭成员</text>
-				<text class="empty-sub">点击底部按钮添加家人信息</text>
-			</view>
+			<EmptyState v-if="memberList.length === 0" icon="staff-filled" text="暂无家庭成员" subtext="点击底部按钮添加家人信息" />
 			
 			<view v-else class="member-card" v-for="(member, index) in memberList" :key="index" :class="{ 'selected': isSelectedForBind(member.memberId) }">
 				<!-- 绑定选择遮罩（仅在绑定模式下有效） -->
@@ -46,7 +40,7 @@
 									<text class="relation-tag" v-if="member.relationship">{{ member.relationship }}</text>
 								</view>
 								<view class="gender-row" v-if="member.sex">
-									<uni-icons :type="member.sex === '0' ? 'person-filled' : 'person'" size="14" :color="member.sex === '0' ? '#3ec6c6' : '#ff7875'"></uni-icons>
+									<uni-icons :type="member.sex === '0' ? 'person-filled' : 'person'" size="14" :color="member.sex === '0' ? '#E07A4F' : '#E07070'"></uni-icons>
 									<text class="gender-text">{{ member.sex === '0' ? '男' : '女' }}</text>
 								</view>
 							</view>
@@ -122,11 +116,11 @@
 				<!-- 操作栏 -->
 				<view class="card-footer">
 					<view class="action-btn delete" @click.stop="deleteMember(member)">
-						<uni-icons type="trash" size="16" color="#ff5555"></uni-icons>
+						<uni-icons type="trash" size="16" color="#D95C5C"></uni-icons>
 						<text>删除</text>
 					</view>
 					<view class="action-btn edit" @click.stop="editMember(member)">
-						<uni-icons type="compose" size="16" color="#3ec6c6"></uni-icons>
+						<uni-icons type="compose" size="16" color="#E07A4F"></uni-icons>
 						<text>编辑资料</text>
 					</view>
 				</view>
@@ -250,7 +244,7 @@
 										:class="{ 'preset-tag-active': formData.likesArray.includes(opt) }"
 										@click="togglePreset(opt)"
 									>
-										<uni-icons v-if="formData.likesArray.includes(opt)" type="checkmarkempty" size="12" color="#3ec6c6" style="margin-right:6rpx;"></uni-icons>
+										<uni-icons v-if="formData.likesArray.includes(opt)" type="checkmarkempty" size="12" color="#E07A4F" style="margin-right:6rpx;"></uni-icons>
 										<text>{{ opt }}</text>
 									</view>
 								</view>
@@ -263,7 +257,7 @@
 										@click="removeCustomLike(like)"
 									>
 										<text>{{ like }}</text>
-										<uni-icons type="closeempty" size="12" color="#3ec6c6"></uni-icons>
+										<uni-icons type="closeempty" size="12" color="#E07A4F"></uni-icons>
 									</view>
 								</view>
 								<view class="add-like-container">
@@ -277,7 +271,7 @@
 										class="like-input"
 									/>
 									<view class="add-like-btn" @click="addLike" v-if="newLikeText.trim()">
-										<uni-icons type="plus" size="16" color="#3ec6c6"></uni-icons>
+										<uni-icons type="plus" size="16" color="#E07A4F"></uni-icons>
 									</view>
 								</view>
 							</view>
@@ -301,6 +295,7 @@
 </template>>
 
 <script>
+import EmptyState from '@/components/empty-state/index.vue'
 import { listFamilymemberNoPage, addFamilymember, updateFamilymember, delFamilymember } from '@/api/familymember'
 import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId, bindFamilyMemberByDevice, delFamilyMemberDevice } from '@/api/familyMemberDevice'
@@ -1253,11 +1248,11 @@ export default {
 	background: linear-gradient(to right, #e6f7ff, #ffffff);
 	margin: 24rpx 24rpx 0;
 	border-radius: 16rpx;
-	box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.08);
-	border-left: 8rpx solid #3ec6c6;
+	box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.08);
+	border-left: 8rpx solid #E07A4F;
 	
 	.tip-text {
-		font-size: 26rpx;
+		font-size: $text-base;
 		color: #333;
 		line-height: 1.5;
 		flex: 1;
@@ -1290,14 +1285,14 @@ export default {
 	}
 	
 	.empty-text {
-		font-size: 32rpx;
+		font-size: $text-lg;
 		color: #333;
 		font-weight: 600;
 		margin-bottom: 16rpx;
 	}
 	
 	.empty-sub {
-		font-size: 26rpx;
+		font-size: $text-base;
 		color: #999;
 	}
 }
@@ -1313,7 +1308,7 @@ export default {
 	border: 2rpx solid transparent;
 	
 	&.selected {
-		border-color: #3ec6c6;
+		border-color: #E07A4F;
 		background: #f0fcfc;
 	}
 
@@ -1337,15 +1332,15 @@ export default {
 				width: 96rpx;
 				height: 96rpx;
 				border-radius: 50%;
-				background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+				background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+				box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
 				overflow: hidden;
 				
 				.avatar-text {
-					font-size: 40rpx;
+					font-size: $text-2xl;
 					color: #fff;
 					font-weight: 600;
 				}
@@ -1367,15 +1362,15 @@ export default {
 					gap: 12rpx;
 					
 					.name {
-						font-size: 34rpx;
+						font-size: $text-xl;
 						font-weight: 600;
 						color: #333;
 					}
 					
 					.relation-tag {
-						font-size: 22rpx;
-						color: #3ec6c6;
-						background: rgba(62, 198, 198, 0.1);
+						font-size: $text-xs;
+						color: #E07A4F;
+						background: rgba(224, 122, 79, 0.1);
 						padding: 2rpx 10rpx;
 						border-radius: 6rpx;
 						font-weight: 500;
@@ -1388,7 +1383,7 @@ export default {
 					gap: 8rpx;
 					
 					.gender-text {
-						font-size: 26rpx;
+						font-size: $text-base;
 						color: #666;
 					}
 				}
@@ -1411,22 +1406,22 @@ export default {
 				transition: all 0.2s;
 				
 				&.checked {
-					background: #3ec6c6;
-					border-color: #3ec6c6;
+					background: #E07A4F;
+					border-color: #E07A4F;
 				}
 				
 				&.bound {
-					background: #ff5555; // 使用红色表示已绑定（可能需要解绑）
-					border-color: #ff5555;
+					background: #D95C5C; // 使用红色表示已绑定（可能需要解绑）
+					border-color: #D95C5C;
 				}
 			}
 			
 			.status-text {
-				font-size: 24rpx;
+				font-size: $text-sm;
 				color: #999;
 				
 				&.bound {
-					color: #ff5555;
+					color: #D95C5C;
 				}
 			}
 		}
@@ -1463,20 +1458,20 @@ export default {
 				}
 				
 				.label {
-					font-size: 24rpx;
+					font-size: $text-sm;
 					color: #999;
 					margin-bottom: 12rpx;
 				}
 				
 				.value {
-					font-size: 36rpx;
+					font-size: $text-xl;
 					font-weight: bold;
 					color: #333;
-					font-family: 'Roboto', sans-serif;
+					font-family: inherit;
 					line-height: 1;
 					
 					.unit {
-						font-size: 22rpx;
+						font-size: $text-xs;
 						font-weight: normal;
 						color: #999;
 						margin-left: 4rpx;
@@ -1494,7 +1489,7 @@ export default {
 			
 			.info-item {
 				display: flex;
-				font-size: 28rpx;
+				font-size: $text-md;
 				
 				&.full {
 					align-items: flex-start;
@@ -1510,10 +1505,10 @@ export default {
 							align-items: center;
 							padding: 8rpx 16rpx;
 							background: #f0fcfc;
-							border: 1rpx solid #3ec6c6;
+							border: 1rpx solid #E07A4F;
 							border-radius: 20rpx;
-							font-size: 24rpx;
-							color: #3ec6c6;
+							font-size: $text-sm;
+							color: #E07A4F;
 							
 							text {
 								line-height: 1;
@@ -1530,7 +1525,7 @@ export default {
 				
 				.value {
 					color: #333;
-					font-family: 'Roboto', sans-serif;
+					font-family: inherit;
 					
 					&.remark {
 						line-height: 1.5;
@@ -1538,7 +1533,7 @@ export default {
 					
 					&.likes {
 						line-height: 1.5;
-						color: #3ec6c6;
+						color: #E07A4F;
 						font-weight: 500;
 					}
 				}
@@ -1567,17 +1562,17 @@ export default {
 			gap: 6rpx;
 			padding: 10rpx 24rpx;
 			border-radius: 30rpx;
-			font-size: 26rpx;
+			font-size: $text-base;
 			transition: all 0.2s;
 			
 			&.edit {
 				background: #f0fcfc;
-				color: #3ec6c6;
+				color: #E07A4F;
 			}
 			
 			&.delete {
 				background: #fff1f0;
-				color: #ff5555;
+				color: #D95C5C;
 			}
 			
 			&:active {
@@ -1604,15 +1599,15 @@ export default {
 	
 	.add-btn {
 		height: 88rpx;
-		background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+		background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 		border-radius: 44rpx;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+		box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 		
 		text {
-			font-size: 32rpx;
+			font-size: $text-lg;
 			font-weight: 600;
 			color: #fff;
 		}
@@ -1630,12 +1625,12 @@ export default {
 		align-items: center;
 		
 		.bind-info {
-			font-size: 30rpx;
+			font-size: $text-lg;
 			color: #333;
 			font-weight: 500;
 			
 			text {
-				color: #3ec6c6;
+				color: #E07A4F;
 				font-weight: 600;
 			}
 		}
@@ -1648,7 +1643,7 @@ export default {
 				height: 72rpx;
 				padding: 0 32rpx;
 				border-radius: 36rpx;
-				font-size: 28rpx;
+				font-size: $text-md;
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -1659,9 +1654,9 @@ export default {
 				}
 				
 				&.confirm {
-					background: #3ec6c6;
+					background: #E07A4F;
 					color: #fff;
-					box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+					box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
 					
 					&.disabled {
 						background: #ccc;
@@ -1719,7 +1714,7 @@ export default {
 		position: relative; /* 确保相对定位 */
 
 		.title {
-			font-size: 34rpx;
+			font-size: $text-xl;
 			font-weight: 600;
 			color: #333;
 		}
@@ -1781,13 +1776,13 @@ export default {
 			.label {
 				width: auto; 
 				margin-right: 12rpx;
-				font-size: 28rpx;
+				font-size: $text-md;
 				white-space: nowrap; /* 防止换行 */
 			}
 			
 			input {
 				text-align: right;
-				font-size: 30rpx;
+				font-size: $text-lg;
 				width: 100%; /* 确保占满剩余空间 */
 			}
 		}
@@ -1814,12 +1809,12 @@ export default {
 				padding: 20rpx;
 				border-radius: 12rpx;
 				box-sizing: border-box;
-				font-size: 28rpx;
+				font-size: $text-md;
 			}
 			
 			.char-count {
 				align-self: flex-end;
-				font-size: 24rpx;
+				font-size: $text-sm;
 				color: #ccc;
 				margin-top: 8rpx;
 			}
@@ -1827,20 +1822,20 @@ export default {
 
 		.label {
 			width: 140rpx;
-			font-size: 30rpx;
+			font-size: $text-lg;
 			color: #333;
 			font-weight: 500;
 			
 			&.required::after {
 				content: '*';
-				color: #ff5555;
+				color: #D95C5C;
 				margin-left: 4rpx;
 			}
 		}
 
 		input {
 			flex: 1;
-			font-size: 30rpx;
+			font-size: $text-lg;
 			color: #333;
 			text-align: right;
 			
@@ -1864,13 +1859,13 @@ export default {
 			
 			.value {
 				color: #333;
-				font-size: 30rpx;
+				font-size: $text-lg;
 				margin-right: 10rpx;
 			}
 			
 			.placeholder {
 				color: #ccc;
-				font-size: 30rpx;
+				font-size: $text-lg;
 				margin-right: 10rpx;
 			}
 		}
@@ -1887,16 +1882,16 @@ export default {
 				border-radius: 28rpx;
 				background: #f5f7fa;
 				color: #666;
-				font-size: 26rpx;
+				font-size: $text-base;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				transition: all 0.2s;
 				
 				&.active {
-					background: #3ec6c6;
+					background: #E07A4F;
 					color: #fff;
-					box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.3);
+					box-shadow: 0 4rpx 10rpx rgba(224, 122, 79, 0.3);
 				}
 			}
 		}
@@ -1922,12 +1917,12 @@ export default {
 			transition: all 0.2s;
 			
 			&:active {
-				border-color: #3ec6c6;
+				border-color: #E07A4F;
 				background: #f0fafa;
 			}
 			
 			.upload-text {
-				font-size: 24rpx;
+				font-size: $text-sm;
 				color: #999;
 			}
 		}
@@ -1973,14 +1968,14 @@ export default {
 					background: #f5f7fa;
 					border: 2rpx solid #e0e0e0;
 					border-radius: 30rpx;
-					font-size: 26rpx;
+					font-size: $text-base;
 					color: #666;
 					transition: all 0.2s;
 					
 					&.preset-tag-active {
 						background: #f0fcfc;
-						border-color: #3ec6c6;
-						color: #3ec6c6;
+						border-color: #E07A4F;
+						color: #E07A4F;
 					}
 				}
 			}
@@ -1997,10 +1992,10 @@ export default {
 					gap: 8rpx;
 					padding: 12rpx 20rpx;
 					background: #f0fcfc;
-					border: 2rpx solid #3ec6c6;
+					border: 2rpx solid #E07A4F;
 					border-radius: 30rpx;
-					font-size: 26rpx;
-					color: #3ec6c6;
+					font-size: $text-base;
+					color: #E07A4F;
 					
 					text {
 						line-height: 1;
@@ -2022,7 +2017,7 @@ export default {
 				
 				.like-input {
 					flex: 1;
-					font-size: 28rpx;
+					font-size: $text-md;
 					color: #333;
 					background: transparent;
 					border: none;
@@ -2033,7 +2028,7 @@ export default {
 					width: 48rpx;
 					height: 48rpx;
 					background: #f0fcfc;
-					border: 2rpx solid #3ec6c6;
+					border: 2rpx solid #E07A4F;
 					border-radius: 50%;
 					display: flex;
 					align-items: center;
@@ -2057,16 +2052,16 @@ export default {
 		
 		.save-btn {
 			height: 88rpx;
-			background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+			background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 			border-radius: 44rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+			box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 			
 			text {
 				color: #fff;
-				font-size: 32rpx;
+				font-size: $text-lg;
 				font-weight: 600;
 			}
 		}

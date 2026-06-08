@@ -16,7 +16,7 @@
       <view class="core-data-card">
         <view class="data-item heart">
           <view class="icon-wrapper heart-bg" @click="toggleHeartWave">
-            <uni-icons type="heart-filled" size="24" color="#ff5555"></uni-icons>
+            <uni-icons type="heart-filled" size="24" color="#D95C5C"></uni-icons>
           </view>
           <view class="value-group">
             <text class="value">{{ currentData.heartRateVal }}</text>
@@ -29,7 +29,7 @@
         
         <view class="data-item breath">
           <view class="icon-wrapper breath-bg">
-            <uni-icons type="refreshempty" size="24" color="#3ec6c6"></uni-icons>
+            <uni-icons type="refreshempty" size="24" color="#E07A4F"></uni-icons>
           </view>
           <view class="value-group">
             <text class="value">{{ currentData.breathRateVal }}</text>
@@ -158,16 +158,17 @@
     
     <!-- 加载状态 -->
     <view v-if="loading && !currentData" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
-      <text class="loading-text">获取数据中...</text>
+      <SkeletonLoader type="chart" height="240rpx" />
     </view>
   </view>
 </template>
 
 <script>
 import { getRealTimeData, getDevice } from '@/api/device'
+import SkeletonLoader from '@/components/skeleton/index.vue'
 
 export default {
+  components: { SkeletonLoader },
   data() {
     return {
       productKey: '',
@@ -504,11 +505,11 @@ export default {
     getBarColor(item) {
       if (item.isMoving) {
         // 活动状态：根据幅度变色
-        if (item.val > 50) return '#ff5555' // 剧烈
+        if (item.val > 50) return '#D95C5C' // 剧烈
         return '#ff9f43' // 一般
       }
       // 静止状态
-      return '#3ec6c6'
+      return '#E07A4F'
     },
     
     // ========== 心率波形相关方法 ==========
@@ -655,7 +656,7 @@ export default {
         ctx.fill()
         
         // 绘制波形线
-        ctx.setStrokeStyle('#ff5555')
+        ctx.setStrokeStyle('#D95C5C')
         ctx.setLineWidth(2.5)
         ctx.setLineCap('round')
         ctx.setLineJoin('round')
@@ -692,7 +693,7 @@ export default {
         ctx.fill()
         
         // 内圈
-        ctx.setFillStyle('#ff5555')
+        ctx.setFillStyle('#D95C5C')
         ctx.beginPath()
         ctx.arc(currentX, currentY, 5, 0, 2 * Math.PI)
         ctx.fill()
@@ -789,7 +790,7 @@ export default {
       font-size: 24rpx;
       color: #666;
       margin-left: 8rpx;
-      font-family: monospace; /* 等宽字体显示时间更整齐 */
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
   }
   
@@ -799,11 +800,11 @@ export default {
     font-size: 26rpx;
     color: #fff;
     font-weight: 600;
-    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3); /* 优化阴影颜色 */
+    box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3); /* 优化阴影颜色 */
     letter-spacing: 2rpx;
     
     &.status-person {
-      background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+      background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     }
     
     &.status-none {
@@ -843,15 +844,11 @@ export default {
       
       &.heart-bg {
         background: linear-gradient(135deg, rgba(255, 85, 85, 0.1), rgba(255, 85, 85, 0.05));
-        
-        &:active {
-          transform: scale(0.95);
-          background: linear-gradient(135deg, rgba(255, 85, 85, 0.2), rgba(255, 85, 85, 0.1));
-        }
+        @include press(0.95, 1);
       }
       
       &.breath-bg {
-        background: linear-gradient(135deg, rgba(62, 198, 198, 0.1), rgba(62, 198, 198, 0.05));
+        background: linear-gradient(135deg, rgba(224, 122, 79, 0.1), rgba(224, 122, 79, 0.05));
       }
     }
     
@@ -865,7 +862,7 @@ export default {
         font-weight: bold;
         color: #333;
         line-height: 1;
-        font-family: 'DIN', sans-serif; /* 如果有数字字体 */
+        font-family: inherit;
       }
       
       .unit {
@@ -973,7 +970,7 @@ export default {
           font-weight: 600;
           
           &.text-active { color: #ff9f43; }
-          &.text-gray { color: #3ec6c6; }
+          &.text-gray { color: #E07A4F; }
         }
         
         .divider {
@@ -1006,7 +1003,7 @@ export default {
           border-radius: 50%;
           margin-right: 8rpx;
           
-          &.static { background: #3ec6c6; }
+          &.static { background: #E07A4F; }
           &.active { background: #ff9f43; }
         }
       }
@@ -1099,19 +1096,19 @@ export default {
     
     &:last-child {
       margin-bottom: 0;
-      color: #3ec6c6;
+      color: #E07A4F;
     }
   }
   
   .refresh-btn {
     margin-top: 24rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     padding: 16rpx 48rpx;
     border-radius: 40rpx;
     display: flex;
     align-items: center;
     gap: 8rpx;
-    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+    box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
     
     text {
       color: #fff;
@@ -1119,10 +1116,7 @@ export default {
       font-weight: 500;
     }
     
-    &:active {
-      transform: scale(0.98);
-      opacity: 0.9;
-    }
+    @include press();
   }
 }
 
@@ -1194,10 +1188,10 @@ export default {
           .stat-value {
             font-size: 28rpx;
             font-weight: bold;
-            font-family: 'DIN', monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             
             &.current {
-              color: #ff5555;
+              color: #D95C5C;
               font-size: 32rpx;
             }
             
@@ -1206,7 +1200,7 @@ export default {
             }
             
             &.low {
-              color: #3ec6c6;
+              color: #E07A4F;
             }
             
             &.avg {
@@ -1232,13 +1226,8 @@ export default {
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.3s ease;
+      @include press(0.95, 0.9);
       flex-shrink: 0;
-      
-      &:active {
-        transform: scale(0.9);
-        background: #ebebeb;
-      }
     }
   }
   

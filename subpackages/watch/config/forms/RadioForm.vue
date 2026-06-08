@@ -4,7 +4,7 @@
       <text class="form-label">{{ label }}</text>
       <radio-group @change="update(field, $event.detail.value)">
         <label v-for="opt in options" :key="String(opt.value)">
-          <radio :value="String(opt.value)" :checked="String(value[field]) === String(opt.value)" color="#3ec6c6" />
+          <radio :value="String(opt.value)" :checked="String(value[field]) === String(opt.value)" color="#E07A4F" />
           {{ opt.label }}
         </label>
       </radio-group>

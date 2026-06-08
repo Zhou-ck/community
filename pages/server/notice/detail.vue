@@ -71,16 +71,16 @@ export default {
       let result = content
         // 【标题】格式
         .replace(/<p>【([^】]+)】[：:]?<\/p>/gi, 
-          '<p style="margin: 36rpx 0 20rpx; font-size: 32rpx; font-weight: 700; color: #1a1a1a; display: flex; align-items: center;"><span style="display: inline-block; width: 8rpx; height: 32rpx; background: linear-gradient(180deg, #3ec6c6, #2eb5b5); border-radius: 4rpx; margin-right: 16rpx;"></span>$1</p>')
+          '<p style="margin: 36rpx 0 20rpx; font-size: 32rpx; font-weight: 700; color: #1a1a1a; display: flex; align-items: center;"><span style="display: inline-block; width: 8rpx; height: 32rpx; background: linear-gradient(180deg, #E07A4F, #C96A42); border-radius: 4rpx; margin-right: 16rpx;"></span>$1</p>')
         // ✓ 列表
         .replace(/<p>✓\s*/gi, 
-          '<p style="' + pStyle + ' padding: 16rpx 20rpx; background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 50%); border-radius: 12rpx; margin: 16rpx 0;"><span style="color: #52c41a; font-weight: 600; margin-right: 12rpx;">✓</span>')
+          '<p style="' + pStyle + ' padding: 16rpx 20rpx; background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 50%); border-radius: 12rpx; margin: 16rpx 0;"><span style="color: #5AAB7A; font-weight: 600; margin-right: 12rpx;">✓</span>')
         // • 列表
         .replace(/<p>•\s*/gi, 
-          '<p style="' + pStyle + ' padding-left: 24rpx; position: relative;"><span style="position: absolute; left: 0; color: #3ec6c6; font-size: 24rpx;">•</span>')
+          '<p style="' + pStyle + ' padding-left: 24rpx; position: relative;"><span style="position: absolute; left: 0; color: #E07A4F; font-size: 24rpx;">•</span>')
         // 数字列表 1. 2. 3.
         .replace(/<p>(\d+)\.\s*/gi, 
-          '<p style="' + pStyle + ' padding: 20rpx 24rpx; background: #f8f9fa; border-radius: 12rpx; margin: 16rpx 0; border-left: 4rpx solid #3ec6c6;"><span style="color: #3ec6c6; font-weight: 700; margin-right: 12rpx;">$1.</span>')
+          '<p style="' + pStyle + ' padding: 20rpx 24rpx; background: #f8f9fa; border-radius: 12rpx; margin: 16rpx 0; border-left: 4rpx solid #E07A4F;"><span style="color: #E07A4F; font-weight: 700; margin-right: 12rpx;">$1.</span>')
         // 普通段落
         .replace(/<p>/gi, '<p style="' + pStyle + '">')
         .replace(/<p\s+style="/gi, '<p style="')
@@ -117,7 +117,7 @@ export default {
   background: #fff;
   border-radius: 28rpx;
   overflow: hidden;
-  box-shadow: 0 12rpx 40rpx rgba(62, 198, 198, 0.08), 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 12rpx 40rpx rgba(224, 122, 79, 0.08), 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
 }
 
 /* 头部区域 */

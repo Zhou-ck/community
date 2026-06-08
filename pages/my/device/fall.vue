@@ -29,16 +29,17 @@
     
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
-      <text class="loading-text">加载中...</text>
+      <SkeletonLoader type="card" :rows="3" />
     </view>
   </view>
 </template>
 
 <script>
 import { getRealTimeData } from '@/api/device'
+import SkeletonLoader from '@/components/skeleton/index.vue'
 
 export default {
+  components: { SkeletonLoader },
   data() {
     return {
       productKey: '',

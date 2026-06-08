@@ -458,7 +458,7 @@ export default {
 	font-size: 13px;
 	color: #606266;
 	margin-bottom: 4px;
-	font-family: monospace;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .order-time {
@@ -545,7 +545,7 @@ export default {
 .price-amount {
 	font-size: 20px;
 	font-weight: 600;
-	font-family: DINAlternate-Bold, sans-serif;
+	font-family: inherit;
 }
 
 /* 订单操作 */
@@ -729,7 +729,7 @@ export default {
 }
 
 .order-no-text {
-	font-family: monospace;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	font-size: 12px;
 	color: #606266;
 }

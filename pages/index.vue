@@ -60,13 +60,23 @@
           <text class="service-title">服务中心</text>
         </view>
       </view>
+      <!-- 推荐服务（2 宽卡片） -->
+      <view class="service-featured">
+        <view class="service-featured-item" v-for="(item, index) in serviceList.slice(0, 2)" :key="index"
+          @click="handleServiceClick(item)">
+          <view class="service-featured-icon" :style="{ backgroundColor: item.bgColor }">
+            <text class="iconfontA" :class="item.icon" :style="{ color: item.iconColor, fontSize: item.iconSize }"></text>
+          </view>
+          <view class="service-featured-body">
+            <text class="service-featured-name">{{ item.name }}</text>
+            <text class="service-featured-tag">热门推荐</text>
+          </view>
+        </view>
+      </view>
+      <!-- 更多服务（紧凑网格） -->
       <view class="service-grid">
-        <view 
-          class="service-item" 
-          v-for="(item, index) in serviceList" 
-          :key="index"
-          @click="handleServiceClick(item)"
-        >
+        <view class="service-item" v-for="(item, index) in serviceList.slice(2)" :key="index"
+          @click="handleServiceClick(item)">
           <view class="service-icon" :style="{ backgroundColor: item.bgColor }">
             <text class="iconfontA" :class="item.icon" :style="{ color: item.iconColor, fontSize: item.iconSize }"></text>
           </view>
@@ -95,18 +105,36 @@
         </view>
       </view>
       <view class="home-care-services">
-        <view 
-          class="home-care-item" 
-          v-for="(item, index) in homeCareList" 
-          :key="index"
-          @click="handleHomeCareClick(item)"
-        >
-          <view class="home-care-image-wrapper">
-            <image :src="item.image" class="home-care-image" mode="aspectFill"></image>
+        <!-- 第一行：全宽横幅（助餐服务） -->
+        <view class="home-care-hero-row" @click="handleHomeCareClick(homeCareList[2])">
+          <view class="home-care-hero-left">
+            <view class="home-care-badge">推荐</view>
+            <text class="home-care-hero-name">{{ homeCareList[2].name }}</text>
+            <text class="home-care-hero-count">{{ homeCareList[2].count }}</text>
           </view>
-          <view class="home-care-info">
-            <text class="home-care-name">{{ item.name }}</text>
-            <text class="home-care-count">{{ item.count }}</text>
+          <view class="home-care-hero-right">
+            <image :src="homeCareList[2].image" class="home-care-hero-image" mode="aspectFill"></image>
+          </view>
+        </view>
+        <!-- 第二行：2 等宽并排（助洁 + 护理） -->
+        <view class="home-care-sub-row">
+          <view class="home-care-item" @click="handleHomeCareClick(homeCareList[0])">
+            <view class="home-care-image-wrapper">
+              <image :src="homeCareList[0].image" class="home-care-image" mode="aspectFill"></image>
+            </view>
+            <view class="home-care-info">
+              <text class="home-care-name">{{ homeCareList[0].name }}</text>
+              <text class="home-care-count">{{ homeCareList[0].count }}</text>
+            </view>
+          </view>
+          <view class="home-care-item" @click="handleHomeCareClick(homeCareList[1])">
+            <view class="home-care-image-wrapper">
+              <image :src="homeCareList[1].image" class="home-care-image" mode="aspectFill"></image>
+            </view>
+            <view class="home-care-info">
+              <text class="home-care-name">{{ homeCareList[1].name }}</text>
+              <text class="home-care-count">{{ homeCareList[1].count }}</text>
+            </view>
           </view>
         </view>
       </view>
@@ -146,7 +174,7 @@ export default {
           name: '助行服务',
           icon: 'icon-kangfuxunlian',
           bgColor: '#E8F5E8',
-          iconColor: '#4CAF50',
+          iconColor: '#5AAB7A',
 		   iconSize: '52rpx' 
         },
        
@@ -155,7 +183,7 @@ export default {
           name: '助医服务',
           icon: 'icon-yisheng',
           bgColor: '#E8F4FF',
-          iconColor: '#2196F3',
+          iconColor: '#E07A4F',
 		   iconSize: '55rpx' 
         },
         {
@@ -205,7 +233,7 @@ export default {
           name: '设备套餐',
           icon: 'icon-yiliaojigou',
           bgColor: '#E8F4FF',
-          iconColor: '#2196F3',
+          iconColor: '#E07A4F',
 		   iconSize: '60rpx' 
         }
         
@@ -557,12 +585,14 @@ export default {
 
 /* 公告栏 */
 .notice-container {
-  background: #fff;
+  background: #FFF8F3;
   border-radius: 12rpx;
-  padding: 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+  padding: 20rpx 20rpx 20rpx 28rpx;
+  margin: 20rpx 30rpx;
   display: flex;
   align-items: center;
+  border-left: 6rpx solid #E07A4F;
+  position: relative;
 }
 
 .notice-header {
@@ -631,7 +661,7 @@ export default {
   transform: translateY(-50%);
   width: 8rpx;
   height: 36rpx;
-  background: #4CAF50;
+  background: #E07A4F;
   border-radius: 4rpx;
 }
 
@@ -641,19 +671,82 @@ export default {
   color: #333;
 }
 
+/* 推荐服务（2 宽卡片） */
+.service-featured {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.service-featured-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 20rpx;
+  background: linear-gradient(135deg, #FFF0E8 0%, #fff 100%);
+  border: 1rpx solid rgba(224, 122, 79, 0.1);
+  border-radius: 14rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.service-featured-item:active {
+  transform: scale(0.97);
+  border-color: rgba(224, 122, 79, 0.3);
+}
+
+.service-featured-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.service-featured-icon .iconfontA {
+  font-size: 40rpx;
+}
+
+.service-featured-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.service-featured-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.service-featured-tag {
+  font-size: 20rpx;
+  color: #E07A4F;
+  background: rgba(224, 122, 79, 0.1);
+  padding: 2rpx 12rpx;
+  border-radius: 20rpx;
+  display: inline-block;
+}
+
+/* 更多服务（紧凑网格） */
 .service-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30rpx 20rpx;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16rpx;
 }
 
 .service-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20rpx 10rpx;
+  padding: 16rpx 8rpx;
   border-radius: 12rpx;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .service-item:active {
@@ -662,21 +755,21 @@ export default {
 }
 
 .service-icon {
-  width: 90rpx;
-  height: 90rpx;
-  border-radius: 20rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 18rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16rpx;
+  margin-bottom: 8rpx;
 }
 
 .service-icon .iconfontA {
-  font-size: 50rpx;
+  font-size: 38rpx;
 }
 
 .service-name {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #666;
   text-align: center;
   line-height: 1.2;
@@ -685,9 +778,9 @@ export default {
 /* 新增模块样式 */
 .new-module-container {
   margin: 20rpx 30rpx;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+  background: transparent;
 }
 
 .new-module-content {
@@ -702,11 +795,10 @@ export default {
 
 /* 居家养老模块样式 */
 .home-care-container {
-  background: #fff;
+  background: #F8F9FA;
   margin: 20rpx 30rpx;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   padding: 30rpx 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .home-care-header {
@@ -726,7 +818,7 @@ export default {
   transform: translateY(-50%);
   width: 8rpx;
   height: 36rpx;
-  background: #FF6B35;
+  background: #4A9E8E;
   border-radius: 4rpx;
 }
 
@@ -745,24 +837,92 @@ export default {
 
 .home-care-services {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+/* ===== 第一行：全宽横幅 ===== */
+.home-care-hero-row {
+  display: flex;
+  background: linear-gradient(135deg, #FFF0E8 0%, #fff 60%);
+  border-radius: 14rpx;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 180rpx;
+}
+
+.home-care-hero-row:active {
+  transform: scale(0.98);
+}
+
+.home-care-hero-left {
+  flex: 1;
+  padding: 28rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-care-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: #E07A4F;
+  color: #fff;
+  font-size: 20rpx;
+  font-weight: 500;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  line-height: 1.4;
+  margin-bottom: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(224, 122, 79, 0.3);
+}
+
+.home-care-hero-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.home-care-hero-count {
+  font-size: 24rpx;
+  color: #E07A4F;
+  font-weight: 500;
+}
+
+.home-care-hero-right {
+  width: 240rpx;
+  flex-shrink: 0;
+}
+
+.home-care-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== 第二行：2 等宽并排 ===== */
+.home-care-sub-row {
+  display: flex;
   gap: 20rpx;
 }
 
 .home-care-item {
   flex: 1;
-  background: #f8f9fa;
+  background: #fff;
   border-radius: 12rpx;
   overflow: hidden;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .home-care-item:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 .home-care-image-wrapper {
-  position: relative;
   width: 100%;
   height: 160rpx;
   overflow: hidden;
@@ -771,23 +931,24 @@ export default {
 .home-care-image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .home-care-info {
-  padding: 20rpx 16rpx;
+  padding: 16rpx 16rpx;
   text-align: center;
 }
 
 .home-care-name {
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 500;
   color: #333;
   display: block;
-  margin-bottom: 8rpx;
+  margin-bottom: 4rpx;
 }
 
 .home-care-count {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #999;
   display: block;
 }

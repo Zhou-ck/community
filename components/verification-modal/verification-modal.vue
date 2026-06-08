@@ -12,7 +12,7 @@
 			<view class="verification-body">
 				<!-- 加载状态 -->
 				<view v-if="loading" class="loading-verification">
-					<uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
+					<uni-icons type="spinner-cycle" size="40" color="#E07A4F"></uni-icons>
 					<text>加载中...</text>
 				</view>
 				
@@ -177,7 +177,7 @@ export default {
 				
 				text {
 					font-size: 28rpx;
-					color: #3ec6c6;
+					color: #E07A4F;
 				}
 			}
 			
@@ -188,12 +188,12 @@ export default {
 				gap: 8rpx;
 				margin-bottom: 32rpx;
 				padding: 16rpx 24rpx;
-				background: rgba(62, 198, 198, 0.1);
+				background: rgba(224, 122, 79, 0.1);
 				border-radius: 12rpx;
 				
 				text {
 					font-size: 26rpx;
-					color: #3ec6c6;
+					color: #E07A4F;
 				}
 			}
 			
@@ -203,10 +203,10 @@ export default {
 				.code-text {
 					font-size: 72rpx;
 					font-weight: bold;
-					color: #3ec6c6;
+					color: #E07A4F;
 					letter-spacing: 12rpx;
-					font-family: 'Courier New', monospace;
-					text-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.2);
+					font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+					text-shadow: 0 2rpx 8rpx rgba(224, 122, 79, 0.2);
 				}
 			}
 			
@@ -281,12 +281,7 @@ export default {
 					border: none;
 					box-shadow: 0 6rpx 16rpx rgba(250, 140, 22, 0.25);
 					
-					&::after { border: none; }
-					
-					&:active {
-						opacity: 0.8;
-						transform: scale(0.98);
-					}
+					@include press-btn();
 				}
 			}
 			
@@ -363,7 +358,7 @@ export default {
 					width: 100%;
 					height: 88rpx;
 					line-height: 88rpx;
-					background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+					background: linear-gradient(135deg, #D95C5C 0%, #E07070 100%);
 					color: #fff;
 					border-radius: 100rpx;
 					font-size: 30rpx;
@@ -371,12 +366,7 @@ export default {
 					border: none;
 					box-shadow: 0 6rpx 16rpx rgba(255, 77, 79, 0.25);
 					
-					&::after { border: none; }
-					
-					&:active {
-						opacity: 0.8;
-						transform: scale(0.98);
-					}
+					@include press-btn();
 				}
 			}
 		}

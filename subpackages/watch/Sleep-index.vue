@@ -25,7 +25,7 @@
 
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-wrapper">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
+      <uni-icons type="spinner-cycle" size="40" color="#E07A4F"></uni-icons>
       <text class="loading-text">加载中...</text>
     </view>
 
@@ -802,7 +802,7 @@ export default {
 }
 
 .header-card {
-  background: #3ec6c6;
+  background: #E07A4F;
   padding: 40rpx 32rpx 80rpx;
   position: relative;
   overflow: hidden;
@@ -924,7 +924,7 @@ export default {
   background: #fff;
   border-radius: 24rpx;
   padding: 28rpx 24rpx;
-  box-shadow: 0 8rpx 32rpx rgba(62, 198, 198, 0.08);
+  box-shadow: 0 8rpx 32rpx rgba(224, 122, 79, 0.08);
   display: flex;
   align-items: center;
   gap: 20rpx;
@@ -932,7 +932,7 @@ export default {
   
   &:active {
     transform: translateY(-4rpx);
-    box-shadow: 0 12rpx 40rpx rgba(62, 198, 198, 0.12);
+    box-shadow: 0 12rpx 40rpx rgba(224, 122, 79, 0.12);
   }
 }
 
@@ -946,8 +946,8 @@ export default {
   flex-shrink: 0;
   
   &.sleep-time {
-    background: #3ec6c6;
-    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.3);
+    background: #E07A4F;
+    box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.3);
   }
   
   &.deep-sleep {

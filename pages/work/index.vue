@@ -36,8 +36,7 @@
       <view class="content-area">
         <!-- 加载状态 -->
         <view v-if="loading" class="loading-state">
-          <uni-icons type="spinner-cycle" size="32" color="#1890ff"></uni-icons>
-          <text class="loading-text">加载中...</text>
+          <SkeletonLoader type="card" :rows="4" />
         </view>
 
         <!-- 内容区域 -->
@@ -75,12 +74,9 @@
           </view>
 
           <!-- 空状态 -->
-          <view v-else class="empty-state">
-             <view class="empty-icon-box">
-               <uni-icons type="calendar-filled" size="50" color="#d9d9d9"></uni-icons>
-             </view>
-             <text class="empty-text">暂无相关服务</text>
-          </view>
+          <EmptyState v-else-if="!hasError" icon="search" text="暂无相关服务" buttonText="去看看" @action="goToHome" />
+          <!-- 错误状态 -->
+          <ErrorState v-else-if="hasError" message="加载失败" @retry="loadData" />
         </view>
       </view>
     </view>
@@ -90,13 +86,18 @@
 <script>
   import { grouplistServicetype, listServiceitem } from '@/api/service'
   import config from '@/config.js'
+  import SkeletonLoader from '@/components/skeleton/index.vue'
+  import EmptyState from '@/components/empty-state/index.vue'
+  import ErrorState from '@/components/error-state/index.vue'
 
   export default {
+    components: { SkeletonLoader, EmptyState, ErrorState },
     data() {
       return {
         searchKeyword: '',
         activeCategory: '',
         loading: false,
+        hasError: false,
         categories: [],
         filteredChildrenMap: {}, // 存储每个分类过滤后的子分类
         searchTimer: null, // 搜索防抖定时器
@@ -105,6 +106,9 @@
       }
     },
     methods: {
+      goToHome() {
+        uni.switchTab({ url: '/pages/index' })
+      },
       selectCategory(categoryId) {
         this.activeCategory = categoryId;
       },
@@ -289,6 +293,7 @@
           }
         } catch (error) {
           console.error('获取服务类型失败:', error);
+          this.hasError = true;
           uni.showToast({
             title: '网络错误，请重试',
             icon: 'none'
@@ -428,7 +433,6 @@
 </script>
 
 <style lang="scss" scoped>
-@import '@/static/fontB/iconfont.css';
 .service-page {
   height: 100vh;
   background-color: #f5f5f5;
@@ -453,15 +457,11 @@
     transition: all 0.3s ease;
     border: 2rpx solid transparent;
 
-    &:active, &:focus-within {
-      background: #fff;
-      border-color: #1890ff;
-      box-shadow: 0 4rpx 12rpx rgba(24, 144, 255, 0.15);
-    }
+    @include press-card();
 
     .search-input {
       flex: 1;
-      font-size: 28rpx;
+      font-size: $text-md;
       color: #333;
       height: 100%;
 
@@ -477,11 +477,7 @@
       width: 48rpx;
       height: 48rpx;
       margin-right: -12rpx;
-      transition: opacity 0.3s ease;
-
-      &:active {
-        opacity: 0.6;
-      }
+      @include press-link();
     }
   }
 }
@@ -527,12 +523,12 @@
       .category-name {
         color: #1890ff;
         font-weight: 600;
-        font-size: 32rpx;
+        font-size: $text-lg;
       }
     }
 
     .category-name {
-      font-size: 30rpx;
+      font-size: $text-lg;
       color: #666;
       text-align: center;
       transition: all 0.3s ease;
@@ -572,7 +568,7 @@
   margin-bottom: 0;
 
   .header-title {
-    font-size: 32rpx;
+    font-size: $text-lg;
     font-weight: 600;
     color: #333;
   }
@@ -583,13 +579,8 @@
   border-radius: 20rpx;
   overflow: hidden;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  @include press-card();
   position: relative;
-
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
-  }
 }
 
 .service-image-container {
@@ -614,9 +605,9 @@
     background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
     
     .description-text {
-      font-size: 26rpx;
+      font-size: $text-base;
       color: #ffffff;
-      line-height: 1.4;
+      line-height: $lh-normal;
       text-align: center;
       display: block;
       text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
@@ -644,7 +635,7 @@
   }
 
   .empty-text {
-    font-size: 28rpx;
+    font-size: $text-md;
     color: #999;
     margin-top: 20rpx;
   }
@@ -658,7 +649,7 @@
   padding: 100rpx 0;
 
   .loading-text {
-    font-size: 28rpx;
+    font-size: $text-md;
     color: #1890ff;
     margin-top: 20rpx;
   }

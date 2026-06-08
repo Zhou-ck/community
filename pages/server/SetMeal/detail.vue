@@ -101,7 +101,7 @@
     <!-- 绑定设备信息 -->
     <view  v-if="deviceList.length > 0" class="device-info-card">
       <view class="device-header">
-        <uni-icons type="gear" size="18" color="#3ec6c6"></uni-icons>
+        <uni-icons type="gear" size="18" color="#E07A4F"></uni-icons>
         <text class="device-title">绑定设备</text>
         <text class="device-count">{{ deviceList.length }}台</text>
       </view>
@@ -444,7 +444,7 @@
             
             <view class="form-item">
               <text class="form-label">是否紧急</text>
-              <switch :checked="applyForm.isUrgent === '1'" @change="onUrgentChange" color="#3ec6c6"></switch>
+              <switch :checked="applyForm.isUrgent === '1'" @change="onUrgentChange" color="#E07A4F"></switch>
             </view>
             
             <view class="form-item">
@@ -1224,7 +1224,7 @@ export default {
 <style lang="scss" scoped>
 .detail-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #3ec6c6 0%, #2eb5b5 100%);
+  background: linear-gradient(180deg, #E07A4F 0%, #C96A42 100%);
   display: flex;
   flex-direction: column;
   
@@ -1507,7 +1507,7 @@ export default {
     
     .iconfont {
       font-size: 18px;
-      color: #3ec6c6;
+      color: #E07A4F;
     }
     
     .device-title {
@@ -1543,7 +1543,7 @@ export default {
       .device-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+        background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
         border-radius: 10px;
         display: flex;
         align-items: center;
@@ -1612,7 +1612,7 @@ export default {
         
         &.status-expired {
           background-color: #fff1f0;
-          color: #ff4d4f;
+          color: #D95C5C;
         }
 
         &.status-cancelled {
@@ -1640,13 +1640,13 @@ export default {
     
     .iconfont {
       font-size: 16px;
-      color: #ff4d4f;
+      color: #D95C5C;
     }
     
     .reject-title {
       font-size: 15px;
       font-weight: 600;
-      color: #ff4d4f;
+      color: #D95C5C;
     }
   }
   
@@ -1703,7 +1703,7 @@ export default {
     }
     
     &.active {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 600;
       background-color: #f8fffe;
       
@@ -1719,9 +1719,9 @@ export default {
         transform: translateX(-50%);
         width: 50px;
         height: 4px;
-        background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+        background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
         border-radius: 2px;
-        box-shadow: 0 2px 8px rgba(62, 198, 198, 0.4);
+        box-shadow: 0 2px 8px rgba(224, 122, 79, 0.4);
       }
     }
   }
@@ -1776,17 +1776,17 @@ export default {
       .service-freq {
         font-size: 12px;
         font-weight: 600;
-        color: #3ec6c6;
+        color: #E07A4F;
         background-color: #e8f5f5;
         padding: 6px 14px;
         border-radius: 20px;
-        border: 1px solid #d4eded;
+        border: 1px solid #FFF0E8;
       }
     }
     
     .on-demand-stats {
       padding: 20px;
-      background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
+      background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
       border-radius: 14px;
       margin-bottom: 18px;
       border: 1px solid #b8e5e5;
@@ -1802,13 +1802,13 @@ export default {
           display: block;
           font-size: 20px;
           font-weight: 700;
-          color: #2eb5b5;
+          color: #C96A42;
           margin-bottom: 6px;
         }
         
         .on-demand-desc {
           font-size: 14px;
-          color: #3ec6c6;
+          color: #E07A4F;
           font-weight: 500;
         }
       }
@@ -1834,14 +1834,14 @@ export default {
               margin-bottom: 4px;
               
               &.used {
-                color: #3ec6c6;
+                color: #E07A4F;
               }
               
               &.remain {
-                color: #52c41a;
+                color: #5AAB7A;
                 
                 &.warning {
-                  color: #ff4d4f;
+                  color: #D95C5C;
                 }
               }
             }
@@ -1861,17 +1861,17 @@ export default {
           justify-content: center;
           gap: 6px;
           padding: 10px 20px;
-          background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+          background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
           border-radius: 20px;
           color: #fff;
           font-size: 14px;
           font-weight: 600;
-          box-shadow: 0 4px 12px rgba(62, 198, 198, 0.3);
+          box-shadow: 0 4px 12px rgba(224, 122, 79, 0.3);
           transition: all 0.3s ease;
           
           &:active {
             transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(62, 198, 198, 0.2);
+            box-shadow: 0 2px 8px rgba(224, 122, 79, 0.2);
           }
           
           &.disabled {
@@ -1921,18 +1921,18 @@ export default {
           margin-bottom: 6px;
           
           &.used {
-            color: #3ec6c6;
+            color: #E07A4F;
           }
           
           &.remain {
-            color: #52c41a;
+            color: #5AAB7A;
             
             &.warning {
               color: #faad14;
             }
             
             &.danger {
-              color: #ff4d4f;
+              color: #D95C5C;
             }
           }
         }
@@ -1962,7 +1962,7 @@ export default {
         
         .progress-percent {
           font-size: 14px;
-          color: #3ec6c6;
+          color: #E07A4F;
           font-weight: 700;
         }
       }
@@ -1975,10 +1975,10 @@ export default {
         
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #3ec6c6 0%, #2eb5b5 100%);
+          background: linear-gradient(90deg, #E07A4F 0%, #C96A42 100%);
           border-radius: 5px;
           transition: width 0.5s ease;
-          box-shadow: 0 2px 6px rgba(62, 198, 198, 0.3);
+          box-shadow: 0 2px 6px rgba(224, 122, 79, 0.3);
           
           &.warning {
             background: linear-gradient(90deg, #faad14 0%, #ffc53d 100%);
@@ -1986,7 +1986,7 @@ export default {
           }
           
           &.danger {
-            background: linear-gradient(90deg, #ff4d4f 0%, #ff7875 100%);
+            background: linear-gradient(90deg, #D95C5C 0%, #E07070 100%);
             box-shadow: 0 2px 6px rgba(255, 77, 79, 0.3);
           }
         }
@@ -1996,7 +1996,7 @@ export default {
     .service-schedule {
       margin-top: 16px;
       padding: 16px;
-      background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
+      background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
       border-radius: 12px;
       border: 1px solid #b8e5e5;
       
@@ -2008,13 +2008,13 @@ export default {
         
         .iconfont {
           font-size: 16px;
-          color: #3ec6c6;
+          color: #E07A4F;
         }
         
         .schedule-title {
           font-size: 14px;
           font-weight: 600;
-          color: #2eb5b5;
+          color: #C96A42;
         }
       }
       
@@ -2031,8 +2031,8 @@ export default {
           padding: 10px 14px;
           background: #fff;
           border-radius: 8px;
-          border: 1px solid #d4eded;
-          box-shadow: 0 2px 4px rgba(62, 198, 198, 0.08);
+          border: 1px solid #FFF0E8;
+          box-shadow: 0 2px 4px rgba(224, 122, 79, 0.08);
           
           .schedule-text {
             font-size: 14px;
@@ -2041,7 +2041,7 @@ export default {
             
             &::before {
               content: '●';
-              color: #3ec6c6;
+              color: #E07A4F;
               margin-right: 10px;
               font-size: 10px;
             }
@@ -2057,17 +2057,17 @@ export default {
         justify-content: center;
         gap: 8px;
         height: 48px;
-        background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+        background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
         border-radius: 24px;
         color: #fff;
         font-size: 16px;
         font-weight: 600;
-        box-shadow: 0 6px 16px rgba(62, 198, 198, 0.35);
+        box-shadow: 0 6px 16px rgba(224, 122, 79, 0.35);
         transition: all 0.3s ease;
         
         &:active {
           transform: scale(0.98);
-          box-shadow: 0 4px 12px rgba(62, 198, 198, 0.25);
+          box-shadow: 0 4px 12px rgba(224, 122, 79, 0.25);
         }
         
         .iconfont {
@@ -2121,10 +2121,10 @@ export default {
       }
 
       &.active {
-        background: linear-gradient(135deg, #3ec6c6, #2eb5b5);
+        background: linear-gradient(135deg, #E07A4F, #C96A42);
         border-color: transparent;
         color: #fff;
-        box-shadow: 0 4px 10px rgba(62, 198, 198, 0.3);
+        box-shadow: 0 4px 10px rgba(224, 122, 79, 0.3);
 
         .filter-count {
           background: rgba(255, 255, 255, 0.3);
@@ -2175,7 +2175,7 @@ export default {
           
           &.order-pending {
             background: #fff7e6;
-            color: #ff9900;
+            color: #E8A84C;
           }
           
           &.order-accepted {
@@ -2185,12 +2185,12 @@ export default {
           
           &.order-in-service {
             background: #e6fff9;
-            color: #0ac160;
+            color: #5AAB7A;
           }
           
           &.order-completed {
             background: #f6ffed;
-            color: #52c41a;
+            color: #5AAB7A;
           }
           
           &.order-cancelled {
@@ -2215,7 +2215,7 @@ export default {
           
           &.order-verifying {
             background: #f6ffed;
-            color: #52c41a;
+            color: #5AAB7A;
           }
         }
       }
@@ -2262,7 +2262,7 @@ export default {
           
           .provider-value {
             font-size: 13px;
-            color: #3ec6c6;
+            color: #E07A4F;
             font-weight: 500;
             
             &.unassigned {
@@ -2285,7 +2285,7 @@ export default {
   
   .iconfont {
     font-size: 70px;
-    color: #d4eded;
+    color: #FFF0E8;
     margin-bottom: 20px;
   }
   
@@ -2328,7 +2328,7 @@ export default {
     
     &.refund-btn {
       background-color: #fff1f0;
-      color: #ff4d4f;
+      color: #D95C5C;
       border: 1px solid #ffccc7;
     }
     
@@ -2404,19 +2404,19 @@ export default {
         gap: 6px;
         margin-top: 10px;
         padding: 8px 12px;
-        background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
+        background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
         border-radius: 8px;
         border: 1px solid #b8e5e5;
 
         .iconfont {
           font-size: 16px;
-          color: #2eb5b5;
+          color: #C96A42;
         }
 
         .member-text {
           font-size: 16px;
           font-weight: 700;
-          color: #2eb5b5;
+          color: #C96A42;
           letter-spacing: 1px;
         }
       }
@@ -2475,7 +2475,7 @@ export default {
         margin-bottom: 10px;
 
         .required {
-          color: #ff4d4f;
+          color: #D95C5C;
         }
       }
 
@@ -2523,7 +2523,7 @@ export default {
     }
 
     .refund-confirm-btn {
-      background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+      background: linear-gradient(135deg, #D95C5C 0%, #E07070 100%);
       color: #fff;
     }
   }
@@ -2582,7 +2582,7 @@ export default {
       
       .service-type {
         font-size: 12px;
-        color: #3ec6c6;
+        color: #E07A4F;
         background: #e8f5f5;
         padding: 4px 10px;
         border-radius: 10px;
@@ -2660,12 +2660,12 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+      background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
       color: #fff;
       border-radius: 24px;
       font-size: 16px;
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(62, 198, 198, 0.3);
+      box-shadow: 0 4px 12px rgba(224, 122, 79, 0.3);
       
       &:active {
         transform: scale(0.98);
@@ -2713,7 +2713,7 @@ export default {
 
       .som-count-badge {
         font-size: 11px;
-        color: #3ec6c6;
+        color: #E07A4F;
         background: #e8f5f5;
         padding: 2px 8px;
         border-radius: 10px;
@@ -2758,7 +2758,7 @@ export default {
 
     &:active {
       background: #f8fffe;
-      border-color: #d4eded;
+      border-color: #FFF0E8;
     }
 
     .som-item-left {
@@ -2773,7 +2773,7 @@ export default {
 
         .som-date-icon {
           font-size: 14px;
-          color: #3ec6c6;
+          color: #E07A4F;
         }
 
         .som-date {
@@ -2785,7 +2785,7 @@ export default {
         .som-period {
           font-size: 12px;
           color: #fff;
-          background: linear-gradient(135deg, #3ec6c6, #2eb5b5);
+          background: linear-gradient(135deg, #E07A4F, #C96A42);
           padding: 2px 8px;
           border-radius: 8px;
         }
@@ -2831,15 +2831,15 @@ export default {
         border-radius: 10px;
         white-space: nowrap;
 
-        &.order-pending    { background: #fff7e6; color: #ff9900; }
+        &.order-pending    { background: #fff7e6; color: #E8A84C; }
         &.order-accepted   { background: #e6f7ff; color: #2979ff; }
-        &.order-in-service { background: #e6fff9; color: #0ac160; }
-        &.order-completed  { background: #f6ffed; color: #52c41a; }
+        &.order-in-service { background: #e6fff9; color: #5AAB7A; }
+        &.order-completed  { background: #f6ffed; color: #5AAB7A; }
         &.order-cancelled  { background: #f5f5f5; color: #999; }
         &.order-rejected   { background: #fff1f0; color: #ff5722; }
         &.order-closed     { background: #f5f5f5; color: #999; }
         &.order-dispatching{ background: #fff7e6; color: #fa8c16; }
-        &.order-verifying  { background: #f6ffed; color: #52c41a; }
+        &.order-verifying  { background: #f6ffed; color: #5AAB7A; }
       }
 
       .som-arrow {

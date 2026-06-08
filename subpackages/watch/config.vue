@@ -298,11 +298,11 @@ export default {
 }
 
 .device-card {
-  background: linear-gradient(135deg, #4dd9d9 0%, #3ec6c6 100%);
+  background: linear-gradient(135deg, #C96A42 0%, #E07A4F 100%);
   border-radius: 24rpx;
   padding: 40rpx;
   margin-bottom: 40rpx;
-  box-shadow: 0 8rpx 32rpx rgba(62, 198, 198, 0.25);
+  box-shadow: 0 8rpx 32rpx rgba(224, 122, 79, 0.25);
   position: relative;
   overflow: hidden;
   

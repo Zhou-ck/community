@@ -15,7 +15,7 @@
 				:key="index" @click="handleFilterChange(index)">
 				<text>{{ tab.name }}</text>
 				<uni-icons v-if="index > 0" :type="currentFilter === index ? 'arrowdown' : 'arrowdown'" size="12"
-					:color="currentFilter === index ? '#2196F3' : '#666'"></uni-icons>
+					:color="currentFilter === index ? '#E07A4F' : '#666'"></uni-icons>
 			</view>
 		</view>
 
@@ -225,7 +225,7 @@
 			gap: 4rpx;
 
 			&.active {
-				color: #2196F3;
+				color: #E07A4F;
 				font-weight: 500;
 			}
 		}
@@ -266,7 +266,7 @@
 				border-bottom-right-radius: 12rpx;
 
 				&.public {
-					background: linear-gradient(135deg, #4CAF50, #81C784);
+					background: linear-gradient(135deg, #5AAB7A, #81C784);
 				}
 
 				&.private {
@@ -354,7 +354,7 @@
 				align-items: center;
 				
 				.price-box {
-					color: #ff4d4f;
+					color: #D95C5C;
 					
 					.currency {
 						font-size: 24rpx;
@@ -380,7 +380,7 @@
 
 				.tag {
 					font-size: 20rpx;
-					color: #2196F3;
+					color: #E07A4F;
 					background-color: #E3F2FD;
 					padding: 2rpx 10rpx;
 					border-radius: 6rpx;

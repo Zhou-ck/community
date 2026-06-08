@@ -66,7 +66,7 @@
             <text class="info-label">联系电话</text>
             <view class="info-value-wrapper" @click="makePhoneCall(orderInfo.contactPhone)">
               <text class="info-value link">{{ orderInfo.contactPhone }}</text>
-              <uni-icons type="phone-filled" size="16" color="#3ec6c6" style="margin-left: 8rpx;"></uni-icons>
+              <uni-icons type="phone-filled" size="16" color="#E07A4F" style="margin-left: 8rpx;"></uni-icons>
             </view>
           </view>
           <view class="divider"></view>
@@ -101,7 +101,7 @@
       <view class="info-card served-member-card" v-if="servedMemberInfo">
         <view class="card-header">
           <view class="header-title">
-            <uni-icons type="person-filled" size="18" color="#3ec6c6" class="header-icon"></uni-icons>
+            <uni-icons type="person-filled" size="18" color="#E07A4F" class="header-icon"></uni-icons>
             <text>被服务人员</text>
           </view>
         </view>
@@ -110,7 +110,7 @@
         <view class="member-profile">
           <view class="member-avatar">
             <view class="avatar-circle">
-              <uni-icons type="person-filled" size="36" color="#3ec6c6"></uni-icons>
+              <uni-icons type="person-filled" size="36" color="#E07A4F"></uni-icons>
             </view>
           </view>
           <view class="member-basic-info">
@@ -138,14 +138,14 @@
           <view class="detail-row" v-if="servedMemberInfo.height || servedMemberInfo.weight">
             <view class="detail-item" v-if="servedMemberInfo.height">
               <view class="detail-icon">
-                <uni-icons type="arrowup" size="14" color="#3ec6c6"></uni-icons>
+                <uni-icons type="arrowup" size="14" color="#E07A4F"></uni-icons>
               </view>
               <text class="detail-label">身高</text>
               <text class="detail-value">{{ servedMemberInfo.height }}cm</text>
             </view>
             <view class="detail-item" v-if="servedMemberInfo.weight">
               <view class="detail-icon">
-                <uni-icons type="loop" size="14" color="#3ec6c6"></uni-icons>
+                <uni-icons type="loop" size="14" color="#E07A4F"></uni-icons>
               </view>
               <text class="detail-label">体重</text>
               <text class="detail-value">{{ servedMemberInfo.weight }}kg</text>
@@ -157,7 +157,7 @@
           <view class="member-contact" v-if="servedMemberInfo.phone">
             <view class="contact-item" @click="makePhoneCall(servedMemberInfo.phone)">
               <view class="contact-icon">
-                <uni-icons type="phone-filled" size="16" color="#3ec6c6"></uni-icons>
+                <uni-icons type="phone-filled" size="16" color="#E07A4F"></uni-icons>
               </view>
               <text class="contact-text">{{ servedMemberInfo.phone }}</text>
               <view class="contact-action">
@@ -193,7 +193,7 @@
           <view class="provider-info">
             <text class="provider-name">{{ orderInfo.providerName }}</text>
             <view class="provider-contact" v-if="orderInfo.providerPhone" @click="makePhoneCall(orderInfo.providerPhone)">
-              <uni-icons type="phone" size="14" color="#3ec6c6"></uni-icons>
+              <uni-icons type="phone" size="14" color="#E07A4F"></uni-icons>
               <text class="provider-phone">{{ orderInfo.providerPhone }}</text>
             </view>
           </view>
@@ -215,12 +215,12 @@
         </view>
         <view class="provider-content">
           <view class="provider-avatar">
-            <uni-icons type="person-filled" size="32" color="#3ec6c6"></uni-icons>
+            <uni-icons type="person-filled" size="32" color="#E07A4F"></uni-icons>
           </view>
           <view class="provider-info">
             <text class="provider-name">{{ orderInfo.staffName }}</text>
             <view class="provider-contact" v-if="orderInfo.staffPhone" @click="makePhoneCall(orderInfo.staffPhone)">
-              <uni-icons type="phone-filled" size="14" color="#3ec6c6"></uni-icons>
+              <uni-icons type="phone-filled" size="14" color="#E07A4F"></uni-icons>
               <text class="provider-phone">{{ orderInfo.staffPhone }}</text>
             </view>
           </view>
@@ -345,7 +345,7 @@
           </view>
           <view class="view-all-btn" @click="viewAllEvaluations" v-if="evaluationList.length > 1">
             <text class="view-all-text">查看全部{{ evaluationList.length }}条</text>
-            <uni-icons type="right" size="14" color="#3ec6c6"></uni-icons>
+            <uni-icons type="right" size="14" color="#E07A4F"></uni-icons>
           </view>
         </view>
         <view class="evaluation-list">
@@ -393,7 +393,7 @@
           <view class="timeline-item" v-for="(item, index) in orderTimeline" :key="index" :class="{ 'is-first': index === 0 }">
             <view class="timeline-dot-wrapper">
               <view class="timeline-dot" :class="{ 'active': index === 0 }">
-                <uni-icons :type="item.icon" size="14" :color="index === 0 ? '#fff' : '#3ec6c6'"></uni-icons>
+                <uni-icons :type="item.icon" size="14" :color="index === 0 ? '#fff' : '#E07A4F'"></uni-icons>
               </view>
               <view class="timeline-line" v-if="index < orderTimeline.length - 1"></view>
             </view>
@@ -941,7 +941,7 @@ export default {
       uni.showModal({
         title: '取消预约',
         content: '确定要取消该预约吗？',
-        confirmColor: '#ff5555',
+        confirmColor: '#D95C5C',
         success: async (res) => {
           if (res.confirm) {
             try {
@@ -984,7 +984,7 @@ export default {
       uni.showModal({
         title: '删除订单',
         content: '确定要删除该订单吗？删除后将无法恢复。',
-        confirmColor: '#ff5555',
+        confirmColor: '#D95C5C',
         success: async (res) => {
           if (res.confirm) {
             try {
@@ -1027,7 +1027,7 @@ export default {
       uni.showModal({
         title: '确认完成',
         content: '确认服务已完成吗？',
-        confirmColor: '#3ec6c6',
+        confirmColor: '#E07A4F',
         success: async (res) => {
           if (res.confirm) {
             try {
@@ -1399,12 +1399,12 @@ export default {
     box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.3);
   }
   &.bg-accepted {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
+    box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.3);
   }
   &.bg-serving {
-    background: linear-gradient(135deg, #3ec6c6 0%, #2db7b7 100%);
-    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.3);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
+    box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.3);
   }
   &.bg-completed {
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
@@ -1498,18 +1498,13 @@ export default {
   align-items: center;
   gap: 4rpx;
   padding: 8rpx 16rpx;
-  background: rgba(62, 198, 198, 0.1);
+  background: rgba(224, 122, 79, 0.1);
   border-radius: 20rpx;
-  cursor: pointer;
-  transition: all 0.3s;
-
-  &:active {
-    background: rgba(62, 198, 198, 0.2);
-  }
+  @include press-card();
 
   .view-all-text {
     font-size: 24rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
   }
 }
 
@@ -1527,9 +1522,9 @@ export default {
   border-radius: 100rpx;
   font-size: 22rpx;
   font-weight: 500;
-  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  background: linear-gradient(135deg, #5AAB7A 0%, #5AAB7A 100%);
   color: #fff;
-  box-shadow: 0 4rpx 12rpx rgba(82, 196, 26, 0.25);
+  box-shadow: 0 4rpx 12rpx rgba(90, 171, 122, 0.25);
   
   text {
     line-height: 1;
@@ -1593,15 +1588,9 @@ export default {
   }
   
   &.voice {
-    background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     color: #fff;
-    cursor: pointer;
-    transition: all 0.2s;
-    
-    &:active {
-      transform: scale(0.95);
-      opacity: 0.8;
-    }
+    @include press();
   }
 }
 
@@ -1619,8 +1608,8 @@ export default {
 
 .tag {
   font-size: 22rpx;
-  color: #3ec6c6;
-  background: rgba(62, 198, 198, 0.1);
+  color: #E07A4F;
+  background: rgba(224, 122, 79, 0.1);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
 }
@@ -1663,7 +1652,7 @@ export default {
   text-align: right;
 
   &.link {
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 500;
   }
 }
@@ -1713,12 +1702,12 @@ export default {
   color: #333;
 
   &.subsidy {
-    color: #52c41a;
+    color: #5AAB7A;
   }
 
   &.actual {
     font-size: 28rpx;
-    color: #ff5555;
+    color: #D95C5C;
     font-weight: bold;
     display: flex;
     align-items: baseline;
@@ -1747,7 +1736,7 @@ export default {
   padding: 24rpx;
   background: #f9fafc;
   border-radius: 12rpx;
-  border-left: 4rpx solid #3ec6c6;
+  border-left: 4rpx solid #E07A4F;
 }
 
 .evaluation-header {
@@ -1835,15 +1824,15 @@ export default {
   }
 
   &.primary {
-    background: linear-gradient(135deg, #3ec6c6 0%, #2db7b7 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     color: #fff;
     border: none;
-    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.35);
+    box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.35);
     
     &:active {
       opacity: 0.9;
       transform: translateY(1rpx);
-      box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.25);
+      box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.25);
     }
   }
 
@@ -1868,14 +1857,14 @@ export default {
   }
   
   &.review {
-    background:#3ec6c6;
+    background:#E07A4F;
     box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.3);
   }
 
   &.delete {
     background: #fff;
-    color: #ff5555;
-    border: 2rpx solid #ff5555;
+    color: #D95C5C;
+    border: 2rpx solid #D95C5C;
     
     &:active {
       background: #fff5f5;
@@ -1948,7 +1937,7 @@ export default {
 
 .provider-phone {
   font-size: 26rpx;
-  color: #3ec6c6;
+  color: #E07A4F;
   font-weight: 500;
 }
 
@@ -1963,7 +1952,7 @@ export default {
   background: #f9fafc;
   border-radius: 16rpx;
   padding: 24rpx;
-  border-left: 4rpx solid #3ec6c6;
+  border-left: 4rpx solid #E07A4F;
 }
 
 .modification-header {
@@ -1980,8 +1969,8 @@ export default {
 
 .modification-badge {
   font-size: 22rpx;
-  color: #3ec6c6;
-  background: rgba(62, 198, 198, 0.1);
+  color: #E07A4F;
+  background: rgba(224, 122, 79, 0.1);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
 
@@ -2031,7 +2020,7 @@ export default {
     }
     
     &.new {
-      color: #3ec6c6;
+      color: #E07A4F;
 
       &.rejected {
         color: #bbb;
@@ -2113,7 +2102,7 @@ export default {
   height: 48rpx;
   border-radius: 50%;
   background: #fff;
-  border: 3rpx solid #3ec6c6;
+  border: 3rpx solid #E07A4F;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2122,9 +2111,9 @@ export default {
   transition: all 0.3s;
   
   &.active {
-    background: linear-gradient(135deg, #3ec6c6 0%, #2db7b7 100%);
-    border-color: #3ec6c6;
-    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
+    border-color: #E07A4F;
+    box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
     transform: scale(1.1);
   }
 }
@@ -2132,7 +2121,7 @@ export default {
 .timeline-line {
   width: 2rpx;
   flex: 1;
-  background: linear-gradient(to bottom, #3ec6c6, #e5e5e5);
+  background: linear-gradient(to bottom, #E07A4F, #e5e5e5);
   margin-top: 8rpx;
   min-height: 40rpx;
 }
@@ -2160,11 +2149,11 @@ export default {
 
 .timeline-item.is-first {
   .timeline-title {
-    color: #3ec6c6;
+    color: #E07A4F;
   }
   
   .timeline-time {
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 500;
   }
 }
@@ -2186,12 +2175,12 @@ export default {
     width: 120rpx;
     height: 120rpx;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(62, 198, 198, 0.1) 0%, rgba(62, 198, 198, 0.05) 100%);
-    border: 3rpx solid rgba(62, 198, 198, 0.2);
+    background: linear-gradient(135deg, rgba(224, 122, 79, 0.1) 0%, rgba(224, 122, 79, 0.05) 100%);
+    border: 3rpx solid rgba(224, 122, 79, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.15);
+    box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.15);
   }
 
   .member-basic-info {
@@ -2219,16 +2208,16 @@ export default {
     align-items: center;
     gap: 8rpx;
     padding: 8rpx 16rpx;
-    background: rgba(62, 198, 198, 0.08);
+    background: rgba(224, 122, 79, 0.08);
     border-radius: 20rpx;
     font-size: 24rpx;
     color: #666;
-    border: 1rpx solid rgba(62, 198, 198, 0.15);
+    border: 1rpx solid rgba(224, 122, 79, 0.15);
 
     &.age-tag {
       background: rgba(255, 152, 0, 0.08);
       border-color: rgba(255, 152, 0, 0.15);
-      color: #ff9800;
+      color: #E8A84C;
     }
 
     &.relation-tag {
@@ -2273,7 +2262,7 @@ export default {
   width: 36rpx;
   height: 36rpx;
   border-radius: 50%;
-  background: rgba(62, 198, 198, 0.1);
+  background: rgba(224, 122, 79, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2309,12 +2298,10 @@ export default {
   gap: 16rpx;
   padding: 8rpx 0;
   cursor: pointer;
-  transition: all 0.3s;
+  @include press-card();
 }
 
-.contact-item:active {
-  background: rgba(62, 198, 198, 0.1);
-  border-radius: 8rpx;
+.contact-item {
 }
 
 .contact-icon {
@@ -2323,7 +2310,7 @@ export default {
   justify-content: center;
   width: 40rpx;
   height: 40rpx;
-  background: rgba(62, 198, 198, 0.1);
+  background: rgba(224, 122, 79, 0.1);
   border-radius: 50%;
 }
 
@@ -2393,8 +2380,8 @@ export default {
   }
 
   &.after {
-    background: rgba(62, 198, 198, 0.1);
-    color: #3ec6c6;
+    background: rgba(224, 122, 79, 0.1);
+    color: #E07A4F;
   }
 }
 

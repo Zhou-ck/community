@@ -57,16 +57,10 @@
       </view>
 
       <!-- 空状态 -->
-      <view class="empty-state" v-if="evaluationList.length === 0 && !isLoading">
-        <uni-icons type="star" size="64" color="#ddd"></uni-icons>
-        <text class="empty-text">暂无评价记录</text>
-      </view>
+      <EmptyState v-if="evaluationList.length === 0 && !isLoading" icon="star" text="暂无评价记录" />
 
       <!-- 加载状态 -->
-      <view class="loading-state" v-if="isLoading">
-        <uni-icons type="spinner-cycle" size="32" color="#3ec6c6"></uni-icons>
-        <text class="loading-text">加载中...</text>
-      </view>
+      <SkeletonLoader type="list" :rows="5" v-if="isLoading" />
     </scroll-view>
   </view>
 </template>
@@ -75,8 +69,11 @@
 import { getServiceorder, getEvaluationListByOrderId } from '@/api/service'
 import { getServiceIcon } from '@/utils/service-helper'
 import config from '@/config.js'
+import SkeletonLoader from '@/components/skeleton/index.vue'
+import EmptyState from '@/components/empty-state/index.vue'
 
 export default {
+  components: { SkeletonLoader, EmptyState },
   data() {
     return {
       config: config,
@@ -197,13 +194,13 @@ export default {
 }
 
 .service-name {
-  font-size: 30rpx;
+  font-size: $text-lg;
   font-weight: 600;
   color: #333;
 }
 
 .provider-name {
-  font-size: 24rpx;
+  font-size: $text-sm;
   color: #999;
 }
 
@@ -211,12 +208,12 @@ export default {
 .evaluation-stats {
   margin: 0 32rpx 24rpx;
   padding: 32rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2db7b7 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
   border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.3);
 }
 
 .stats-item {
@@ -227,13 +224,13 @@ export default {
 }
 
 .stats-number {
-  font-size: 48rpx;
+  font-size: $text-3xl;
   font-weight: bold;
   color: #fff;
 }
 
 .stats-label {
-  font-size: 24rpx;
+  font-size: $text-sm;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -263,8 +260,8 @@ export default {
 }
 
 .evaluation-index {
-  font-size: 24rpx;
-  color: #3ec6c6;
+  font-size: $text-sm;
+  color: #E07A4F;
   font-weight: 600;
   margin-bottom: 16rpx;
 }
@@ -284,13 +281,13 @@ export default {
 
 .rating-text {
   margin-left: 12rpx;
-  font-size: 26rpx;
+  font-size: $text-base;
   color: #ffb400;
   font-weight: 600;
 }
 
 .evaluation-time {
-  font-size: 24rpx;
+  font-size: $text-sm;
   color: #999;
 }
 
@@ -299,9 +296,9 @@ export default {
 }
 
 .evaluation-text {
-  font-size: 28rpx;
+  font-size: $text-md;
   color: #333;
-  line-height: 1.6;
+  line-height: $lh-loose;
 }
 
 .evaluation-images {
@@ -328,7 +325,7 @@ export default {
 }
 
 .empty-text {
-  font-size: 28rpx;
+  font-size: $text-md;
   color: #999;
 }
 
@@ -343,7 +340,7 @@ export default {
 }
 
 .loading-text {
-  font-size: 24rpx;
+  font-size: $text-sm;
   color: #999;
 }
 </style>

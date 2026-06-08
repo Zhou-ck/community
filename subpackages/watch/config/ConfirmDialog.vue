@@ -75,7 +75,7 @@ export default {
   width: 80rpx;
   height: 80rpx;
   margin: 0 auto 32rpx;
-  background: linear-gradient(135deg, #4dd9d9 0%, #3ec6c6 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #E07A4F 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -129,9 +129,9 @@ export default {
   }
   
   .btn-confirm {
-    background: linear-gradient(135deg, #4dd9d9 0%, #3ec6c6 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #E07A4F 100%);
     color: #fff;
-    box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.35);
+    box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.35);
     
     &:active {
       opacity: 0.9;

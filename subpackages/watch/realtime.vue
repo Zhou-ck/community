@@ -22,7 +22,7 @@
       </view>
       <view class="status-grid">
         <view class="status-item">
-          <view class="status-icon" style="background: #3ec6c6;">
+          <view class="status-icon" style="background: #E07A4F;">
             <uni-icons type="gear" size="22" color="#fff"></uni-icons>
           </view>
           <view class="status-info">
@@ -107,7 +107,7 @@
             <view class="location-coords">经度: {{ item.longitude }} | 纬度: {{ item.latitude }}</view>
           </view>
           <view class="location-action" @click="viewOnMap(item)">
-            <uni-icons type="map" size="18" color="#3ec6c6"></uni-icons>
+            <uni-icons type="map" size="18" color="#E07A4F"></uni-icons>
           </view>
         </view>
       </view>
@@ -115,7 +115,7 @@
 
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
+      <uni-icons type="spinner-cycle" size="40" color="#E07A4F"></uni-icons>
       <text class="loading-text">加载中...</text>
     </view>
   </view>
@@ -253,9 +253,9 @@ export default {
         case '1':
           return '#ffa502'
         case '2':
-          return '#3ec6c6'
+          return '#E07A4F'
         case '3':
-          return '#4CAF50'
+          return '#5AAB7A'
         default:
           return '#999'
       }
@@ -372,7 +372,7 @@ export default {
 .section-line {
   width: 6rpx;
   height: 32rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   border-radius: 3rpx;
 }
 
@@ -493,8 +493,8 @@ export default {
 /* 定位信息 */
 .location-count {
   font-size: 22rpx;
-  color: #3ec6c6;
-  background: rgba(62, 198, 198, 0.1);
+  color: #E07A4F;
+  background: rgba(224, 122, 79, 0.1);
   padding: 8rpx 16rpx;
   border-radius: 20rpx;
   font-weight: 500;

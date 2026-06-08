@@ -7,7 +7,7 @@
           <text class="package-name">{{ packageData.packageName || '套餐名称' }}</text>
           <view class="package-tags">
             <view class="validity-tag" v-if="packageData.validityPeriod">
-              <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+              <uni-icons type="calendar" size="20" color="#E07A4F"></uni-icons>
               <text>{{ getValidityText(packageData) }}</text>
             </view>
           </view>
@@ -60,7 +60,7 @@
           <text :class="selectedMembers.length > 0 ? '' : 'placeholder'">
             {{ selectedMembersText || '请选择家庭成员' }}
           </text>
-          <text class="iconfont icon-xiala"></text>
+          <uni-icons type="arrowdown" size="24rpx" color="#999"></uni-icons>
         </view>
       </view>
       
@@ -110,7 +110,7 @@
           <text class="address-text" :class="{ 'placeholder': !purchaseData.serviceAddress }">
             {{ purchaseData.serviceAddress || '请选择服务地址' }}
           </text>
-          <text class="iconfont icon-youjiantou"></text>
+          <uni-icons type="arrowright" size="24rpx" color="#999"></uni-icons>
         </view>
       </view>
       
@@ -140,7 +140,7 @@
           >
             <view class="schedule-item-left">
               <view class="schedule-item-icon">
-                <uni-icons type="calendar" size="24" color="#3ec6c6"></uni-icons>
+                <uni-icons type="calendar" size="24" color="#E07A4F"></uni-icons>
               </view>
               <view class="schedule-item-info">
                 <text class="service-name">{{ item.serviceName }}</text>
@@ -156,7 +156,7 @@
                 :class="{ 'configured': getScheduleCount(item.serviceId) > 0 }"
                 @click="openScheduleConfig(index)"
               >
-                <uni-icons :type="getScheduleCount(item.serviceId) > 0 ? 'compose' : 'plusempty'" size="16" :color="getScheduleCount(item.serviceId) > 0 ? '#3ec6c6' : '#fff'"></uni-icons>
+                <uni-icons :type="getScheduleCount(item.serviceId) > 0 ? 'compose' : 'plusempty'" size="16" :color="getScheduleCount(item.serviceId) > 0 ? '#E07A4F' : '#fff'"></uni-icons>
                 <text>{{ getScheduleCount(item.serviceId) > 0 ? '修改' : '配置' }}</text>
               </view>
             </view>
@@ -176,7 +176,7 @@
           <scroll-view class="schedule-picker-body" scroll-y v-if="currentScheduleItem">
             <view class="schedule-info">
               <view class="schedule-info-name">
-                <uni-icons type="calendar" size="22" color="#3ec6c6"></uni-icons>
+                <uni-icons type="calendar" size="22" color="#E07A4F"></uni-icons>
                 <text>{{ currentScheduleItem.serviceName }}</text>
               </view>
               <view class="schedule-info-tags">
@@ -203,7 +203,7 @@
                   @change="e => dailyPeriod = periodOptions[e.detail.value]"
                 >
                   <view class="period-picker-single">
-                    <uni-icons type="notification" size="20" color="#3ec6c6"></uni-icons>
+                    <uni-icons type="notification" size="20" color="#E07A4F"></uni-icons>
                     <text :class="['picker-value', dailyPeriod ? '' : 'placeholder']">
                       {{ dailyPeriod || '选择时段' }}
                     </text>
@@ -237,7 +237,7 @@
                       @change="e => date.weekday = e.detail.value + 1"
                     >
                       <view class="date-picker">
-                        <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+                        <uni-icons type="calendar" size="20" color="#E07A4F"></uni-icons>
                         <view class="picker-value-wrap">
                           <text class="picker-label">星期</text>
                           <text :class="['picker-value', date.weekday ? '' : 'placeholder']">
@@ -254,7 +254,7 @@
                       @change="e => date.appointmentPeriod = periodOptions[e.detail.value]"
                     >
                       <view class="period-picker">
-                        <uni-icons type="notification" size="20" color="#3ec6c6"></uni-icons>
+                        <uni-icons type="notification" size="20" color="#E07A4F"></uni-icons>
                         <view class="picker-value-wrap">
                           <text class="picker-label">时段</text>
                           <text :class="['picker-value', date.appointmentPeriod ? '' : 'placeholder']">
@@ -266,12 +266,12 @@
                     </picker>
                   </view>
                   <view class="date-item-action" @click="removeScheduleDate(index)">
-                    <uni-icons type="trash" size="20" color="#ff4d4f"></uni-icons>
+                    <uni-icons type="trash" size="20" color="#D95C5C"></uni-icons>
                   </view>
                 </view>
               </view>
               <view class="add-date-btn" @click="addScheduleDate" v-if="currentScheduleDates.length < currentScheduleItem.frequencyLimit">
-                <uni-icons type="plusempty" size="20" color="#3ec6c6"></uni-icons>
+                <uni-icons type="plusempty" size="20" color="#E07A4F"></uni-icons>
                 <text>添加 ({{ currentScheduleDates.length }}/{{ currentScheduleItem.frequencyLimit }})</text>
               </view>
             </template>
@@ -318,7 +318,7 @@
                       @change="e => date.monthDay = e.detail.value + 1"
                     >
                       <view class="date-picker">
-                        <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+                        <uni-icons type="calendar" size="20" color="#E07A4F"></uni-icons>
                         <view class="picker-value-wrap">
                           <text class="picker-label">日期</text>
                           <text :class="['picker-value', date.monthDay ? '' : 'placeholder']">
@@ -335,7 +335,7 @@
                       @change="e => date.appointmentPeriod = periodOptions[e.detail.value]"
                     >
                       <view class="period-picker">
-                        <uni-icons type="notification" size="20" color="#3ec6c6"></uni-icons>
+                        <uni-icons type="notification" size="20" color="#E07A4F"></uni-icons>
                         <view class="picker-value-wrap">
                           <text class="picker-label">时段</text>
                           <text :class="['picker-value', date.appointmentPeriod ? '' : 'placeholder']">
@@ -347,12 +347,12 @@
                     </picker>
                   </view>
                   <view class="date-item-action" @click="removeScheduleDate(index)">
-                    <uni-icons type="trash" size="20" color="#ff4d4f"></uni-icons>
+                    <uni-icons type="trash" size="20" color="#D95C5C"></uni-icons>
                   </view>
                 </view>
               </view>
               <view class="add-date-btn" @click="addScheduleDate" v-if="currentScheduleDates.length < currentScheduleItem.frequencyLimit">
-                <uni-icons type="plusempty" size="20" color="#3ec6c6"></uni-icons>
+                <uni-icons type="plusempty" size="20" color="#E07A4F"></uni-icons>
                 <text>添加 ({{ currentScheduleDates.length }}/{{ currentScheduleItem.frequencyLimit }})</text>
               </view>
             </template>
@@ -361,7 +361,7 @@
             <template v-else>
               <text class="config-label">请选择套餐生效后的第几天进行服务（共{{ currentScheduleItem.totalCount }}次）：</text>
               <view class="validity-tip">
-                <uni-icons type="info" size="16" color="#3ec6c6"></uni-icons>
+                <uni-icons type="info" size="16" color="#E07A4F"></uni-icons>
                 <text>套餐有效期{{ getPackageMaxDays() }}天，请在有效期内安排服务</text>
               </view>
               <view class="schedule-dates-list">
@@ -379,12 +379,12 @@
                   </view>
                   <view class="date-item-content">
                     <view class="date-picker">
-                      <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+                      <uni-icons type="calendar" size="20" color="#E07A4F"></uni-icons>
                       <view class="picker-value-wrap">
                         <text class="picker-label">第</text>
                         <view class="stepper-wrapper">
                           <view class="stepper-btn" @click="decrementDay(date)">
-                            <uni-icons type="minus" size="16" color="#3ec6c6"></uni-icons>
+                            <uni-icons type="minus" size="16" color="#E07A4F"></uni-icons>
                           </view>
                           <input 
                             type="number" 
@@ -393,7 +393,7 @@
                             @blur="validateDayOffset(date)"
                           />
                           <view class="stepper-btn" @click="incrementDay(date)">
-                            <uni-icons type="plus" size="16" color="#3ec6c6"></uni-icons>
+                            <uni-icons type="plus" size="16" color="#E07A4F"></uni-icons>
                           </view>
                         </view>
                         <text class="picker-label">天</text>
@@ -406,7 +406,7 @@
                       @change="e => date.appointmentPeriod = periodOptions[e.detail.value]"
                     >
                       <view class="period-picker">
-                        <uni-icons type="notification" size="20" color="#3ec6c6"></uni-icons>
+                        <uni-icons type="notification" size="20" color="#E07A4F"></uni-icons>
                         <view class="picker-value-wrap">
                           <text class="picker-label">时段</text>
                           <text :class="['picker-value', date.appointmentPeriod ? '' : 'placeholder']">
@@ -418,16 +418,16 @@
                     </picker>
                   </view>
                   <view class="date-item-action" @click="removeScheduleDate(index)">
-                    <uni-icons type="trash" size="20" color="#ff4d4f"></uni-icons>
+                    <uni-icons type="trash" size="20" color="#D95C5C"></uni-icons>
                   </view>
                 </view>
               </view>
               <view class="add-date-btn" @click="addScheduleDate" v-if="currentScheduleDates.length < currentScheduleItem.totalCount">
-                <uni-icons type="plusempty" size="20" color="#3ec6c6"></uni-icons>
+                <uni-icons type="plusempty" size="20" color="#E07A4F"></uni-icons>
                 <text>添加 ({{ currentScheduleDates.length }}/{{ currentScheduleItem.totalCount }})</text>
               </view>
               <view class="schedule-full-tip" v-if="currentScheduleDates.length >= currentScheduleItem.totalCount">
-                <uni-icons type="info" size="20" color="#52c41a"></uni-icons>
+                <uni-icons type="info" size="20" color="#5AAB7A"></uni-icons>
                 <text>已配置全部{{ currentScheduleItem.totalCount }}次服务时间</text>
               </view>
             </template>
@@ -479,12 +479,12 @@
                   class="document-item"
                 >
                   <view class="document-icon">
-                    <uni-icons type="document-filled" size="32" color="#3ec6c6"></uni-icons>
+                    <uni-icons type="document-filled" size="32" color="#E07A4F"></uni-icons>
                     <text class="file-extension">{{ getFileExtension(file.name) }}</text>
                   </view>
                   <text class="document-name">{{ file.name }}</text>
                   <view class="delete-btn-doc" @click="removeFile(file)">
-                    <uni-icons type="trash" size="20" color="#ff4d4f"></uni-icons>
+                    <uni-icons type="trash" size="20" color="#D95C5C"></uni-icons>
                   </view>
                 </view>
               </view>
@@ -493,7 +493,7 @@
             <!-- 添加更多文件按钮 -->
             <view v-if="uploadedFiles.length < 5" class="add-more-section">
               <view class="add-more-btn" @click="chooseFile">
-                <uni-icons type="plus" size="32" color="#3ec6c6"></uni-icons>
+                <uni-icons type="plus" size="32" color="#E07A4F"></uni-icons>
                 <text>继续添加</text>
               </view>
             </view>
@@ -1840,18 +1840,18 @@ export default {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  background: rgba(62, 198, 198, 0.1);
+  background: rgba(224, 122, 79, 0.1);
   padding: 6rpx 16rpx;
   border-radius: 20rpx;
   
   .iconfont {
     font-size: 24rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
   }
   
   text {
     font-size: 24rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 500;
   }
 }
@@ -1909,13 +1909,13 @@ export default {
   
   .currency-sign {
     font-size: 28rpx;
-    color: #ff4d4f;
+    color: #D95C5C;
     font-weight: 600;
   }
   
   .total-value {
     font-size: 40rpx;
-    color: #ff4d4f;
+    color: #D95C5C;
     font-weight: 700;
   }
 }
@@ -1967,12 +1967,12 @@ export default {
   right: 32rpx;
   top: 32rpx;
   font-size: 24rpx;
-  color: #52c41a;
-  background: rgba(82, 196, 26, 0.15);
+  color: #5AAB7A;
+  background: rgba(90, 171, 122, 0.15);
   padding: 8rpx 20rpx;
   border-radius: 20rpx;
   font-weight: 600;
-  border: 1rpx solid rgba(82, 196, 26, 0.3);
+  border: 1rpx solid rgba(90, 171, 122, 0.3);
 }
 
 .form-section {
@@ -1999,7 +1999,7 @@ export default {
     transform: translateY(-50%);
     width: 6rpx;
     height: 28rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     border-radius: 3rpx;
   }
 }
@@ -2020,7 +2020,7 @@ export default {
   
   &.required::before {
     content: '*';
-    color: #ff4d4f;
+    color: #D95C5C;
     margin-right: 6rpx;
   }
 }
@@ -2059,16 +2059,16 @@ export default {
   background: #f0fafa;
   border-radius: 12rpx;
   margin-bottom: 32rpx;
-  border: 2rpx dashed #3ec6c6;
+  border: 2rpx dashed #E07A4F;
   
   .iconfont {
     font-size: 32rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
   }
   
   text {
     font-size: 28rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 500;
   }
 }
@@ -2106,7 +2106,7 @@ export default {
     justify-content: center;
     gap: 12rpx;
     padding: 28rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     border-radius: 12rpx;
     color: #fff;
     
@@ -2218,7 +2218,7 @@ export default {
         left: 50%;
         transform: translateX(-50%);
         font-size: 16rpx;
-        color: #3ec6c6;
+        color: #E07A4F;
         font-weight: 600;
         background: #fff;
         padding: 2rpx 6rpx;
@@ -2255,7 +2255,7 @@ export default {
     justify-content: center;
     gap: 8rpx;
     padding: 20rpx;
-    border: 2rpx dashed #3ec6c6;
+    border: 2rpx dashed #E07A4F;
     border-radius: 12rpx;
     background: #f0fafa;
     transition: all 0.3s ease;
@@ -2266,7 +2266,7 @@ export default {
     
     text {
       font-size: 26rpx;
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 500;
     }
   }
@@ -2343,13 +2343,13 @@ export default {
     
     .currency {
       font-size: 28rpx;
-      color: #ff4d4f;
+      color: #D95C5C;
       font-weight: 600;
     }
     
     .summary-price {
       font-size: 40rpx;
-      color: #ff4d4f;
+      color: #D95C5C;
       font-weight: 700;
     }
   }
@@ -2359,13 +2359,13 @@ export default {
   flex: 1;
   height: 88rpx;
   line-height: 88rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
   border-radius: 44rpx;
   color: #fff;
   font-size: 32rpx;
   font-weight: 600;
   text-align: center;
-  box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.4);
   
   &::after {
     border: none;
@@ -2450,7 +2450,7 @@ export default {
     background: #f0fafa;
     
     .member-name {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 600;
     }
   }
@@ -2476,8 +2476,8 @@ export default {
     flex-shrink: 0;
     
     &.checked {
-      background: #3ec6c6;
-      border-color: #3ec6c6;
+      background: #E07A4F;
+      border-color: #E07A4F;
     }
   }
   
@@ -2496,7 +2496,7 @@ export default {
     width: 100%;
     height: 80rpx;
     line-height: 80rpx;
-    background: #3ec6c6;
+    background: #E07A4F;
     color: #fff;
     border: none;
     border-radius: 12rpx;
@@ -2567,9 +2567,9 @@ export default {
   transition: all 0.3s ease;
   
   &.schedule-item-configured {
-    border-color: #3ec6c6;
+    border-color: #E07A4F;
     background: linear-gradient(135deg, #f0fafa 0%, #fff 100%);
-    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.12);
+    box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.12);
   }
 }
 
@@ -2624,7 +2624,7 @@ export default {
 .schedule-progress {
   .progress-text {
     font-size: 24rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 600;
   }
 }
@@ -2634,18 +2634,18 @@ export default {
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 24rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
   border-radius: 32rpx;
   color: #fff;
-  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
   
   &.configured {
     background: #fff;
-    border: 2rpx solid #3ec6c6;
+    border: 2rpx solid #E07A4F;
     box-shadow: none;
     
     text {
-      color: #3ec6c6;
+      color: #E07A4F;
     }
   }
   
@@ -2722,11 +2722,11 @@ export default {
   }
   
   &.progress-tag {
-    background: rgba(62, 198, 198, 0.15);
-    border-color: rgba(62, 198, 198, 0.3);
+    background: rgba(224, 122, 79, 0.15);
+    border-color: rgba(224, 122, 79, 0.3);
     
     text {
-      color: #2eb5b5;
+      color: #C96A42;
       font-weight: 600;
     }
   }
@@ -2785,7 +2785,7 @@ export default {
   
   text {
     font-size: 24rpx;
-    color: #2eb5b5;
+    color: #C96A42;
     line-height: 1.5;
   }
 }
@@ -2875,12 +2875,12 @@ export default {
     justify-content: center;
     background: #f0f9f9;
     border-radius: 8rpx;
-    border: 2rpx solid #d4eded;
+    border: 2rpx solid #FFF0E8;
     transition: all 0.2s;
     
     &:active {
       background: #e8f5f5;
-      border-color: #3ec6c6;
+      border-color: #E07A4F;
       transform: scale(0.95);
     }
   }
@@ -2892,14 +2892,14 @@ export default {
     font-size: 32rpx;
     color: #333;
     font-weight: 700;
-    font-family: DIN, -apple-system, Helvetica, sans-serif;
+    font-family: inherit;
     background: #fff;
     border: 2rpx solid #e8e8e8;
     border-radius: 8rpx;
     padding: 0 8rpx;
     
     &:focus {
-      border-color: #3ec6c6;
+      border-color: #E07A4F;
       background: #f8fdfd;
     }
   }
@@ -2938,12 +2938,12 @@ export default {
   flex-shrink: 0;
   width: 52rpx;
   height: 52rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 8rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 4rpx 8rpx rgba(224, 122, 79, 0.3);
   
   .date-index {
     font-size: 24rpx;
@@ -2980,15 +2980,15 @@ export default {
     top: 0;
     bottom: 0;
     width: 6rpx;
-    background: linear-gradient(180deg, #3ec6c6 0%, #2eb5b5 100%);
+    background: linear-gradient(180deg, #E07A4F 0%, #C96A42 100%);
     opacity: 0;
     transition: opacity 0.3s;
   }
   
   &:active {
-    border-color: #3ec6c6;
+    border-color: #E07A4F;
     background: linear-gradient(135deg, #f8fdfd 0%, #f0f9f9 100%);
-    box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.15);
+    box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.15);
     transform: translateY(-2rpx);
     
     &::before {
@@ -3014,7 +3014,7 @@ export default {
     font-size: 30rpx;
     color: #333;
     font-weight: 700;
-    font-family: DIN, -apple-system, Helvetica, sans-serif;
+    font-family: inherit;
     letter-spacing: 1rpx;
     
     &.placeholder {
@@ -3042,19 +3042,19 @@ export default {
 // 时段选择器特殊样式
 .period-picker {
   background: linear-gradient(135deg, #f8fdfd 0%, #f0f9f9 100%);
-  border-color: #d4eded;
+  border-color: #FFF0E8;
   
   &::before {
-    background: linear-gradient(180deg, #52c41a 0%, #3ec6c6 100%);
+    background: linear-gradient(180deg, #5AAB7A 0%, #E07A4F 100%);
   }
   
   .picker-value {
-    color: #2eb5b5;
+    color: #C96A42;
   }
   
   &:active {
-    background: linear-gradient(135deg, #e8f5f5 0%, #d4eded 100%);
-    border-color: #3ec6c6;
+    background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
+    border-color: #E07A4F;
   }
 }
 
@@ -3083,7 +3083,7 @@ export default {
   background: #f0fafa;
   border-radius: 12rpx;
   margin-top: 8rpx;
-  border: 2rpx dashed #3ec6c6;
+  border: 2rpx dashed #E07A4F;
   transition: all 0.2s;
   
   &:active {
@@ -3092,7 +3092,7 @@ export default {
   
   text {
     font-size: 26rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 500;
   }
 }
@@ -3110,7 +3110,7 @@ export default {
   
   text {
     font-size: 26rpx;
-    color: #52c41a;
+    color: #5AAB7A;
     font-weight: 500;
   }
 }
@@ -3139,9 +3139,9 @@ export default {
   }
   
   .confirm-btn {
-    background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
     color: #fff;
-    box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.3);
+    box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.3);
   }
 }
 </style>

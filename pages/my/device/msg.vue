@@ -48,7 +48,7 @@
             <!-- 音频播放器 -->
             <view class="audio-player" v-if="isAudio(item)" @click.stop="playAudio(item)">
               <view class="play-icon-box" :class="{ playing: isPlaying(item) }">
-                <uni-icons :type="isPlaying(item) ? 'sound-filled' : 'sound'" size="22" :color="isPlaying(item) ? '#fff' : '#3ec6c6'"></uni-icons>
+                <uni-icons :type="isPlaying(item) ? 'sound-filled' : 'sound'" size="22" :color="isPlaying(item) ? '#fff' : '#E07A4F'"></uni-icons>
               </view>
               <view class="audio-info">
                 <text class="audio-name">{{ item.title || '语音消息' }}</text>
@@ -63,7 +63,7 @@
 
             <!-- 普通文件 -->
             <view class="file-info" v-else-if="item.filename">
-              <uni-icons type="paperclip" size="16" color="#3ec6c6"></uni-icons>
+              <uni-icons type="paperclip" size="16" color="#E07A4F"></uni-icons>
               <text class="file-name">{{ item.filename }}</text>
             </view>
             
@@ -75,7 +75,7 @@
           <!-- 底部操作栏 -->
           <view class="item-footer">
             <view class="resend-btn" @click.stop="handleResend(item)">
-              <uni-icons type="redo" size="16" color="#3ec6c6"></uni-icons>
+              <uni-icons type="redo" size="16" color="#E07A4F"></uni-icons>
               <text>再次发送</text>
             </view>
           </view>
@@ -105,7 +105,7 @@
             <!-- 音频播放器 -->
             <view class="audio-player" v-if="isAudio(item)" @click.stop="playAudio(item)">
               <view class="play-icon-box" :class="{ playing: isPlaying(item) }">
-                <uni-icons :type="isPlaying(item) ? 'sound-filled' : 'sound'" size="22" :color="isPlaying(item) ? '#fff' : '#3ec6c6'"></uni-icons>
+                <uni-icons :type="isPlaying(item) ? 'sound-filled' : 'sound'" size="22" :color="isPlaying(item) ? '#fff' : '#E07A4F'"></uni-icons>
               </view>
               <view class="audio-info">
                 <text class="audio-name">{{ item.title || '语音消息' }}</text>
@@ -120,7 +120,7 @@
 
              <!-- 普通文件 -->
             <view class="file-info" v-else-if="item.filename">
-              <uni-icons type="paperclip" size="16" color="#3ec6c6"></uni-icons>
+              <uni-icons type="paperclip" size="16" color="#E07A4F"></uni-icons>
               <text class="file-name">{{ item.filename }}</text>
             </view>
 
@@ -169,11 +169,11 @@
             <text class="form-label">内容类型</text>
             <radio-group @change="onContentTypeChange" class="radio-group-inline">
               <label class="radio-item">
-                <radio value="1" :checked="formData.contentType === '1'" color="#3ec6c6" />
+                <radio value="1" :checked="formData.contentType === '1'" color="#E07A4F" />
                 <text>文本</text>
               </label>
               <label class="radio-item">
-                <radio value="2" :checked="formData.contentType === '2'" color="#3ec6c6" />
+                <radio value="2" :checked="formData.contentType === '2'" color="#E07A4F" />
                 <text>音频</text>
               </label>
             </radio-group>
@@ -206,7 +206,7 @@
             <view v-else class="record-actions">
                <!-- iOS 不支持试听，只显示重录按钮 -->
                <button v-if="!isIOS" class="action-btn play-btn" @click="playTempAudio">
-                 <uni-icons :type="isPlayingTemp ? 'videocam-filled' : 'videocam'" size="20" color="#3ec6c6"></uni-icons>
+                 <uni-icons :type="isPlayingTemp ? 'videocam-filled' : 'videocam'" size="20" color="#E07A4F"></uni-icons>
                  <text>{{ isPlayingTemp ? '停止播放' : '试听录音' }} ({{ recordDuration }}s)</text>
                </button>
                <button class="action-btn retry-btn" @click="reRecord">
@@ -1183,7 +1183,7 @@ export default {
     transition: all 0.3s;
     
     &.active {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: bold;
       font-size: 32rpx;
       transform: scale(1.02);
@@ -1192,11 +1192,11 @@ export default {
     .active-line {
       width: 48rpx;
       height: 6rpx;
-      background: linear-gradient(90deg, #3ec6c6, #2bb5b5);
+      background: linear-gradient(90deg, #E07A4F, #2bb5b5);
       border-radius: 4rpx;
       position: absolute;
       bottom: 12rpx;
-      box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.3);
+      box-shadow: 0 2rpx 6rpx rgba(224, 122, 79, 0.3);
     }
   }
 }
@@ -1227,10 +1227,7 @@ export default {
     }
   }
   
-  &:active {
-    transform: scale(0.99);
-    background-color: #fafafa;
-  }
+  @include press-card();
   
   @keyframes slideIn {
     from {
@@ -1266,8 +1263,8 @@ export default {
       
       .item-user {
         font-size: 22rpx;
-        color: #3ec6c6;
-        background-color: rgba(62, 198, 198, 0.08);
+        color: #E07A4F;
+        background-color: rgba(224, 122, 79, 0.08);
         padding: 8rpx 20rpx;
         border-radius: 30rpx;
         font-weight: 600;
@@ -1283,12 +1280,7 @@ export default {
       justify-content: center;
       cursor: pointer;
       opacity: 0.6;
-      transition: all 0.2s;
-      
-      &:active {
-        opacity: 1;
-        transform: scale(0.9);
-      }
+      @include press(0.95, 0.7);
     }
   }
   
@@ -1332,7 +1324,7 @@ export default {
       margin-bottom: 16rpx;
       
       .demand-tag {
-        background: linear-gradient(135deg, #3ec6c6, #2bb5b5);
+        background: linear-gradient(135deg, #E07A4F, #2bb5b5);
         color: #fff;
         font-size: 20rpx;
         padding: 4rpx 16rpx;
@@ -1341,7 +1333,7 @@ export default {
         margin-top: 6rpx;
         font-weight: 600;
         flex-shrink: 0;
-        box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.25);
+        box-shadow: 0 4rpx 10rpx rgba(224, 122, 79, 0.25);
       }
       
       .demand-text {
@@ -1364,12 +1356,7 @@ export default {
       border: 1rpx solid #e0f2f2;
       max-width: 85%; /* 限制宽度更像气泡 */
       box-sizing: border-box;
-      transition: all 0.3s;
-      
-      &:active {
-        background-color: #eef9f9;
-        transform: scale(0.98);
-      }
+      @include press-card();
       
       .play-icon-box {
         width: 70rpx;
@@ -1381,12 +1368,12 @@ export default {
         justify-content: center;
         margin-right: 20rpx;
         flex-shrink: 0;
-        box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.15);
+        box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.15);
         transition: all 0.3s;
         
         &.playing {
-          background-color: #3ec6c6;
-          box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.4);
+          background-color: #E07A4F;
+          box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.4);
         }
         
         uni-icons {
@@ -1426,7 +1413,7 @@ export default {
         
         .bar {
           width: 4rpx;
-          background-color: #3ec6c6;
+          background-color: #E07A4F;
           margin: 0 2rpx;
           border-radius: 2rpx;
           animation: wave 1s infinite ease-in-out;
@@ -1497,18 +1484,13 @@ export default {
       display: flex;
       align-items: center;
       padding: 12rpx 24rpx;
-      background-color: rgba(62, 198, 198, 0.08);
+      background-color: rgba(224, 122, 79, 0.08);
       border-radius: 30rpx;
-      transition: all 0.2s;
-      
-      &:active {
-        background-color: rgba(62, 198, 198, 0.15);
-        transform: scale(0.96);
-      }
+      @include press-btn();
       
       text {
         font-size: 24rpx;
-        color: #3ec6c6;
+        color: #E07A4F;
         margin-left: 8rpx;
         font-weight: 500;
       }
@@ -1577,17 +1559,15 @@ export default {
   bottom: 60rpx;
   width: 100rpx;
   height: 100rpx;
-  background-color: #3ec6c6;
+  background-color: #E07A4F;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(62, 198, 198, 0.4);
+  box-shadow: 0 4rpx 16rpx rgba(224, 122, 79, 0.4);
   z-index: 100;
   
-  &:active {
-    transform: scale(0.95);
-  }
+  @include press-btn();
 }
 
 /* 弹窗样式 */
@@ -1665,7 +1645,7 @@ export default {
       .record-btn {
         width: 100%;
         height: 80rpx;
-        background-color: #3ec6c6;
+        background-color: #E07A4F;
         color: #fff;
         border-radius: 8rpx;
         display: flex;
@@ -1708,9 +1688,9 @@ export default {
           uni-icons { margin-right: 8rpx; }
           
           &.play-btn {
-            background-color: #e6fbfb;
-            color: #3ec6c6;
-            border: 1rpx solid #3ec6c6;
+            background-color: #FFF0E8;
+            color: #E07A4F;
+            border: 1rpx solid #E07A4F;
           }
           
           &.retry-btn {
@@ -1733,12 +1713,12 @@ export default {
       .audio-preview {
         margin-top: 16rpx;
         padding: 16rpx;
-        background-color: #f0fcfa;
+        background-color: #FFF0E8;
         border-radius: 8rpx;
         display: flex;
         align-items: center;
         font-size: 24rpx;
-        color: #3ec6c6;
+        color: #E07A4F;
         
         uni-icons {
           margin-right: 8rpx;
@@ -1797,7 +1777,7 @@ export default {
       }
       
       &.confirm {
-        color: #3ec6c6;
+        color: #E07A4F;
       }
     }
   }
@@ -1840,7 +1820,7 @@ export default {
         word-break: break-all;
         
         &.highlight-current {
-          color: #3ec6c6;
+          color: #E07A4F;
           font-weight: bold;
         }
       }
@@ -1859,7 +1839,7 @@ export default {
       border-radius: 8rpx;
       
       &.confirm {
-        background-color: #3ec6c6;
+        background-color: #E07A4F;
         color: #fff;
       }
     }

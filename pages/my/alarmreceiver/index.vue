@@ -12,13 +12,13 @@
 		>
 
 			<view class="tip-bar" v-if="deviceId">
-				<uni-icons type="info" size="14" color="#3ec6c6"></uni-icons>
+				<uni-icons type="info" size="14" color="#E07A4F"></uni-icons>
 				<text>请选择要绑定到设备的接警人</text>
 			</view>
 			
 			<!-- 报警逻辑说明 -->
 			<view class="logic-tip-bar">
-				<uni-icons type="info-filled" size="14" color="#ff9800"></uni-icons>
+				<uni-icons type="info-filled" size="14" color="#E8A84C"></uni-icons>
 				<text>实际通知 = 设备配置 ∩ 接警人设置，双方都开启才会发送</text>
 			</view>
 
@@ -60,10 +60,10 @@
 						<!-- 普通模式下的操作按钮 -->
 						<view class="action-right" v-else>
 							<view class="icon-btn" @click.stop="editReceiver(item)">
-								<uni-icons type="compose" size="20" color="#3ec6c6"></uni-icons>
+								<uni-icons type="compose" size="20" color="#E07A4F"></uni-icons>
 							</view>
 							<view class="icon-btn delete" @click.stop="deleteReceiver(item)">
-								<uni-icons type="trash" size="20" color="#ff5555"></uni-icons>
+								<uni-icons type="trash" size="20" color="#D95C5C"></uni-icons>
 							</view>
 						</view>
 					</view>
@@ -76,21 +76,21 @@
 								:class="{ active: item.phoneNotifySwitch === '1' }"
 								@click="changeNotifySwitch(item, 'phoneNotifySwitch')">
 								<uni-icons :type="item.phoneNotifySwitch === '1' ? 'phone-filled' : 'phone'" 
-									size="16" :color="item.phoneNotifySwitch === '1' ? '#3ec6c6' : '#999'"></uni-icons>
+									size="16" :color="item.phoneNotifySwitch === '1' ? '#E07A4F' : '#999'"></uni-icons>
 								<text>电话</text>
 							</view>
 							<view class="notify-tag" 
 								:class="{ active: item.smsNotifySwitch === '1' }"
 								@click="changeNotifySwitch(item, 'smsNotifySwitch')">
 								<uni-icons :type="item.smsNotifySwitch === '1' ? 'chat-filled' : 'chat'" 
-									size="16" :color="item.smsNotifySwitch === '1' ? '#3ec6c6' : '#999'"></uni-icons>
+									size="16" :color="item.smsNotifySwitch === '1' ? '#E07A4F' : '#999'"></uni-icons>
 								<text>短信</text>
 							</view>
 							<view class="notify-tag" 
 								:class="{ active: item.wechatNotifySwitch === '1' }"
 								@click="changeNotifySwitch(item, 'wechatNotifySwitch')">
 								<uni-icons :type="item.wechatNotifySwitch === '1' ? 'weixin' : 'weixin'" 
-									size="16" :color="item.wechatNotifySwitch === '1' ? '#3ec6c6' : '#999'"></uni-icons>
+									size="16" :color="item.wechatNotifySwitch === '1' ? '#E07A4F' : '#999'"></uni-icons>
 								<text>微信</text>
 							</view>
 						</view>
@@ -170,15 +170,15 @@
 						</view>
 						<view class="form-item switch-item">
 							<text class="label">电话通知</text>
-							<switch :checked="formData.phoneNotifySwitch === '1'" @change="e => formData.phoneNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
+							<switch :checked="formData.phoneNotifySwitch === '1'" @change="e => formData.phoneNotifySwitch = e.detail.value ? '1' : '2'" color="#E07A4F" style="transform:scale(0.8)"/>
 						</view>
 						<view class="form-item switch-item">
 							<text class="label">短信通知</text>
-							<switch :checked="formData.smsNotifySwitch === '1'" @change="e => formData.smsNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
+							<switch :checked="formData.smsNotifySwitch === '1'" @change="e => formData.smsNotifySwitch = e.detail.value ? '1' : '2'" color="#E07A4F" style="transform:scale(0.8)"/>
 						</view>
 						<view class="form-item switch-item">
 							<text class="label">微信通知</text>
-							<switch :checked="formData.wechatNotifySwitch === '1'" @change="e => formData.wechatNotifySwitch = e.detail.value ? '1' : '2'" color="#3ec6c6" style="transform:scale(0.8)"/>
+							<switch :checked="formData.wechatNotifySwitch === '1'" @change="e => formData.wechatNotifySwitch = e.detail.value ? '1' : '2'" color="#E07A4F" style="transform:scale(0.8)"/>
 						</view>
 					</view>
 
@@ -764,7 +764,7 @@
 		
 		text {
 			font-size: 24rpx;
-			color: #ff9800;
+			color: #E8A84C;
 			line-height: 1.5;
 		}
 	}
@@ -779,7 +779,7 @@
 		overflow: hidden;
 		
 		&.selected {
-			border-color: #3ec6c6;
+			border-color: #E07A4F;
 			background: #fcfcfc;
 		}
 		
@@ -801,12 +801,12 @@
 				.avatar-icon {
 					width: 80rpx;
 					height: 80rpx;
-					background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+					background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 					border-radius: 50%;
 					display: flex;
 					align-items: center;
 					justify-content: center;
-					box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.2);
+					box-shadow: 0 4rpx 10rpx rgba(224, 122, 79, 0.2);
 					
 					text {
 						color: #fff;
@@ -837,8 +837,8 @@
 							border-radius: 6rpx;
 							
 							&.bound {
-								background: rgba(62, 198, 198, 0.1);
-								color: #3ec6c6;
+								background: rgba(224, 122, 79, 0.1);
+								color: #E07A4F;
 							}
 						}
 					}
@@ -846,7 +846,7 @@
 					.phone {
 						font-size: 26rpx;
 						color: #666;
-						font-family: 'Roboto', sans-serif;
+						font-family: inherit;
 					}
 				}
 			}
@@ -886,8 +886,8 @@
 					transition: all 0.2s;
 					
 					&.checked {
-						background: #3ec6c6;
-						border-color: #3ec6c6;
+						background: #E07A4F;
+						border-color: #E07A4F;
 					}
 				}
 			}
@@ -926,10 +926,10 @@
 					
 					&.active {
 						background: #e6fffb;
-						border-color: #3ec6c6;
+						border-color: #E07A4F;
 						
 						text {
-							color: #3ec6c6;
+							color: #E07A4F;
 						}
 					}
 				}
@@ -1001,12 +1001,12 @@
 		
 		.add-btn-full {
 			height: 88rpx;
-			background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+			background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 			border-radius: 44rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+			box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 			
 			text {
 				font-size: 32rpx;
@@ -1048,9 +1048,9 @@
 				}
 				
 				&.primary {
-					background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+					background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 					color: #fff;
-					box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+					box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 					
 					&[disabled] {
 						background: #e0e0e0;
@@ -1145,7 +1145,7 @@
 				margin-bottom: 24rpx;
 				margin-top: 10rpx;
 				padding-left: 16rpx;
-				border-left: 6rpx solid #3ec6c6;
+				border-left: 6rpx solid #E07A4F;
 				line-height: 1;
 			}
 			
@@ -1216,7 +1216,7 @@
 				
 				&.required::after {
 					content: '*';
-					color: #ff5555;
+					color: #D95C5C;
 					margin-left: 4rpx;
 				}
 			}
@@ -1233,7 +1233,7 @@
 				transition: all 0.2s;
 				
 				&:focus {
-					border-color: #3ec6c6;
+					border-color: #E07A4F;
 				}
 			}
 			
@@ -1250,12 +1250,12 @@
 
 			.save-btn {
 				height: 88rpx;
-				background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+				background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 				border-radius: 44rpx;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+				box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 				
 				text {
 					color: #fff;

@@ -142,8 +142,8 @@ export default {
 }
 
 .custom-checkbox.checked {
-  background: #3ec6c6;
-  border-color: #3ec6c6;
+  background: #E07A4F;
+  border-color: #E07A4F;
 }
 
 .check-icon {

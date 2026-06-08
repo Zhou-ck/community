@@ -437,9 +437,13 @@
     transition: all 0.3s ease;
   }
 
-  .register-btn:active {
-    transform: translateY(2rpx);
-    box-shadow: 0 4rpx 12rpx rgba(63, 169, 231, 0.3);
+  .register-btn {
+    @include press-btn();
+
+    &:active {
+      transform: translateY(2rpx);
+      box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
+    }
   }
 
   .register-btn::after {

@@ -5,7 +5,7 @@
       <view class="status-card">
         <view class="status-header">
           <view class="status-icon-wrapper">
-            <uni-icons type="home-filled" size="28" color="#4CAF50"></uni-icons>
+            <uni-icons type="home-filled" size="28" color="#5AAB7A"></uni-icons>
           </view>
           <text class="status-title">我的社区状态</text>
         </view>
@@ -62,7 +62,7 @@
             <view class="community-avatar">
               <image v-if="community.avatar" :src="community.avatar" class="avatar-img" mode="aspectFill"></image>
               <view v-else class="default-avatar">
-                <uni-icons type="home-filled" size="36" color="#4CAF50"></uni-icons>
+                <uni-icons type="home-filled" size="36" color="#5AAB7A"></uni-icons>
               </view>
             </view>
             
@@ -118,7 +118,7 @@
     <view v-if="userStatus.hasCommunity || userStatus.hasApplied" class="tip-section">
       <view class="tip-card">
         <view class="tip-icon">
-          <uni-icons type="info" size="20" color="#ff9800"></uni-icons>
+          <uni-icons type="info" size="20" color="#E8A84C"></uni-icons>
         </view>
         <view class="tip-content">
           <text class="tip-title">温馨提示</text>
@@ -1445,7 +1445,7 @@ export default {
   left: 0;
   right: 0;
   height: 4rpx;
-  background: linear-gradient(90deg, #4CAF50, #81C784);
+  background: linear-gradient(90deg, #5AAB7A, #81C784);
 }
 
 .status-header {
@@ -1522,7 +1522,7 @@ export default {
 }
 
 .status-badge.success {
-  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  background: linear-gradient(135deg, #5AAB7A, #66BB6A);
   color: #fff;
 }
 
@@ -1545,7 +1545,7 @@ export default {
 .view-apply-btn {
   display: inline-block;
   padding: 8rpx 16rpx;
-  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  background: linear-gradient(135deg, #5AAB7A, #66BB6A);
   color: #fff;
   font-size: 24rpx;
   border-radius: 16rpx;
@@ -1628,7 +1628,7 @@ export default {
   left: 0;
   width: 4rpx;
   height: 100%;
-  background: linear-gradient(180deg, #4CAF50, #81C784);
+  background: linear-gradient(180deg, #5AAB7A, #81C784);
 }
 
 .community-avatar {
@@ -1676,7 +1676,7 @@ export default {
 .community-tag {
   padding: 4rpx 12rpx;
   background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
-  color: #4CAF50;
+  color: #5AAB7A;
   font-size: 20rpx;
   border-radius: 12rpx;
   font-weight: 500;
@@ -1710,7 +1710,7 @@ export default {
   align-items: center;
   gap: 8rpx;
   padding: 16rpx 24rpx;
-  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  background: linear-gradient(135deg, #5AAB7A, #66BB6A);
   border-radius: 28rpx;
   box-shadow: 0 6rpx 20rpx rgba(76, 175, 80, 0.3);
   transition: all 0.3s ease;
@@ -1790,7 +1790,7 @@ export default {
 }
 
 .required {
-  color: #ff4d4f;
+  color: #D95C5C;
   font-size: 28rpx;
 }
 
@@ -1808,7 +1808,7 @@ export default {
 }
 
 .form-input:focus, .form-textarea:focus {
-  border-color: #4CAF50;
+  border-color: #5AAB7A;
   outline: none;
 }
 
@@ -1876,7 +1876,7 @@ export default {
 }
 
 .upload-btn:active {
-  border-color: #4CAF50;
+  border-color: #5AAB7A;
   background: #f6ffed;
 }
 
@@ -1944,7 +1944,7 @@ export default {
 }
 
 .add-more-btn:active {
-  border-color: #4CAF50;
+  border-color: #5AAB7A;
   background: #f6ffed;
 }
 
@@ -1977,7 +1977,7 @@ export default {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #5AAB7A, #45a049);
   color: #fff;
 }
 
@@ -2090,7 +2090,7 @@ export default {
 .tip-title {
   font-size: 28rpx;
   font-weight: 600;
-  color: #ff9800;
+  color: #E8A84C;
   display: block;
   margin-bottom: 8rpx;
 }

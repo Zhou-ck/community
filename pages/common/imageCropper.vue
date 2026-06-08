@@ -42,7 +42,7 @@
 			<view class="preview-section">
 				<view class="preview-header">
 					<view class="preview-icon">
-						<uni-icons type="eye" size="18" color="#3ec6c6"></uni-icons>
+						<uni-icons type="eye" size="18" color="#E07A4F"></uni-icons>
 					</view>
 					<text class="preview-title">裁剪预览</text>
 					<text class="preview-size">154 × 240</text>
@@ -73,7 +73,7 @@
 						:step="0.1" 
 						@change="handleScaleChange"
 						@changing="handleScaleChanging"
-						activeColor="#3ec6c6"
+						activeColor="#E07A4F"
 						backgroundColor="rgba(255,255,255,0.2)"
 						block-size="20"
 					/>
@@ -480,7 +480,7 @@ export default {
 		left: 40rpx;
 		right: 40rpx;
 		height: 3rpx;
-		background: linear-gradient(90deg, transparent 0%, #3ec6c6 50%, transparent 100%);
+		background: linear-gradient(90deg, transparent 0%, #E07A4F 50%, transparent 100%);
 	}
 	
 	.header-content {
@@ -534,11 +534,11 @@ export default {
 			left: 0;
 			right: 0;
 			bottom: 0;
-			border: 4rpx solid #3ec6c6;
+			border: 4rpx solid #E07A4F;
 			box-shadow: 
 				0 0 0 2000px rgba(0, 0, 0, 0.4),
-				0 0 24rpx rgba(62, 198, 198, 0.6),
-				inset 0 0 24rpx rgba(62, 198, 198, 0.2);
+				0 0 24rpx rgba(224, 122, 79, 0.6),
+				inset 0 0 24rpx rgba(224, 122, 79, 0.2);
 			animation: borderPulse 2s ease-in-out infinite;
 			border-radius: 8rpx;
 		}
@@ -554,9 +554,9 @@ export default {
 				position: absolute;
 				width: 50rpx;
 				height: 50rpx;
-				border-color: #3ec6c6;
+				border-color: #E07A4F;
 				border-style: solid;
-				filter: drop-shadow(0 0 8rpx rgba(62, 198, 198, 0.8));
+				filter: drop-shadow(0 0 8rpx rgba(224, 122, 79, 0.8));
 				
 				&.corner-tl {
 					top: -6rpx;
@@ -597,7 +597,7 @@ export default {
 			
 			.line {
 				position: absolute;
-				background: rgba(62, 198, 198, 0.4);
+				background: rgba(224, 122, 79, 0.4);
 				
 				&.line-h {
 					top: 50%;
@@ -637,7 +637,7 @@ export default {
 		.preview-icon {
 			width: 40rpx;
 			height: 40rpx;
-			background: rgba(62, 198, 198, 0.1);
+			background: rgba(224, 122, 79, 0.1);
 			border-radius: 50%;
 			display: flex;
 			align-items: center;
@@ -656,7 +656,7 @@ export default {
 			padding: 4rpx 12rpx;
 			background: #f0fcfc;
 			border-radius: 8rpx;
-			border: 1rpx solid rgba(62, 198, 198, 0.2);
+			border: 1rpx solid rgba(224, 122, 79, 0.2);
 		}
 	}
 	
@@ -668,7 +668,7 @@ export default {
 		overflow: hidden;
 		box-shadow: 
 			0 8rpx 32rpx rgba(0, 0, 0, 0.12),
-			0 0 0 4rpx rgba(62, 198, 198, 0.2);
+			0 0 0 4rpx rgba(224, 122, 79, 0.2);
 		
 		.preview-canvas {
 			display: block;
@@ -680,7 +680,7 @@ export default {
 			left: 0;
 			right: 0;
 			bottom: 0;
-			border: 2rpx solid rgba(62, 198, 198, 0.5);
+			border: 2rpx solid rgba(224, 122, 79, 0.5);
 			pointer-events: none;
 		}
 	}
@@ -712,7 +712,7 @@ export default {
 			
 			&:active {
 				background: #e8f8f8;
-				border-color: #3ec6c6;
+				border-color: #E07A4F;
 				transform: scale(0.95);
 			}
 		}
@@ -731,12 +731,12 @@ export default {
 				left: 50%;
 				transform: translateX(-50%);
 				font-size: 24rpx;
-				color: #3ec6c6;
+				color: #E07A4F;
 				background: #f0fcfc;
 				padding: 6rpx 16rpx;
 				border-radius: 20rpx;
 				font-weight: 600;
-				border: 1rpx solid rgba(62, 198, 198, 0.3);
+				border: 1rpx solid rgba(224, 122, 79, 0.3);
 			}
 		}
 	}
@@ -806,13 +806,13 @@ export default {
 			}
 			
 			&.btn-confirm {
-				background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+				background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 				color: #fff;
-				box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.35);
+				box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.35);
 				
 				&:active {
 					transform: translateY(2rpx);
-					box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.35);
+					box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.35);
 				}
 			}
 		}
@@ -823,14 +823,14 @@ export default {
 	0%, 100% {
 		box-shadow: 
 			0 0 0 2000px rgba(0, 0, 0, 0.4),
-			0 0 24rpx rgba(62, 198, 198, 0.6),
-			inset 0 0 24rpx rgba(62, 198, 198, 0.2);
+			0 0 24rpx rgba(224, 122, 79, 0.6),
+			inset 0 0 24rpx rgba(224, 122, 79, 0.2);
 	}
 	50% {
 		box-shadow: 
 			0 0 0 2000px rgba(0, 0, 0, 0.4),
-			0 0 36rpx rgba(62, 198, 198, 0.9),
-			inset 0 0 36rpx rgba(62, 198, 198, 0.3);
+			0 0 36rpx rgba(224, 122, 79, 0.9),
+			inset 0 0 36rpx rgba(224, 122, 79, 0.3);
 	}
 }
 </style>

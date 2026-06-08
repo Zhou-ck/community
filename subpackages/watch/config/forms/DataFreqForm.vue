@@ -11,8 +11,8 @@
     <view class="form-item">
       <text class="form-label">省电模式</text>
       <radio-group @change="update('power_mode', $event.detail.value)">
-        <label><radio value="0" :checked="value.power_mode == 0" color="#3ec6c6" />正常</label>
-        <label><radio value="1" :checked="value.power_mode == 1" color="#3ec6c6" />省电</label>
+        <label><radio value="0" :checked="value.power_mode == 0" color="#E07A4F" />正常</label>
+        <label><radio value="1" :checked="value.power_mode == 1" color="#E07A4F" />省电</label>
       </radio-group>
     </view>
   </view>

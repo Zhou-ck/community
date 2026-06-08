@@ -53,7 +53,7 @@
     <!-- 通话记录列表 -->
     <view class="call-list">
       <view v-if="loading" class="loading-container">
-        <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
+        <uni-icons type="spinner-cycle" size="40" color="#E07A4F"></uni-icons>
         <text class="loading-text">加载中...</text>
       </view>
       
@@ -99,7 +99,7 @@
             </view>
             
             <view class="info-row highlight">
-              <uni-icons type="clock" size="14" color="#3ec6c6"></uni-icons>
+              <uni-icons type="clock" size="14" color="#E07A4F"></uni-icons>
               <text class="info-label">通话时长：</text>
               <text class="info-value duration">{{ formatCallDuration(item.callDuration) }}</text>
             </view>
@@ -346,7 +346,7 @@ export default {
   font-weight: 500;
   
   &.active {
-    background: #3ec6c6;
+    background: #E07A4F;
     color: #fff;
   }
 }
@@ -393,7 +393,7 @@ export default {
 }
 
 .search-btn {
-  background: #3ec6c6;
+  background: #E07A4F;
   color: #fff;
   padding: 12rpx 28rpx;
   border-radius: 28rpx;
@@ -460,7 +460,7 @@ export default {
   width: 56rpx;
   height: 56rpx;
   border-radius: 50%;
-  background: #3ec6c6;
+  background: #E07A4F;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -494,8 +494,8 @@ export default {
   font-weight: 500;
   
   &.normal {
-    background: rgba(62, 198, 198, 0.1);
-    color: #3ec6c6;
+    background: rgba(224, 122, 79, 0.1);
+    color: #E07A4F;
   }
   
   &.sos {
@@ -540,7 +540,7 @@ export default {
   font-size: 26rpx;
   
   &.highlight {
-    background: rgba(62, 198, 198, 0.06);
+    background: rgba(224, 122, 79, 0.06);
     padding: 12rpx 16rpx;
     border-radius: 12rpx;
     margin-top: 4rpx;
@@ -557,7 +557,7 @@ export default {
   flex: 1;
   
   &.duration {
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 600;
   }
 }

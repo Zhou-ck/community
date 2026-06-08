@@ -76,7 +76,7 @@
         <switch 
           :checked="deviceInfo && deviceInfo.defenseStatus === '1'" 
           @change="toggleDefenseStatus"
-          color="#3ec6c6"
+          color="#E07A4F"
           class="defense-switch"
         />
       </view>
@@ -91,7 +91,7 @@
           <text class="card-subtitle">配置设备报警开关</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="sound" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="sound" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -102,7 +102,7 @@
           <text class="card-subtitle">调整设备运行参数</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="gear" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="gear" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -113,7 +113,7 @@
           <text class="card-subtitle">{{ bindFamilySubtitle }}</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="person" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="person" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -124,7 +124,7 @@
           <text class="card-subtitle">查看实时健康数据</text>
         </view>
         <view class="card-icon cyan-bg">
-          <text class="iconfontA icon-shishijianceshuju" style="font-size: 20px; color: #3ec6c6;"></text>
+          <text class="iconfontA icon-shishijianceshuju" style="font-size: 20px; color: #E07A4F;"></text>
         </view>
       </view>
       
@@ -135,7 +135,7 @@
           <text class="card-subtitle">查看历史健康数据</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="heart" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="heart" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -146,7 +146,7 @@
           <text class="card-subtitle">查看睡眠数据分析</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="bars" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="bars" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -157,7 +157,7 @@
           <text class="card-subtitle">查看手表通话记录</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="phone-filled" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="phone-filled" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -168,7 +168,7 @@
           <text class="card-subtitle">设置手表参数</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="gear" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="gear" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -179,7 +179,7 @@
           <text class="card-subtitle">已绑定 {{ boundReceivers.length }} 人</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="phone" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="phone" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
 
@@ -190,7 +190,7 @@
           <text class="card-subtitle">设备网络配置</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="tune" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="tune" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       <!-- 实时检测 - AEP设备（水浸/门磁/烟感/燃气/红外/温湿度/一氧化碳/SOS拉绳） -->
@@ -200,7 +200,7 @@
           <text class="card-subtitle">查看设备状态信息</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="eye" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="eye" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       <!-- 实时检测 -->
@@ -210,7 +210,7 @@
           <text class="card-subtitle">查看设备实时状态</text>
         </view>
         <view class="card-icon cyan-bg">
-          <text class="iconfontA icon-shishijianceshuju" style="font-size: 20px; color: #3ec6c6;"></text>
+          <text class="iconfontA icon-shishijianceshuju" style="font-size: 20px; color: #E07A4F;"></text>
         </view>
       </view>
       <!-- 睡眠报告 -->
@@ -220,7 +220,7 @@
           <text class="card-subtitle">查看睡眠数据分析</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="bars" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="bars" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>   
 
@@ -231,7 +231,7 @@
           <text class="card-subtitle">查看需求消息列表</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="chat" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="chat" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
 
@@ -242,7 +242,7 @@
           <text class="card-subtitle">查看设备运行计划</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="calendar" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
 
@@ -253,7 +253,7 @@
           <text class="card-subtitle">设置设备显示内容</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="images" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="images" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
 
@@ -264,7 +264,7 @@
           <text class="card-subtitle">申请社区监控服务</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="eye" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="eye" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
 
@@ -286,7 +286,7 @@
           <text class="card-subtitle">修改设备信息</text>
         </view>
         <view class="card-icon cyan-bg">
-          <uni-icons type="compose" size="20" color="#3ec6c6"></uni-icons>
+          <uni-icons type="compose" size="20" color="#E07A4F"></uni-icons>
         </view>
       </view>
       
@@ -330,7 +330,7 @@
           <!-- 报警逻辑说明 -->
           <view class="alarm-logic-tip">
             <view class="tip-header">
-              <uni-icons type="info-filled" size="16" color="#ff9800"></uni-icons>
+              <uni-icons type="info-filled" size="16" color="#E8A84C"></uni-icons>
               <text class="tip-title">报警规则说明</text>
             </view>
             <view class="tip-content">
@@ -350,7 +350,7 @@
                 <switch 
                   :checked="alarm.open" 
                   @change="toggleAlarm(alarm)"
-                  color="#3ec6c6"
+                  color="#E07A4F"
                   class="setting-switch"
                 />
               </view>
@@ -364,7 +364,7 @@
                     :class="{ active: alarm.callOpen }"
                     @click="toggleAlarmMethod(alarm, 'callOpen')"
                   >
-                    <uni-icons type="phone" size="16" :color="alarm.callOpen ? '#3ec6c6' : '#999'"></uni-icons>
+                    <uni-icons type="phone" size="16" :color="alarm.callOpen ? '#E07A4F' : '#999'"></uni-icons>
                     <text>电话</text>
                   </view>
                   <view 
@@ -372,7 +372,7 @@
                     :class="{ active: alarm.smsOpen }"
                     @click="toggleAlarmMethod(alarm, 'smsOpen')"
                   >
-                    <uni-icons type="chatbubble" size="16" :color="alarm.smsOpen ? '#3ec6c6' : '#999'"></uni-icons>
+                    <uni-icons type="chatbubble" size="16" :color="alarm.smsOpen ? '#E07A4F' : '#999'"></uni-icons>
                     <text>短信</text>
                   </view>
                   <view 
@@ -380,7 +380,7 @@
                     :class="{ active: alarm.wxOpen }"
                     @click="toggleAlarmMethod(alarm, 'wxOpen')"
                   >
-                    <uni-icons type="chat" size="16" :color="alarm.wxOpen ? '#3ec6c6' : '#999'"></uni-icons>
+                    <uni-icons type="chat" size="16" :color="alarm.wxOpen ? '#E07A4F' : '#999'"></uni-icons>
                     <text>微信</text>
                   </view>
                 </view>
@@ -435,7 +435,7 @@
                   <switch v-if="prop.uiType === 'bool'"
                     :checked="!!prop.tempValue"
                     @change="prop.identifier === 'pageRotation' ? onPageRotationSwitchChange(prop, $event) : onParamSwitchChange(prop, $event)"
-                    color="#3ec6c6"
+                    color="#E07A4F"
                     class="param-switch"
                   />
                   <!-- 数值输入 -->
@@ -479,8 +479,7 @@
 
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
-      <text class="loading-text">加载中...</text>
+      <SkeletonLoader type="card" :rows="5" />
     </view>
     <!-- 修改设备弹窗 -->
     <uni-popup ref="editDevicePopup" type="center" :mask-click="false">
@@ -549,8 +548,7 @@
         </view>
         <view class="aep-realtime-body">
           <view v-if="aepRealtimeLoading" class="aep-realtime-loading">
-            <uni-icons type="spinner-cycle" size="32" color="#3ec6c6"></uni-icons>
-            <text>加载中...</text>
+            <SkeletonLoader type="chart" height="160rpx" />
           </view>
           <view v-else class="aep-realtime-content">
             <view class="aep-realtime-item">
@@ -619,6 +617,7 @@ import { submitMonitorApply, cancelMonitorApplyByDeviceId } from '@/api/monitorA
 import { queryParamsStatusByDpIdAndImei, saveAepCommandLog } from '@/api/aepcommandlog'
 import { getDicts } from '@/api/system/dict/data'
 import { getMemberIdsByDeviceId } from '@/api/familyMemberDevice'
+import SkeletonLoader from '@/components/skeleton/index.vue'
 import { getAlarmReceiverIdsByDeviceId } from '@/api/devicereceiver'
 import { 
   needsNetworkConfig, 
@@ -638,6 +637,7 @@ import {
 } from '@/utils/parseDevNumber'
 
 export default {
+  components: { SkeletonLoader },
   data() {
     return {
       deviceId: '',
@@ -1110,7 +1110,7 @@ export default {
         const iconMap = {
           '1': '../../my/static/breath.png',        // 呼吸睡眠(Ld)
           '2': '../../my/static/tumble.png',        // 跌倒监测(Ed)
-          '4': '../../my/static/keranqiti.png',     // 呼吸睡眠-L2(La)
+          '4': '../../my/static/sleep-l2.jpg',     // 二代睡眠(La)
           '13': '../../my/static/shuijin.png',      // 水浸(Sd)
           '14': '../../my/static/menci.png',        // 门磁(Md)
           '15': '../../my/static/yangan.png',       // 烟感(Yd)
@@ -1190,9 +1190,9 @@ export default {
     
     // 根据电量返回颜色
     getBatteryColor(val) {
-      if (val === undefined || val === null) return '#3ec6c6'
+      if (val === undefined || val === null) return '#E07A4F'
       if (val <= 20) return '#f44336'
-      if (val <= 50) return '#ff9800'
+      if (val <= 50) return '#E8A84C'
       return '#4caf50'
     },
     
@@ -2678,7 +2678,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/static/fontA/iconfont.css';
 
 .device-detail-page {
   min-height: 100vh;
@@ -2706,11 +2705,11 @@ export default {
   width: 120rpx;
   height: 120rpx;
   border-radius: 24rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 16rpx rgba(62, 198, 198, 0.2);
+  box-shadow: 0 8rpx 16rpx rgba(224, 122, 79, 0.2);
   overflow: hidden;
   flex-shrink: 0;
   
@@ -2758,8 +2757,8 @@ export default {
   font-weight: 500;
   
   &.type-tag {
-    background: rgba(62, 198, 198, 0.1);
-    color: #3ec6c6;
+    background: rgba(224, 122, 79, 0.1);
+    color: #E07A4F;
   }
   
   &.status-tag {
@@ -2775,8 +2774,8 @@ export default {
     
     &.online {
       background: rgba(76, 175, 80, 0.1);
-      color: #4CAF50;
-      .status-dot { background: #4CAF50; }
+      color: #5AAB7A;
+      .status-dot { background: #5AAB7A; }
     }
     
     &.offline {
@@ -2794,12 +2793,12 @@ export default {
     
     &.package-monitoring {
       background: rgba(76, 175, 80, 0.1);
-      color: #4CAF50;
+      color: #5AAB7A;
     }
     
     &.apply-monitoring {
       background: rgba(33, 150, 243, 0.1);
-      color: #2196F3;
+      color: #E07A4F;
     }
     
     &.apply-reviewing {
@@ -2832,7 +2831,7 @@ export default {
   .info-value {
     font-size: 26rpx;
     color: #333;
-    font-family: monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
 }
 
@@ -2855,7 +2854,7 @@ export default {
 .section-title-bar {
   width: 6rpx;
   height: 28rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   border-radius: 4rpx;
 }
 
@@ -2910,9 +2909,7 @@ export default {
   justify-content: space-between;
   gap: 16rpx;
   
-  &:active {
-    transform: scale(0.98);
-  }
+  @include press-card();
 }
 
 .card-content {
@@ -2947,7 +2944,7 @@ export default {
   flex-shrink: 0;
   
   &.cyan-bg {
-    background: rgba(62, 198, 198, 0.08);
+    background: rgba(224, 122, 79, 0.08);
   }
   
   &.red-bg {
@@ -3001,7 +2998,7 @@ export default {
     .tip-title {
       font-size: 28rpx;
       font-weight: 600;
-      color: #ff9800;
+      color: #E8A84C;
     }
   }
   
@@ -3024,7 +3021,7 @@ export default {
         top: 10rpx;
         width: 6rpx;
         height: 6rpx;
-        background: #ff9800;
+        background: #E8A84C;
         border-radius: 50%;
       }
     }
@@ -3108,18 +3105,16 @@ export default {
   }
   
   &.active {
-    background: rgba(62, 198, 198, 0.08);
-    border-color: #3ec6c6;
+    background: rgba(224, 122, 79, 0.08);
+    border-color: #E07A4F;
     
     text {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 500;
     }
   }
   
-  &:active {
-    transform: scale(0.95);
-  }
+  @include press-btn();
 }
 
 /* Setting List Styles */
@@ -3246,6 +3241,8 @@ export default {
       }
     }
     
+    @include press(0.98, 0.95);
+    
     &:active:not(.disabled) {
       background: #e8e8e8;
     }
@@ -3262,7 +3259,7 @@ export default {
 }
 
 .param-set-btn {
-  background: #3ec6c6;
+  background: #E07A4F;
   color: #fff;
   border: none;
   border-radius: 8rpx;
@@ -3324,7 +3321,7 @@ export default {
   }
   
   &:focus {
-    border-color: #3ec6c6;
+    border-color: #E07A4F;
   }
 }
 
@@ -3340,7 +3337,7 @@ export default {
   resize: none;
   
   &:focus {
-    border-color: #3ec6c6;
+    border-color: #E07A4F;
   }
 }
 
@@ -3375,7 +3372,7 @@ export default {
   flex: 1;
   height: 80rpx;
   line-height: 80rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   color: #fff;
   border: none;
   border-radius: 8rpx;
@@ -3458,6 +3455,8 @@ export default {
     opacity: 0.35;
   }
 
+  @include press(0.98, 0.95);
+  
   &:active:not(.disabled) {
     background: #bae6fd;
   }
@@ -3490,7 +3489,7 @@ export default {
   width: 100%;
   height: 72rpx;
   line-height: 72rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   color: #fff;
   border: none;
   border-radius: 8rpx;

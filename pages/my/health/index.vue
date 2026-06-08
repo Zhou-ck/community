@@ -15,13 +15,7 @@
 				<text class="loading-text">加载中...</text>
 			</view>
 			
-			<view v-else-if="recordList.length === 0" class="empty-state">
-				<view class="empty-icon-box">
-					<uni-icons type="heart-filled" size="60" color="#e0e0e0"></uni-icons>
-				</view>
-				<text class="empty-text">暂无健康档案</text>
-				<text class="empty-sub">点击底部按钮建立健康档案</text>
-			</view>
+			<EmptyState v-else-if="recordList.length === 0" icon="heart-filled" text="暂无健康档案" subtext="点击底部按钮建立健康档案" />
 			
 			<view v-else class="record-card" v-for="record in recordList" :key="record.recordId">
 				<view class="card-header">
@@ -40,10 +34,10 @@
 					</view>
 					<view class="header-right">
 						<view class="action-icon" @click.stop="editRecord(record)">
-							<uni-icons type="compose" size="20" color="#3ec6c6"></uni-icons>
+							<uni-icons type="compose" size="20" color="#E07A4F"></uni-icons>
 						</view>
 						<view class="action-icon delete" @click.stop="deleteRecord(record.recordId)">
-							<uni-icons type="trash" size="20" color="#ff5555"></uni-icons>
+							<uni-icons type="trash" size="20" color="#D95C5C"></uni-icons>
 						</view>
 					</view>
 				</view>
@@ -352,6 +346,7 @@
 </template>
 
 <script>
+import EmptyState from '@/components/empty-state/index.vue'
 import { listFamilymemberNoPage } from '@/api/familymember'
 import { 
 	listResidenthealthrecord, 
@@ -1024,16 +1019,16 @@ export default {
 			.avatar-icon {
 				width: 80rpx;
 				height: 80rpx;
-				background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+				background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 				border-radius: 50%;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.2);
+				box-shadow: 0 4rpx 10rpx rgba(224, 122, 79, 0.2);
 				
 				text {
 					color: #fff;
-					font-size: 32rpx;
+					font-size: $text-lg;
 					font-weight: bold;
 				}
 			}
@@ -1050,22 +1045,22 @@ export default {
 					gap: 12rpx;
 					
 					.name {
-						font-size: 32rpx;
+						font-size: $text-lg;
 						font-weight: bold;
 						color: #333;
 					}
 					
 					.relation-tag {
-						font-size: 22rpx;
-						color: #3ec6c6;
-						background: rgba(62, 198, 198, 0.1);
+						font-size: $text-xs;
+						color: #E07A4F;
+						background: rgba(224, 122, 79, 0.1);
 						padding: 2rpx 10rpx;
 						border-radius: 6rpx;
 					}
 				}
 				
 				.update-time {
-					font-size: 24rpx;
+					font-size: $text-sm;
 					color: #999;
 				}
 			}
@@ -1125,18 +1120,18 @@ export default {
 					gap: 8rpx;
 					
 					.label {
-						font-size: 24rpx;
+						font-size: $text-sm;
 						color: #999;
 					}
 					
 					.value {
-						font-size: 30rpx;
+						font-size: $text-lg;
 						font-weight: bold;
 						color: #333;
-						font-family: 'Roboto', sans-serif;
+						font-family: inherit;
 						
 						.unit {
-							font-size: 22rpx;
+							font-size: $text-xs;
 							font-weight: normal;
 							color: #999;
 							margin-left: 4rpx;
@@ -1155,7 +1150,7 @@ export default {
 				border: 1rpx solid #ffbb96;
 				
 				.warning-text {
-					font-size: 26rpx;
+					font-size: $text-base;
 					color: #fa541c;
 					font-weight: 500;
 				}
@@ -1168,8 +1163,8 @@ export default {
 				margin-bottom: 20rpx;
 				
 				.mini-disease-tag {
-					font-size: 22rpx;
-					color: #ff4d4f;
+					font-size: $text-xs;
+					color: #D95C5C;
 					background: #fff2f0;
 					border: 1rpx solid #ffccc7;
 					padding: 4rpx 12rpx;
@@ -1192,19 +1187,19 @@ export default {
 				background-color: #f5f7fa;
 				
 				.label {
-					font-size: 26rpx;
+					font-size: $text-base;
 					color: #666;
 				}
 				
 				.val {
-					font-size: 26rpx;
+					font-size: $text-base;
 					font-weight: 600;
 				}
 				
 				/* 状态颜色 */
 				&.status-0 { // 正常
 					background-color: #f6ffed;
-					.val { color: #52c41a; }
+					.val { color: #5AAB7A; }
 				}
 				
 				&.status-1 { // 轻度
@@ -1214,7 +1209,7 @@ export default {
 				
 				&.status-2 { // 中度
 					background-color: #fff2f0;
-					.val { color: #ff4d4f; }
+					.val { color: #D95C5C; }
 				}
 				
 				&.status-3 { // 重度
@@ -1238,14 +1233,14 @@ export default {
 		width: 60rpx;
 		height: 60rpx;
 		border: 4rpx solid #f0f0f0;
-		border-top-color: #3ec6c6;
+		border-top-color: #E07A4F;
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
 		margin-bottom: 20rpx;
 	}
 	
 	.loading-text {
-		font-size: 28rpx;
+		font-size: $text-md;
 		color: #999;
 	}
 }
@@ -1275,14 +1270,14 @@ export default {
 	}
 	
 	.empty-text {
-		font-size: 32rpx;
+		font-size: $text-lg;
 		color: #333;
 		font-weight: 600;
 		margin-bottom: 16rpx;
 	}
 	
 	.empty-sub {
-		font-size: 26rpx;
+		font-size: $text-base;
 		color: #999;
 	}
 }
@@ -1304,19 +1299,19 @@ export default {
 	
 	.add-btn {
 		height: 88rpx;
-		background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+		background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 		border-radius: 44rpx;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+		box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 		
 		uni-icons {
 			margin-right: 8rpx;
 		}
 		
 		text {
-			font-size: 32rpx;
+			font-size: $text-lg;
 			font-weight: 600;
 			color: #fff;
 		}
@@ -1401,13 +1396,13 @@ export default {
 		}
 		
 		.section-title {
-			font-size: 30rpx;
+			font-size: $text-lg;
 			font-weight: bold;
 			color: #333;
 			margin-bottom: 24rpx;
 			margin-top: 10rpx;
 			padding-left: 16rpx;
-			border-left: 6rpx solid #3ec6c6;
+			border-left: 6rpx solid #E07A4F;
 			line-height: 1;
 		}
 	}
@@ -1445,12 +1440,12 @@ export default {
 				padding: 20rpx;
 				border-radius: 12rpx;
 				box-sizing: border-box;
-				font-size: 28rpx;
+				font-size: $text-md;
 			}
 			
 			.char-count {
 				align-self: flex-end;
-				font-size: 24rpx;
+				font-size: $text-sm;
 				color: #ccc;
 				margin-top: 8rpx;
 			}
@@ -1458,13 +1453,13 @@ export default {
 
 		.label {
 			display: block;
-			font-size: 28rpx;
+			font-size: $text-md;
 			color: #666;
 			margin-bottom: 12rpx;
 			
 			&.required::after {
 				content: '*';
-				color: #ff5555;
+				color: #D95C5C;
 				margin-left: 4rpx;
 			}
 		}
@@ -1475,13 +1470,13 @@ export default {
 			padding: 0 24rpx;
 			border: 2rpx solid #e0e0e0;
 			border-radius: 8rpx;
-			font-size: 30rpx;
+			font-size: $text-lg;
 			color: #333;
 			box-sizing: border-box;
 			transition: all 0.2s;
 			
 			&:focus {
-				border-color: #3ec6c6;
+				border-color: #E07A4F;
 			}
 			
 			&.disabled {
@@ -1504,15 +1499,15 @@ export default {
 				padding: 12rpx 24rpx;
 				background: #f5f7fa;
 				border-radius: 100rpx;
-				font-size: 26rpx;
+				font-size: $text-base;
 				color: #666;
 				border: 1rpx solid transparent;
 				transition: all 0.2s;
 				
 				&.active {
 					background: #e6f7f7;
-					color: #3ec6c6;
-					border-color: #3ec6c6;
+					color: #E07A4F;
+					border-color: #E07A4F;
 					font-weight: 500;
 				}
 				
@@ -1544,12 +1539,12 @@ export default {
 			
 			.value {
 				color: #333;
-				font-size: 30rpx;
+				font-size: $text-lg;
 			}
 			
 			.placeholder {
 				color: #ccc;
-				font-size: 30rpx;
+				font-size: $text-lg;
 			}
 		}
 	}
@@ -1563,16 +1558,16 @@ export default {
 		
 		.save-btn {
 			height: 88rpx;
-			background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+			background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 			border-radius: 44rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+			box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 			
 			text {
 				color: #fff;
-				font-size: 32rpx;
+				font-size: $text-lg;
 				font-weight: 600;
 			}
 		}

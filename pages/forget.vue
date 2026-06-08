@@ -432,7 +432,7 @@
 	.input-item:focus-within {
 		border-color: #3FA9E7;
 		background: #fff;
-		box-shadow: 0 0 0 4rpx rgba(62, 198, 198, 0.1);
+		box-shadow: 0 0 0 4rpx rgba(224, 122, 79, 0.1);
 	}
 
 	.input-item.error {

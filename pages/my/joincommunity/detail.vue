@@ -6,7 +6,7 @@
         <view class="community-avatar">
           <image v-if="communityInfo.avatar" :src="communityInfo.avatar" class="avatar-img" mode="aspectFill"></image>
           <view v-else class="default-avatar">
-            <uni-icons type="home-filled" size="48" color="#4CAF50"></uni-icons>
+            <uni-icons type="home-filled" size="48" color="#5AAB7A"></uni-icons>
           </view>
         </view>
         <view class="community-basic">
@@ -18,7 +18,7 @@
       <view class="community-details">
         <view class="detail-row">
           <view class="detail-label">
-            <uni-icons type="location" size="18" color="#4CAF50"></uni-icons>
+            <uni-icons type="location" size="18" color="#5AAB7A"></uni-icons>
             <text>社区地址</text>
           </view>
           <text class="detail-value">{{ communityInfo.address || '地址待完善' }}</text>
@@ -26,7 +26,7 @@
         
         <view class="detail-row" v-if="communityInfo.description">
           <view class="detail-label">
-            <uni-icons type="info" size="18" color="#4CAF50"></uni-icons>
+            <uni-icons type="info" size="18" color="#5AAB7A"></uni-icons>
             <text>社区简介</text>
           </view>
           <text class="detail-value">{{ communityInfo.description }}</text>
@@ -301,7 +301,7 @@ export default {
   display: inline-block;
   padding: 6rpx 16rpx;
   background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
-  color: #4CAF50;
+  color: #5AAB7A;
   font-size: 22rpx;
   border-radius: 12rpx;
   font-weight: 500;
@@ -348,7 +348,7 @@ export default {
   color: #333;
   margin-bottom: 24rpx;
   padding-left: 16rpx;
-  border-left: 4rpx solid #4CAF50;
+  border-left: 4rpx solid #5AAB7A;
 }
 
 .record-card {
@@ -375,7 +375,7 @@ export default {
 }
 
 .status-success {
-  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  background: linear-gradient(135deg, #5AAB7A, #66BB6A);
   color: #fff;
 }
 

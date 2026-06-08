@@ -585,7 +585,7 @@
 					}
 					
 					&.submit-btn {
-						background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
+						background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 						color: #fff;
 						box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.25);
 						

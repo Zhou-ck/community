@@ -52,7 +52,7 @@
 
 			<!-- 空状态 -->
 			<view v-if="filteredNoticeList.length === 0 && !loading" class="empty-state">
-				<text class="iconfontB icon-yonghupingjia empty-icon"></text>
+				<text class="iconfontA icon-yonghupingjia empty-icon"></text>
 				<text class="empty-text">{{ searchKeyword ? '未找到相关公告' : '暂无公告通知' }}</text>
 			</view>
 			
@@ -196,7 +196,7 @@
 </script>
 
 <style lang="scss" scoped>
-@import '@/static/fontB/iconfont.css';
+@import '@/static/fontA/iconfont.css';
 
 .notice-page {
 	min-height: 100vh;

@@ -15,8 +15,8 @@
     <view class="form-item">
       <text class="form-label">性别</text>
       <radio-group @change="update('gender', $event.detail.value)">
-        <label><radio value="1" :checked="value.gender == 1" color="#3ec6c6" />男</label>
-        <label><radio value="2" :checked="value.gender == 2" color="#3ec6c6" />女</label>
+        <label><radio value="1" :checked="value.gender == 1" color="#E07A4F" />男</label>
+        <label><radio value="2" :checked="value.gender == 2" color="#E07A4F" />女</label>
       </radio-group>
     </view>
     <view class="form-item">
@@ -27,8 +27,8 @@
     <view class="form-item">
       <text class="form-label">高血压史</text>
       <radio-group @change="update('hypertension', $event.detail.value)">
-        <label><radio value="1" :checked="value.hypertension == 1" color="#3ec6c6" />有</label>
-        <label><radio value="2" :checked="value.hypertension == 2" color="#3ec6c6" />没有</label>
+        <label><radio value="1" :checked="value.hypertension == 1" color="#E07A4F" />有</label>
+        <label><radio value="2" :checked="value.hypertension == 2" color="#E07A4F" />没有</label>
       </radio-group>
     </view>
   </view>

@@ -41,7 +41,7 @@ export default {
     .section-line {
       width: 6rpx;
       height: 32rpx;
-      background: linear-gradient(180deg, #4dd9d9 0%, #3ec6c6 100%);
+      background: linear-gradient(180deg, #E07A4F 0%, #E07A4F 100%);
       border-radius: 3rpx;
       margin-right: 16rpx;
     }
@@ -70,10 +70,7 @@ export default {
       transition: all 0.3s ease;
       border: 1rpx solid #f0f0f0;
       
-      &:active {
-        transform: scale(0.98);
-        box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.08);
-      }
+      @include press-card();
       
       .card-text {
         font-size: 26rpx;

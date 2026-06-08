@@ -506,7 +506,7 @@ export default {
 	flex-shrink: 0;
 	height: 80rpx;
 	padding: 0 24rpx;
-	background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+	background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 	color: #fff;
 	font-size: 26rpx;
 	border-radius: 12rpx;
@@ -527,7 +527,7 @@ export default {
 	z-index: 10;
 }
 .last-config-btn { padding: 32rpx; text-align: center; }
-.last-config-text { font-size: 28rpx; color: #3ec6c6; font-weight: 500; }
+.last-config-text { font-size: 28rpx; color: #E07A4F; font-weight: 500; }
 .action-buttons { display: flex; gap: 24rpx; padding: 48rpx 32rpx; }
 .reset-btn, .confirm-btn {
 	flex: 1;

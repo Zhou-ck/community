@@ -201,7 +201,7 @@ export default {
     position: relative;
     
     &.active {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 600;
       font-size: 30rpx;
     }
@@ -211,7 +211,7 @@ export default {
       bottom: 6rpx;
       width: 40rpx;
       height: 4rpx;
-      background-color: #3ec6c6;
+      background-color: #E07A4F;
       border-radius: 2rpx;
     }
   }
@@ -250,7 +250,7 @@ export default {
       color: #fff;
       
       &.status-active {
-        background: linear-gradient(135deg, #3ec6c6, #2eb5b5);
+        background: linear-gradient(135deg, #E07A4F, #C96A42);
       }
       
       &.status-end {
@@ -295,7 +295,7 @@ export default {
         color: #999;
         
         .count {
-          color: #3ec6c6;
+          color: #E07A4F;
           font-size: 30rpx;
           font-weight: 600;
           margin: 0 4rpx;
@@ -304,7 +304,7 @@ export default {
       
       .action-btn {
         padding: 12rpx 32rpx;
-        background: linear-gradient(135deg, #3ec6c6, #2eb5b5);
+        background: linear-gradient(135deg, #E07A4F, #C96A42);
         color: #fff;
         font-size: 26rpx;
         border-radius: 32rpx;

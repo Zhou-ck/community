@@ -124,7 +124,7 @@
 				<view class="voice-order-remark" v-if="(order.orderSource === '5' || order.orderSource === 5) && order.remark && parseVoiceRemark(order.remark)">
 					<view class="remark-detail">
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).userRequest">
-							<uni-icons type="person" size="14" color="#3ec6c6"></uni-icons>
+							<uni-icons type="person" size="14" color="#E07A4F"></uni-icons>
 							<text class="remark-value highlight">{{ parseVoiceRemark(order.remark).userRequest }}</text>
 						</view>
 						<view class="remark-item" v-if="parseVoiceRemark(order.remark).matchReason">
@@ -1537,7 +1537,7 @@
 			transition: all 0.3s;
 
 			&.active {
-				color: #3ec6c6;
+				color: #E07A4F;
 				font-weight: 600;
 				font-size: 30rpx;
 
@@ -1549,7 +1549,7 @@
 					transform: translateX(-50%);
 					width: 40rpx;
 					height: 6rpx;
-					background: linear-gradient(90deg, #3ec6c6, #6be0e0);
+					background: linear-gradient(90deg, #E07A4F, #6be0e0);
 					border-radius: 6rpx;
 					box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.3);
 				}
@@ -1706,7 +1706,7 @@
 				font-weight: 500;
 				
 				&.status-pending {
-					color: #ff9900;
+					color: #E8A84C;
 					background: rgba(255, 153, 0, 0.08);
 				}
 				&.status-accepted {
@@ -1714,11 +1714,11 @@
 					background: rgba(41, 121, 255, 0.08);
 				}
 				&.status-serving {
-					color: #0ac160;
+					color: #5AAB7A;
 					background: rgba(10, 193, 96, 0.08);
 				}
 				&.status-shipping {
-					color: #0ac160;
+					color: #5AAB7A;
 					background: rgba(10, 193, 96, 0.08);
 				}
 				&.status-received {
@@ -1750,7 +1750,7 @@
 					background: rgba(250, 140, 22, 0.08);
 				}
 				&.status-verifying {
-					color: #52c41a;
+					color: #5AAB7A;
 					background: rgba(82, 196, 26, 0.08);
 				}
 			}
@@ -1818,7 +1818,7 @@
 							display: inline-flex;
 							align-items: center;
 							gap: 6rpx;
-							background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
+							background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 							color: #fff;
 							font-size: 20rpx;
 							padding: 6rpx 14rpx;
@@ -1868,7 +1868,7 @@
 								font-weight: 500;
 								margin-left: 12rpx;
 								flex-shrink: 0;
-								background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+								background: linear-gradient(135deg, #5AAB7A 0%, #5AAB7A 100%);
 								color: #fff;
 								box-shadow: 0 2rpx 6rpx rgba(82, 196, 26, 0.25);
 								
@@ -1898,7 +1898,7 @@
 				top: 0;
 				right: 0;
 				background: rgba(62, 198, 198, 0.1);
-				color: #3ec6c6;
+				color: #E07A4F;
 				font-size: 18rpx;
 				padding: 4rpx 12rpx;
 				border-bottom-left-radius: 12rpx;
@@ -1933,7 +1933,7 @@
 						flex: 1;
 						
 						&.highlight {
-							color: #2bb3b3;
+							color: #C96A42;
 							font-weight: 500;
 							font-size: 28rpx;
 							display: block;
@@ -1999,7 +1999,7 @@
 				
 				.subsidy-text {
 					font-size: 24rpx;
-					color: #52c41a;
+					color: #5AAB7A;
 					background: rgba(82, 196, 26, 0.1);
 					padding: 2rpx 8rpx;
 					border-radius: 4rpx;
@@ -2013,7 +2013,7 @@
 				
 				.total-price {
 					font-size: 34rpx;
-					color: #ff5555;
+					color: #D95C5C;
 					font-weight: bold;
 					font-family: DIN, -apple-system, Helvetica, sans-serif;
 					
@@ -2027,7 +2027,7 @@
 				.refund-tag {
 					padding: 4rpx 12rpx;
 					font-size: 22rpx;
-					color: #52c41a;
+					color: #5AAB7A;
 					background: #f6ffed;
 					border: 1rpx solid #b7eb8f;
 					border-radius: 8rpx;
@@ -2084,7 +2084,7 @@
 
 					&.primary {
 						color: #fff;
-						background: linear-gradient(135deg, #3ec6c6 0%, #2bb3b3 100%);
+						background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 						box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.35);
 						border: none;
 						
@@ -2095,8 +2095,8 @@
 					
 					&.secondary {
 						background: linear-gradient(135deg, #fff 0%, #f8fcfc 100%);
-						border: 2rpx solid #3ec6c6;
-						color: #3ec6c6;
+						border: 2rpx solid #E07A4F;
+						color: #E07A4F;
 						box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.1);
 						
 						&:active {
@@ -2107,8 +2107,8 @@
 					
 					&.remind, &.review, &.test-ship, &.test-review {
 						background: #fff;
-						border: 2rpx solid #3ec6c6;
-						color: #3ec6c6;
+						border: 2rpx solid #E07A4F;
+						color: #E07A4F;
 						box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.08);
 					}
 					
@@ -2124,7 +2124,7 @@
 					}
 					
 					&.delete {
-						color: #ff5555;
+						color: #D95C5C;
 						background: #fff;
 						border: 2rpx solid #ffcdd2;
 						box-shadow: 0 2rpx 6rpx rgba(255, 85, 85, 0.1);

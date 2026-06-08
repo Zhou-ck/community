@@ -535,7 +535,7 @@ export default {
     text-align: center; /* 居中对齐 */
     
     &.active {
-      color: #3ec6c6; 
+      color: #E07A4F; 
       font-weight: 600; /* 加粗 */
     }
     
@@ -546,7 +546,7 @@ export default {
       transform: translateX(-50%);
       width: 60rpx; /* 增加线条宽度 */
       height: 6rpx; /* 增加线条高度 */
-      background-color: #3ec6c6;
+      background-color: #E07A4F;
       border-radius: 3rpx;
     }
   }
@@ -575,18 +575,18 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #3ec6c6; /* 使用主题色 */
+  background-color: #E07A4F; /* 使用主题色 */
   color: #fff;
   padding: 24rpx 100rpx; /* 增加宽度 */
   border-radius: 44rpx; /* 圆角更大 */
   font-size: 32rpx;
-  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.4);
+  box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.4);
   transition: all 0.3s;
   width: 80%; /* 占据大部分宽度 */
   
   &:active {
     transform: scale(0.98);
-    box-shadow: 0 2rpx 6rpx rgba(62, 198, 198, 0.4);
+    box-shadow: 0 2rpx 6rpx rgba(224, 122, 79, 0.4);
   }
   
   uni-icons {
@@ -614,8 +614,8 @@ export default {
     transition: all 0.3s;
     
     &.active {
-      border-color: #3ec6c6; /* 主题色边框 */
-      box-shadow: 0 0 0 2rpx rgba(62, 198, 198, 0.2);
+      border-color: #E07A4F; /* 主题色边框 */
+      box-shadow: 0 0 0 2rpx rgba(224, 122, 79, 0.2);
     }
     
     .bg-image {
@@ -631,7 +631,7 @@ export default {
       position: absolute;
       top: 0;
       right: 0;
-      background: linear-gradient(135deg, #3ec6c6, #2da8a8);
+      background: linear-gradient(135deg, #E07A4F, #2da8a8);
       color: #fff;
       font-size: 20rpx;
       padding: 4rpx 12rpx;
@@ -901,7 +901,7 @@ export default {
     transition: all 0.3s ease;
     
     &.primary {
-      background: #3ec6c6;
+      background: #E07A4F;
       color: #fff;
       border: none;
       

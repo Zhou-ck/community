@@ -11,7 +11,7 @@
       </view>
       <view class="status-grid">
         <view class="status-item">
-          <view class="status-icon" style="background: #3ec6c6;">
+          <view class="status-icon" style="background: #E07A4F;">
             <uni-icons type="gear" size="18" color="#fff"></uni-icons>
           </view>
           <view class="status-info">
@@ -92,7 +92,7 @@
         <view class="section-title">运动数据</view>
         <picker mode="date" :value="pedoDate" @change="onPedoDateChange">
           <view class="chart-date">
-            <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
             <text>{{ pedoDate }}</text>
           </view>
         </picker>
@@ -119,7 +119,7 @@
         <view class="section-title">心率数据</view>
         <picker mode="date" :value="hrDate" @change="onHrDateChange">
           <view class="chart-date">
-            <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
             <text>{{ hrDate }}</text>
           </view>
         </picker>
@@ -146,7 +146,7 @@
         <view class="section-title">血氧数据</view>
         <picker mode="date" :value="boxyDate" @change="onBoxyDateChange">
           <view class="chart-date">
-            <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
             <text>{{ boxyDate }}</text>
           </view>
         </picker>
@@ -173,7 +173,7 @@
         <view class="section-title">血压数据</view>
         <picker mode="date" :value="bpDate" @change="onBpDateChange">
           <view class="chart-date">
-            <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
             <text>{{ bpDate }}</text>
           </view>
         </picker>
@@ -200,7 +200,7 @@
         <view class="section-title">压力数据</view>
         <picker mode="date" :value="hrvDate" @change="onHrvDateChange">
           <view class="chart-date">
-            <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
             <text>{{ hrvDate }}</text>
           </view>
         </picker>
@@ -227,7 +227,7 @@
         <view class="section-title">体温数据</view>
         <picker mode="date" :value="tempDate" @change="onTempDateChange">
           <view class="chart-date">
-            <uni-icons type="calendar" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="16" color="#E07A4F"></uni-icons>
             <text>{{ tempDate }}</text>
           </view>
         </picker>
@@ -250,7 +250,7 @@
 
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
+      <uni-icons type="spinner-cycle" size="40" color="#E07A4F"></uni-icons>
       <text class="loading-text">加载中...</text>
     </view>
   </view>
@@ -291,7 +291,7 @@ export default {
       // 健康数据
       healthDataList: [
         { type: 'hr', label: '心率', value: '--', time: '--', icon: 'heart', color: '#ff6b6b' },
-        { type: 'boxy', label: '血氧', value: '--', time: '--', icon: 'circle', color: '#3ec6c6' },
+        { type: 'boxy', label: '血氧', value: '--', time: '--', icon: 'circle', color: '#E07A4F' },
         { type: 'bp', label: '血压', value: '--', time: '--', icon: 'fire-filled', color: '#91cc75' },
         { type: 'hrv', label: '压力', value: '--', time: '--', icon: 'pulldown', color: '#fac858' },
         { type: 'temp', label: '体温', value: '--', time: '--', icon: 'compose', color: '#a29bfe' }
@@ -1038,7 +1038,7 @@ export default {
 .section-line {
   width: 6rpx;
   height: 32rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   border-radius: 3rpx;
 }
 
@@ -1214,7 +1214,7 @@ export default {
       content: '';
       width: 6rpx;
       height: 28rpx;
-      background: #3ec6c6;
+      background: #E07A4F;
       border-radius: 3rpx;
     }
   }
@@ -1224,14 +1224,14 @@ export default {
     align-items: center;
     gap: 8rpx;
     font-size: 24rpx;
-    color: #3ec6c6;
+    color: #E07A4F;
     font-weight: 500;
     padding: 10rpx 20rpx;
-    background: rgba(62, 198, 198, 0.1);
+    background: rgba(224, 122, 79, 0.1);
     border-radius: 24rpx;
     
     &:active {
-      background: rgba(62, 198, 198, 0.2);
+      background: rgba(224, 122, 79, 0.2);
     }
   }
 }

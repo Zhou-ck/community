@@ -10,19 +10,9 @@
 			@refresherrefresh="onRefresh"
 		>
 			<!-- 加载中状态 -->
-			<view v-if="loading && addressList.length === 0" class="loading-state">
-				<view class="loading-icon"></view>
-				<text class="loading-text">加载中...</text>
-			</view>
+			<SkeletonLoader v-if="loading && addressList.length === 0" type="list" :rows="4" />
 			
-			<view v-else-if="addressList.length === 0" class="empty-address">
-				<image src="/static/images/empty-address.png" mode="aspectFit" class="empty-img" v-if="false"></image>
-				<view class="empty-icon-box">
-					<uni-icons type="location-filled" size="60" color="#e0e0e0"></uni-icons>
-				</view>
-				<text class="empty-text">暂无服务地址</text>
-				<text class="empty-sub">点击底部按钮添加新地址</text>
-			</view>
+			<EmptyState v-else-if="addressList.length === 0" icon="location-filled" text="暂无服务地址" subtext="点击底部按钮添加新地址" />
 			
 			<view v-else class="address-item" v-for="(address, index) in addressList" :key="address.addressId" :class="{ 'selected': (isFromBooking || isFromPurchase) && selectedAddressId === address.addressId }">
 				<view class="address-content" @click="selectAddressByIndex(index)">
@@ -40,7 +30,7 @@
 					
 					<view class="address-row">
 						<view class="icon-box">
-							<uni-icons type="location-filled" size="18" color="#3ec6c6"></uni-icons>
+							<uni-icons type="location-filled" size="18" color="#E07A4F"></uni-icons>
 						</view>
 						<view class="address-text-box">
 							<text class="area">{{ getAddressArea(address) }}</text>
@@ -55,7 +45,7 @@
 				<view class="address-actions">
 					<view class="action-left">
 						<view class="action-btn delete" @click.stop="deleteAddress(index)">
-							<uni-icons type="trash" size="16" color="#ff5555"></uni-icons>
+							<uni-icons type="trash" size="16" color="#D95C5C"></uni-icons>
 							<text>删除</text>
 						</view>
 					</view>
@@ -138,7 +128,7 @@
 								<text class="main-text">设为默认地址</text>
 								<text class="sub-text">下单时将优先使用该地址</text>
 							</view>
-							<switch :checked="addressForm.isDefault === '1'" @change="onDefaultChange" color="#3ec6c6" style="transform:scale(0.8)"/>
+							<switch :checked="addressForm.isDefault === '1'" @change="onDefaultChange" color="#E07A4F" style="transform:scale(0.8)"/>
 						</view>
 					</view>
 				</scroll-view>
@@ -155,8 +145,11 @@
 
 <script>
 import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, delServicesaddress } from '@/api/servicesaddress'
+import SkeletonLoader from '@/components/skeleton/index.vue'
+import EmptyState from '@/components/empty-state/index.vue'
 
 	export default {
+		components: { SkeletonLoader, EmptyState },
 		data() {
 			return {
 				addressList: [],
@@ -870,14 +863,14 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 			width: 60rpx;
 			height: 60rpx;
 			border: 4rpx solid #f0f0f0;
-			border-top-color: #3ec6c6;
+			border-top-color: #E07A4F;
 			border-radius: 50%;
 			animation: spin 0.8s linear infinite;
 			margin-bottom: 20rpx;
 		}
 		
 		.loading-text {
-			font-size: 28rpx;
+			font-size: $text-md;
 			color: #999;
 		}
 	}
@@ -907,14 +900,14 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 		}
 
 		.empty-text {
-			font-size: 32rpx;
+			font-size: $text-lg;
 			color: #333;
 			font-weight: 600;
 			margin-bottom: 16rpx;
 		}
 
 		.empty-sub {
-			font-size: 26rpx;
+			font-size: $text-base;
 			color: #999;
 		}
 	}
@@ -930,11 +923,11 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 		border: 2rpx solid transparent;
 
 		&.selected {
-			border-color: #3ec6c6;
+			border-color: #E07A4F;
 			background: #f0fcfc;
 			
 			.tags-row .selected {
-				background: #3ec6c6;
+				background: #E07A4F;
 				color: #fff;
 			}
 		}
@@ -954,16 +947,16 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				align-items: baseline;
 				
 				.name {
-					font-size: 34rpx;
+					font-size: $text-xl;
 					font-weight: 600;
 					color: #333;
 					margin-right: 20rpx;
 				}
 				
 				.phone {
-					font-size: 28rpx;
+					font-size: $text-md;
 					color: #999;
-					font-family: 'Roboto', sans-serif;
+					font-family: inherit;
 				}
 			}
 
@@ -972,19 +965,19 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				gap: 12rpx;
 				
 				.tag {
-					font-size: 20rpx;
+					font-size: $text-xs;
 					padding: 4rpx 12rpx;
 					border-radius: 8rpx;
 					font-weight: 500;
 					
 					&.default {
-						background: rgba(62, 198, 198, 0.1);
-						color: #3ec6c6;
+						background: rgba(224, 122, 79, 0.1);
+						color: #E07A4F;
 					}
 					
 					&.set-default {
 						background: rgba(255, 153, 0, 0.1);
-						color: #ff9900;
+						color: #E8A84C;
 						border: 1rpx solid rgba(255, 153, 0, 0.3);
 						
 						&:active {
@@ -993,7 +986,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 					}
 					
 					&.selected {
-						background: #3ec6c6;
+						background: #E07A4F;
 						color: #fff;
 					}
 				}
@@ -1013,13 +1006,13 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				flex: 1;
 				
 				.area {
-					font-size: 28rpx;
+					font-size: $text-md;
 					color: #666;
 					margin-right: 10rpx;
 				}
 				
 				.detail {
-					font-size: 28rpx;
+					font-size: $text-md;
 					color: #333;
 					font-weight: 500;
 					line-height: 1.5;
@@ -1048,7 +1041,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				align-items: center;
 				padding: 12rpx 24rpx;
 				border-radius: 30rpx;
-				font-size: 26rpx;
+				font-size: $text-base;
 				transition: all 0.2s;
 				
 				uni-icons {
@@ -1062,7 +1055,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 
 			.delete {
 				background: rgba(255, 85, 85, 0.05);
-				color: #ff5555;
+				color: #D95C5C;
 			}
 
 			.action-right {
@@ -1075,9 +1068,9 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 				}
 				
 				.edit {
-					background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+					background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 					color: #fff;
-					box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+					box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
 				}
 			}
 		}
@@ -1100,15 +1093,15 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 		
 		.add-btn {
 			height: 88rpx;
-			background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+			background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 			border-radius: 44rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+			box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 			
 			text {
-				font-size: 32rpx;
+				font-size: $text-lg;
 				font-weight: 600;
 				color: #fff;
 			}
@@ -1116,7 +1109,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 		
 		.add-btn-hover {
 			transform: scale(0.98);
-			box-shadow: 0 4rpx 10rpx rgba(62, 198, 198, 0.3);
+			box-shadow: 0 4rpx 10rpx rgba(224, 122, 79, 0.3);
 		}
 	}
 
@@ -1166,7 +1159,7 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 			position: relative;
 
 			.title {
-				font-size: 34rpx;
+				font-size: $text-xl;
 				font-weight: 600;
 				color: #333;
 			}
@@ -1227,13 +1220,13 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 					flex-direction: column;
 					
 					.main-text {
-						font-size: 30rpx;
+						font-size: $text-lg;
 						color: #333;
 						font-weight: 500;
 					}
 					
 					.sub-text {
-						font-size: 24rpx;
+						font-size: $text-sm;
 						color: #999;
 						margin-top: 6rpx;
 					}
@@ -1242,13 +1235,13 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 
 			.label {
 				width: 160rpx;
-				font-size: 30rpx;
+				font-size: $text-lg;
 				color: #333;
 				font-weight: 500;
 				
 				&.required::after {
 					content: '*';
-					color: #ff5555;
+					color: #D95C5C;
 					margin-left: 4rpx;
 				}
 			}
@@ -1298,12 +1291,12 @@ import { listServicesaddressNoPage, addServicesaddress, updateServicesaddress, d
 			
 			.save-btn {
 				height: 88rpx;
-				background: linear-gradient(135deg, #3ec6c6 0%, #2eb5b5 100%);
+				background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
 				border-radius: 44rpx;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+				box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
 				
 				text {
 					color: #fff;

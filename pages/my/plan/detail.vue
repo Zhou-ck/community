@@ -83,7 +83,7 @@
 
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#3ec6c6"></uni-icons>
+      <uni-icons type="spinner-cycle" size="40" color="#E07A4F"></uni-icons>
       <text class="loading-text">加载中...</text>
     </view>
 
@@ -226,6 +226,7 @@ import { listDevicePlanCurrent, addDevicePlan } from '@/api/deviceplan'
 import { addCompletionlogs } from '@/api/completionlogs'
 import { getDicts } from '@/api/system/dict/data'
 import { resetDeviceNetwork } from '@/api/device'
+import SkeletonLoader from '@/components/skeleton/index.vue'
 
 export default {
   data() {
@@ -743,8 +744,8 @@ export default {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2da8a8 100%);
-  box-shadow: 0 8rpx 24rpx rgba(62, 198, 198, 0.4);
+  background: linear-gradient(135deg, #E07A4F 0%, #2da8a8 100%);
+  box-shadow: 0 8rpx 24rpx rgba(224, 122, 79, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -755,7 +756,7 @@ export default {
 
 .float-sync-text {
   font-size: 22rpx;
-  color: #3ec6c6;
+  color: #E07A4F;
   font-weight: 500;
   background: rgba(255, 255, 255, 0.95);
   padding: 6rpx 16rpx;
@@ -799,9 +800,9 @@ export default {
     transition: all 0.3s ease;
     
     &.active {
-      color: #3ec6c6;
+      color: #E07A4F;
       font-weight: 600;
-      background: linear-gradient(180deg, rgba(62, 198, 198, 0.05) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(224, 122, 79, 0.05) 0%, transparent 100%);
     }
     
     .active-line {
@@ -811,9 +812,9 @@ export default {
       transform: translateX(-50%);
       width: 80rpx;
       height: 8rpx;
-      background: linear-gradient(90deg, #3ec6c6 0%, #2da8a8 100%);
+      background: linear-gradient(90deg, #E07A4F 0%, #2da8a8 100%);
       border-radius: 4rpx 4rpx 0 0;
-      box-shadow: 0 -2rpx 8rpx rgba(62, 198, 198, 0.3);
+      box-shadow: 0 -2rpx 8rpx rgba(224, 122, 79, 0.3);
     }
   }
 }
@@ -838,7 +839,7 @@ export default {
   &:active {
     transform: translateY(-2rpx);
     box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
-    border-color: rgba(62, 198, 198, 0.1);
+    border-color: rgba(224, 122, 79, 0.1);
   }
 }
 
@@ -846,7 +847,7 @@ export default {
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2da8a8 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #2da8a8 100%);
   color: #fff;
   font-size: 28rpx;
   font-weight: 700;
@@ -854,7 +855,7 @@ export default {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
 }
 
 .plan-info {
@@ -892,7 +893,7 @@ export default {
     color: #fff;
     font-weight: 600;
     padding: 12rpx 24rpx;
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    background: linear-gradient(135deg, #5AAB7A 0%, #45a049 100%);
     border-radius: 30rpx;
     box-shadow: 0 4rpx 12rpx rgba(76, 175, 80, 0.3);
     letter-spacing: 1rpx;
@@ -930,7 +931,7 @@ export default {
 
 .confirm-btn {
   padding: 10rpx 28rpx;
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: linear-gradient(135deg, #5AAB7A 0%, #45a049 100%);
   color: #fff;
   border: none;
   border-radius: 40rpx;
@@ -984,7 +985,7 @@ export default {
 .sync-btn {
   width: 100%;
   height: 88rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2da8a8 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #2da8a8 100%);
   color: #fff;
   border: none;
   border-radius: 12rpx;
@@ -1040,7 +1041,7 @@ export default {
 .add-btn {
   width: 100%;
   height: 88rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2da8a8 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #2da8a8 100%);
   color: #fff;
   border: none;
   border-radius: 50rpx;
@@ -1050,16 +1051,9 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
   
-  &::after {
-    border: none;
-  }
-  
-  &:active {
-    opacity: 0.9;
-    transform: scale(0.98);
-  }
+  @include press();
 }
 
 /* 新增计划弹窗样式 */
@@ -1147,7 +1141,7 @@ export default {
   box-sizing: border-box;
   
   &:focus {
-    border-color: #3ec6c6;
+    border-color: #E07A4F;
   }
 }
 
@@ -1163,7 +1157,7 @@ export default {
   resize: none;
   
   &:focus {
-    border-color: #3ec6c6;
+    border-color: #E07A4F;
   }
 }
 
@@ -1225,7 +1219,7 @@ export default {
   flex: 1;
   height: 80rpx;
   line-height: 80rpx;
-  background: #3ec6c6;
+  background: #E07A4F;
   color: #fff;
   border: none;
   border-radius: 8rpx;

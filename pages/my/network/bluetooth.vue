@@ -20,7 +20,7 @@
 		<view v-if="currentStep === 1" class="step-content scan-step-content">
 			<view class="scan-visual-area" v-if="!scanning && !(hasScanned && devices.length === 0)">
 				<view class="radar-circle">
-					<uni-icons type="search" size="40" color="#3ec6c6"></uni-icons>
+					<uni-icons type="search" size="40" color="#E07A4F"></uni-icons>
 					<view class="radar-wave wave-1"></view>
 					<view class="radar-wave wave-2"></view>
 				</view>
@@ -736,7 +736,7 @@ export default {
 }
 
 .step-item.active .step-number {
-	background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+	background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 	color: #fff;
 }
 
@@ -752,7 +752,7 @@ export default {
 }
 
 .step-item.active .step-label {
-	color: #3ec6c6;
+	color: #E07A4F;
 	font-weight: 600;
 }
 
@@ -869,20 +869,20 @@ export default {
 	width: 80%; /* 稍微收窄按钮宽度 */
 	height: 96rpx;
 	line-height: 96rpx;
-	background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+	background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 	color: #fff;
 	font-size: 34rpx;
 	font-weight: 500;
 	border-radius: 48rpx;
 	border: none;
 	margin-bottom: 24rpx;
-	box-shadow: 0 10rpx 20rpx rgba(62, 198, 198, 0.3); /* 增加按钮投影 */
+	box-shadow: 0 10rpx 20rpx rgba(224, 122, 79, 0.3); /* 增加按钮投影 */
 	transition: all 0.3s;
 }
 
 .scan-btn:active {
 	transform: scale(0.98);
-	box-shadow: 0 5rpx 10rpx rgba(62, 198, 198, 0.2);
+	box-shadow: 0 5rpx 10rpx rgba(224, 122, 79, 0.2);
 }
 
 .scan-btn::after {
@@ -897,7 +897,7 @@ export default {
 
 .scanning-text {
 	font-size: 28rpx;
-	color: #3ec6c6;
+	color: #E07A4F;
 	margin-top: 24rpx;
 	display: block;
 }
@@ -948,7 +948,7 @@ export default {
 
 .signal-text {
 	font-size: 24rpx;
-	color: #3ec6c6;
+	color: #E07A4F;
 	font-weight: 500;
 }
 
@@ -999,8 +999,8 @@ export default {
 	height: 72rpx;
 	line-height: 72rpx;
 	background: #fff;
-	color: #3ec6c6;
-	border: 2rpx solid #3ec6c6;
+	color: #E07A4F;
+	border: 2rpx solid #E07A4F;
 	border-radius: 36rpx;
 	font-size: 28rpx;
 	font-weight: 500;
@@ -1062,7 +1062,7 @@ export default {
 	padding: 0 24rpx;
 	height: 80rpx;
 	line-height: 80rpx;
-	background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+	background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 	color: #fff;
 	font-size: 24rpx;
 	border-radius: 12rpx;
@@ -1149,7 +1149,7 @@ export default {
 }
 
 .retry-btn {
-	background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+	background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
 	color: #fff;
 }
 
@@ -1168,7 +1168,7 @@ export default {
 	width: 80rpx;
 	height: 80rpx;
 	border: 6rpx solid #f5f5f5;
-	border-top-color: #3ec6c6;
+	border-top-color: #E07A4F;
 	border-radius: 50%;
 	margin: 0 auto 30rpx;
 	animation: spin 1s linear infinite;

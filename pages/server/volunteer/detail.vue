@@ -19,7 +19,7 @@
       <view class="info-card">
         <view class="info-item">
           <view class="info-icon-box">
-            <uni-icons type="calendar" size="20" color="#3ec6c6"></uni-icons>
+            <uni-icons type="calendar" size="20" color="#E07A4F"></uni-icons>
           </view>
           <view class="info-content">
             <text class="info-label">活动时间</text>
@@ -29,7 +29,7 @@
 
         <view class="info-item">
           <view class="info-icon-box">
-            <uni-icons type="location" size="20" color="#3ec6c6"></uni-icons>
+            <uni-icons type="location" size="20" color="#E07A4F"></uni-icons>
           </view>
           <view class="info-content">
             <text class="info-label">活动地点</text>
@@ -39,7 +39,7 @@
 
         <view class="info-item">
           <view class="info-icon-box">
-            <uni-icons type="person" size="20" color="#3ec6c6"></uni-icons>
+            <uni-icons type="person" size="20" color="#E07A4F"></uni-icons>
           </view>
           <view class="info-content">
             <text class="info-label">招募人数</text>
@@ -414,9 +414,9 @@ export default {
     font-weight: 600;
     
     &.status-active {
-      background: linear-gradient(135deg, #3ec6c6 0%, #2ea8a8 100%);
+      background: linear-gradient(135deg, #E07A4F 0%, #2ea8a8 100%);
       color: #fff;
-      box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.4);
+      box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.4);
     }
     
     &.status-end {
@@ -518,7 +518,7 @@ export default {
     .title-line {
       width: 6rpx;
       height: 28rpx;
-      background: linear-gradient(180deg, #3ec6c6 0%, #2ea8a8 100%);
+      background: linear-gradient(180deg, #E07A4F 0%, #2ea8a8 100%);
       border-radius: 3rpx;
       margin-right: 12rpx;
     }
@@ -540,7 +540,7 @@ export default {
       .requirement-dot {
         width: 10rpx;
         height: 10rpx;
-        background: #3ec6c6;
+        background: #E07A4F;
         border-radius: 50%;
         margin-top: 12rpx;
         margin-right: 16rpx;
@@ -576,7 +576,7 @@ export default {
     .title-line {
       width: 6rpx;
       height: 28rpx;
-      background: linear-gradient(180deg, #3ec6c6 0%, #2ea8a8 100%);
+      background: linear-gradient(180deg, #E07A4F 0%, #2ea8a8 100%);
       border-radius: 3rpx;
       margin-right: 12rpx;
     }
@@ -604,7 +604,7 @@ export default {
         font-weight: 500;
         
         &.phone {
-          color: #3ec6c6;
+          color: #E07A4F;
           text-decoration: underline;
         }
       }
@@ -653,7 +653,7 @@ export default {
   .sign-up-btn {
     flex: 1;
     height: 80rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #2ea8a8 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #2ea8a8 100%);
     color: #fff;
     border: none;
     border-radius: 40rpx;
@@ -662,12 +662,14 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8rpx 20rpx rgba(62, 198, 198, 0.3);
+    box-shadow: 0 8rpx 20rpx rgba(224, 122, 79, 0.3);
     transition: all 0.3s ease;
+    
+    @include press(0.98, 0.95);
     
     &:active:not(.disabled) {
       transform: translateY(2rpx);
-      box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+      box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
     }
     
     &.disabled {
@@ -747,7 +749,7 @@ export default {
           
           &:focus {
             background-color: #fff;
-            border-color: #3ec6c6;
+            border-color: #E07A4F;
           }
         }
       }
@@ -777,13 +779,11 @@ export default {
         }
         
         &.confirm-btn {
-          color: #3ec6c6;
+          color: #E07A4F;
           font-weight: 600;
         }
         
-        &:active {
-          background-color: #f9f9f9;
-        }
+        @include press-card();
       }
     }
   }

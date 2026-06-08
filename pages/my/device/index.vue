@@ -12,7 +12,7 @@
     <view class="stats-section">
       <view class="stat-card">
         <view class="stat-icon">
-          <uni-icons type="home-filled" size="24" color="#3ec6c6"></uni-icons>
+          <uni-icons type="home-filled" size="24" color="#E07A4F"></uni-icons>
         </view>
         <view class="stat-info">
           <text class="stat-value">{{ totalCount }}</text>
@@ -95,11 +95,11 @@
         <view class="card-actions" @click.stop>
           <view class="action-row">
             <button class="action-btn secondary" @click="editDevice(device)">
-              <uni-icons type="compose" size="16" color="#3ec6c6"></uni-icons>
+              <uni-icons type="compose" size="16" color="#E07A4F"></uni-icons>
               <text>修改</text>
             </button>
             <button class="action-btn danger" @click="unbindDevice(device)">
-              <uni-icons type="trash" size="16" color="#ff5555"></uni-icons>
+              <uni-icons type="trash" size="16" color="#D95C5C"></uni-icons>
               <text>解绑</text>
             </button>
           </view>
@@ -116,21 +116,21 @@
       <!-- 空状态 -->
       <view v-if="deviceList.length === 0 && !loading" class="empty-box">
         <view class="empty-icon-wrapper">
-          <uni-icons type="gear" size="80" color="#3ec6c6"></uni-icons>
+          <uni-icons type="gear" size="80" color="#E07A4F"></uni-icons>
         </view>
         <text class="empty-text">还没有添加设备</text>
         <text class="empty-tip">点击下方按钮添加您的第一台智能设备</text>
         <view class="empty-features">
           <view class="feature-item">
-            <uni-icons type="checkmarkempty" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="checkmarkempty" size="16" color="#E07A4F"></uni-icons>
             <text>实时监控设备状态</text>
           </view>
           <view class="feature-item">
-            <uni-icons type="checkmarkempty" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="checkmarkempty" size="16" color="#E07A4F"></uni-icons>
             <text>远程控制管理</text>
           </view>
           <view class="feature-item">
-            <uni-icons type="checkmarkempty" size="16" color="#3ec6c6"></uni-icons>
+            <uni-icons type="checkmarkempty" size="16" color="#E07A4F"></uni-icons>
             <text>异常告警通知</text>
           </view>
         </view>
@@ -290,7 +290,7 @@
 
     <!-- 加载状态 -->
     <view v-if="loading && !isRefreshing" class="loading-mask">
-      <uni-icons type="spinner-cycle" size="40" color="#4CAF50"></uni-icons>
+      <uni-icons type="spinner-cycle" size="40" color="#5AAB7A"></uni-icons>
       <text class="loading-text">加载中...</text>
     </view>
   </view>
@@ -300,8 +300,10 @@
 import { listDevice, delDevice, addDevice, updateDevice, getAepDevice, getIwownDeviceByImei } from '@/api/device'
 import { getDicts } from '@/api/system/dict/data'
 import { parseDeviceNumber } from '@/utils/parseDevNumber'
+import SkeletonLoader from '@/components/skeleton/index.vue'
 
 export default {
+  components: { SkeletonLoader },
   data() {
     return {
       deviceList: [],
@@ -490,7 +492,7 @@ export default {
         const iconMap = {
           '1': '../static/breath.png',      // 呼吸睡眠 Ld
           '2': '../static/tumble.png',      // 跌倒监测 Ed
-          '4': '../static/breath.png',      // 呼吸睡眠-L2 La
+          '4': '../static/sleep-l2.jpg',      // 二代睡眠
           '13': '../static/shuijin.png',    // 水浸 Sd
           '14': '../static/menci.png',      // 门磁 Md
           '15': '../static/yangan.png',     // 烟感 Yd
@@ -1029,13 +1031,13 @@ export default {
   &.online {
     width: 48rpx;
     height: 48rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
   }
   
   &.offline {
     width: 48rpx;
     height: 48rpx;
-    background: linear-gradient(135deg, #ff5555 0%, #ff4444 100%);
+    background: linear-gradient(135deg, #D95C5C 0%, #ff4444 100%);
   }
 }
 
@@ -1080,7 +1082,7 @@ export default {
   
   &:hover {
     transform: translateY(-4rpx);
-    box-shadow: 0 16rpx 48rpx rgba(62, 198, 198, 0.08);
+    box-shadow: 0 16rpx 48rpx rgba(224, 122, 79, 0.08);
   }
 }
 
@@ -1125,9 +1127,9 @@ export default {
   }
   
   &.online {
-    color: #3ec6c6;
-    background: rgba(62, 198, 198, 0.12);
-    .status-dot { background: #3ec6c6; }
+    color: #E07A4F;
+    background: rgba(224, 122, 79, 0.12);
+    .status-dot { background: #E07A4F; }
   }
   
   &.offline {
@@ -1183,9 +1185,9 @@ export default {
   
   // 居民自购样式
   &.self-purchased {
-    color: #3ec6c6;
-    background: rgba(62, 198, 198, 0.1);
-    border: 1rpx solid rgba(62, 198, 198, 0.3);
+    color: #E07A4F;
+    background: rgba(224, 122, 79, 0.1);
+    border: 1rpx solid rgba(224, 122, 79, 0.3);
   }
   
   // 社区分配样式
@@ -1215,18 +1217,18 @@ export default {
   width: 108rpx;
   height: 108rpx;
   border-radius: 28rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #2eb8b8 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #2eb8b8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 6rpx 16rpx rgba(62, 198, 198, 0.15);
+  box-shadow: 0 6rpx 16rpx rgba(224, 122, 79, 0.15);
   overflow: hidden;
 
   &.has-icon {
     background: #f8fdfd; /* 给图片加一个极淡的背景 */
     box-shadow: none;
-    border: 1rpx solid rgba(62, 198, 198, 0.05);
+    border: 1rpx solid rgba(224, 122, 79, 0.05);
   }
 
   .avatar-img {
@@ -1284,9 +1286,11 @@ export default {
   
   &.secondary {
     background: #eefbfb; /* 纯色背景 */
-    color: #3ec6c6;
+    color: #E07A4F;
     border: none;
     box-shadow: none;
+    
+    @include press(0.98, 0.95);
     
     &:active {
       background: #dcf5f5;
@@ -1295,9 +1299,11 @@ export default {
   
   &.danger {
     background: #fff0f0; /* 纯色背景 */
-    color: #ff5555;
+    color: #D95C5C;
     border: none;
     box-shadow: none;
+    
+    @include press(0.98, 0.95);
     
     &:active {
       background: #ffe0e0;
@@ -1331,7 +1337,7 @@ export default {
       width: 40rpx;
       height: 40rpx;
       border-radius: 50%;
-      background: rgba(62, 198, 198, 0.1);
+      background: rgba(224, 122, 79, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1362,20 +1368,20 @@ export default {
         
         &.online {
           color: #fff;
-          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+          background: linear-gradient(135deg, #5AAB7A 0%, #45a049 100%);
           box-shadow: 0 2rpx 8rpx rgba(76, 175, 80, 0.3);
         }
         
         &.offline {
           color: #fff;
-          background: linear-gradient(135deg, #ff5555 0%, #ff4444 100%);
+          background: linear-gradient(135deg, #D95C5C 0%, #ff4444 100%);
           box-shadow: 0 2rpx 8rpx rgba(255, 85, 85, 0.3);
         }
       }
       
       &.device-key,
       &.product-key {
-        font-family: 'Courier New', monospace;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 24rpx;
         color: #666;
         background: #f8f9fa;
@@ -1409,7 +1415,7 @@ export default {
     width: 180rpx;
     height: 180rpx;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(62, 198, 198, 0.1) 0%, rgba(62, 198, 198, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(224, 122, 79, 0.1) 0%, rgba(224, 122, 79, 0.05) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1422,7 +1428,7 @@ export default {
       width: 220rpx;
       height: 220rpx;
       border-radius: 50%;
-      border: 2rpx dashed rgba(62, 198, 198, 0.3);
+      border: 2rpx dashed rgba(224, 122, 79, 0.3);
       animation: rotate 20s linear infinite;
     }
   }
@@ -1480,7 +1486,7 @@ export default {
   .add-btn {
     width: 100%;
     height: 88rpx;
-    background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+    background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
     color: #fff;
     border: none;
     border-radius: 44rpx;
@@ -1490,7 +1496,7 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 12rpx;
-    box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+    box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
 
     .add-btn-text {
       color: #fff;
@@ -1574,7 +1580,7 @@ export default {
     bottom: -2rpx;
     width: 60rpx;
     height: 2rpx;
-    background: #667eea;
+    background: #E07A4F;
   }
 }
 
@@ -1645,7 +1651,7 @@ export default {
 
 .save-btn {
   width: 100%;
-  background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
   color: #fff;
   border: none;
   height: 88rpx;
@@ -1704,7 +1710,7 @@ export default {
   background: #fff;
   
   &:focus {
-    border-color: #667eea;
+    border-color: #E07A4F;
   }
   
   &.disabled {
@@ -1750,7 +1756,7 @@ export default {
   gap: 8rpx;
   height: 80rpx;
   padding: 0 24rpx;
-  background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
   border: none;
   border-radius: 12rpx;
   color: #fff;
@@ -1758,7 +1764,7 @@ export default {
   font-weight: 600;
   white-space: nowrap;
   transition: all 0.3s ease;
-  box-shadow: 0 4rpx 12rpx rgba(62, 198, 198, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
   position: relative;
   overflow: hidden;
   
@@ -1773,10 +1779,9 @@ export default {
     transition: left 0.5s ease;
   }
   
+  @include press-btn();
+  
   &:active {
-    transform: scale(0.96);
-    box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.4);
-    
     &::before {
       left: 100%;
     }
@@ -1805,7 +1810,7 @@ export default {
   resize: none;
   
   &:focus {
-    border-color: #667eea;
+    border-color: #E07A4F;
   }
 }
 
@@ -1850,7 +1855,7 @@ export default {
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #3ec6c6 0%, #36b3b3 100%);
+  background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
   color: #fff;
 }
 </style>

@@ -35,20 +35,20 @@
       <!-- 快捷操作 -->
       <view class="quick-actions-new">
         <view class="action-item-new" @click="handleJoinCommunity">
-          <text class="iconfontB icon-shequ action-icon-color"></text>
+          <text class="iconfontA icon-shequ action-icon-color"></text>
           <text class="action-text-new">加入社区</text>
         </view>
         <view class="action-item-new" @click="handleAddress">
-          <text class="iconfontB icon-dizhi action-icon-color"></text>
+          <text class="iconfontA icon-dizhi action-icon-color"></text>
           <text class="action-text-new">服务地址</text>
         </view>
         
         <view class="action-item-new" @click="handleFamily">
-          <text class="iconfontB icon-jigoubanji action-icon-color action-icon-small-2"></text>
+          <text class="iconfontA icon-jigoubanji action-icon-color action-icon-small-2"></text>
           <text class="action-text-new text-small-2">家庭成员</text>
         </view>
         <view class="action-item-new" @click="handleHealth">
-          <text class="iconfontB icon-jiankangdangan1 action-icon-color action-icon-small"></text>
+          <text class="iconfontA icon-jiankangdangan1 action-icon-color action-icon-small"></text>
           <text class="action-text-new text-small">健康档案</text>
         </view>
       </view>
@@ -68,7 +68,7 @@
         
         <view v-if="showDevTools" class="menu-item" @click="handleBalancePackage">
           <view class="menu-icon-wrapper" style="background-color: #E3F2FD;">
-            <uni-icons type="wallet" size="20" color="#2196F3"></uni-icons>
+            <uni-icons type="wallet" size="20" color="#E07A4F"></uni-icons>
           </view>
           <view class="menu-content">
             <text class="menu-title">设备套餐</text>
@@ -90,7 +90,7 @@
         
         <view v-if="showDevTools" class="menu-item" @click="handleDevice">
           <view class="menu-icon-wrapper" style="background-color: #FFF3E0;">
-            <text class="iconfontA icon-shebeiguanli" style="color: #FF9800; font-size: 20px;"></text>
+            <text class="iconfontA icon-shebeiguanli" style="color: #E8A84C; font-size: 20px;"></text>
           </view>
           <view class="menu-content">
             <text class="menu-title">设备管理</text>
@@ -112,7 +112,7 @@
         
         <view class="menu-item" @click="handleToSetting">
           <view class="menu-icon-wrapper" style="background-color: #E8F5E8;">
-            <uni-icons type="gear" size="20" color="#4CAF50"></uni-icons>
+            <uni-icons type="gear" size="20" color="#5AAB7A"></uni-icons>
           </view>
           <view class="menu-content">
             <text class="menu-title">应用设置</text>
@@ -225,7 +225,7 @@
 </script>
 
 <style lang="scss" scoped>
-@import '@/static/fontB/iconfont.css';
+@import '@/static/fontA/iconfont.css';
 
 page {
   background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);

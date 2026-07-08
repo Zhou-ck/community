@@ -389,7 +389,6 @@ import { listMyPackageInstance, myRefundApply, myCancelRefundApply } from '@/api
 import { viewPackageQrCode, reportLostQrCode } from '@/api/packageQrCode'
 import verificationMixin from '@/mixins/verification-mixin.js'
 import VerificationModal from '@/components/verification-modal/verification-modal.vue'
-import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'
 import {
   formatDate as _formatDate,
   getInstanceStatusText as _getInstanceStatusText,
@@ -405,8 +404,7 @@ import {
 export default {
   mixins: [verificationMixin],
   components: {
-    VerificationModal,
-    uniIcons
+    VerificationModal
   },
   data() {
     return {

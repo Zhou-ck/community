@@ -150,7 +150,7 @@ const request = config => {
             console.log('完整响应:', res.data)
             console.groupEnd()
           }
-          toast(msg)
+          if (!config.silent) toast(msg)
           return reject('500')
         } else if (code !== 200) {
           // 调试信息：业务错误
@@ -162,7 +162,7 @@ const request = config => {
             console.log('完整响应:', res.data)
             console.groupEnd()
           }
-          toast(msg)
+          if (!config.silent) toast(msg)
           return reject(code)
         }
         resolve(res.data)

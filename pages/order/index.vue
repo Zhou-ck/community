@@ -252,7 +252,6 @@
 	import { listServiceorder, cancelServiceorder, updateServiceorder, delServiceorder, evaluationServiceorder, completeServiceorder } from '@/api/service'
 	import { ORDER_STATUS_MAP, ORDER_STATUS_CODE_MAP, getServiceIcon as _getServiceIcon } from '@/utils/service-helper'
 	import websocket from '@/utils/websocket.js'
-	import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'
 	import config from '@/config.js'
 	import verificationMixin from '@/mixins/verification-mixin.js'
 	import VerificationModal from '@/components/verification-modal/verification-modal.vue'
@@ -261,7 +260,6 @@
 	export default {
 		mixins: [verificationMixin],
 		components: {
-			'uni-icons': uniIcons,
 			VerificationModal,
 			ReviewModal
 		},
@@ -687,7 +685,10 @@
 						let orders = response.rows.map(order => this.formatOrderData(order))
 						
 						// 前端额外过滤：确保套餐订单只显示一周内未完成的
-						orders = this.filterPackageOrders(orders)
+						// 已完成标签不过滤，避免已完成订单无法显示
+						if (this.currentTab !== 4) {
+							orders = this.filterPackageOrders(orders)
+						}
 						
 						// 更新列表数据
 						if (this.page === 1) {

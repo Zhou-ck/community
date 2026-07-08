@@ -51,6 +51,10 @@
           <text class="iconfontA icon-jiankangdangan1 action-icon-color action-icon-small"></text>
           <text class="action-text-new text-small">健康档案</text>
         </view>
+        <view class="action-item-new" @click="handleUseRecords">
+          <uni-icons type="list" size="28" color="#3ec6c6"></uni-icons>
+          <text class="action-text-new text-small">使用记录</text>
+        </view>
       </view>
 
       <!-- 功能菜单 -->
@@ -207,6 +211,10 @@
       handleHealth() {
         if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/health/index')
+      },
+      handleUseRecords() {
+        if (!this.checkLogin()) return
+        this.$tab.navigateTo('/pages/my/use-records/index')
       },
       handleAddress() {
         if (!this.checkLogin()) return

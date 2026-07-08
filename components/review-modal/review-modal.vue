@@ -144,12 +144,9 @@
 </template>
 
 <script>
-	import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'
-	
-	export default {
+		export default {
 		name: 'ReviewModal',
 		components: {
-			'uni-icons': uniIcons
 		},
 		props: {
 			visible: {

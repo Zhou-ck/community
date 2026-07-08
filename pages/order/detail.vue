@@ -1411,14 +1411,14 @@ export default {
     .status-text { color: #555; }
     .status-time { color: #777; }
     .status-icon-wrapper { background: rgba(0,0,0,0.05); }
-    /deep/ .uni-icons { color: #555 !important; }
+    ::v-deep .uni-icons { color: #555 !important; }
   }
   &.bg-cancelled {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     .status-text { color: #666; }
     .status-time { color: #888; }
     .status-icon-wrapper { background: rgba(0,0,0,0.05); }
-    /deep/ .uni-icons { color: #666 !important; }
+    ::v-deep .uni-icons { color: #666 !important; }
   }
   &.bg-rejected {
     background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);

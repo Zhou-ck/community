@@ -16,10 +16,11 @@ export function residentConfirm(orderId) {
   })
 }
 
-// 获取订单额外信息
+// 获取订单额外信息（服务照片等可选数据，静默请求失败不弹 toast）
 export function getExtraOrderInfo(orderId) {
   return request({
     url: '/services/verification/extra/order/' + orderId,
-    method: 'get'
+    method: 'get',
+    silent: true
   })
 }

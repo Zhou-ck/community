@@ -46,25 +46,26 @@
 			</view>
 
 			<view v-else class="order-item" v-for="(order, index) in orderList" :key="order.id" @click="viewOrderDetail(order.id)">
-				<view class="order-header" v-if="order.status !== 'completed'">
+				<view class="order-header" v-if="order.status !== 'completed' && order.status !== 'serving'">
 				<view class="order-info">
-					<text class="order-time">{{ order.status === 'completed' ? (order.verificationTime || order.createTime) : order.createTime }}</text>
+					<text class="order-time" v-if="order.status !== 'serving'">{{ order.status === 'completed' ? (order.verificationTime || order.createTime) : order.createTime }}</text>
 					<view class="order-no-wrapper" v-if="order.status !== 'completed'" @longpress.stop="copyOrderNo(order.orderNo || order.id)">
 						<text class="order-no-label">订单号：</text>
 						<text class="order-no">{{ order.orderNo || order.id }}</text>
 						<uni-icons type="copy" size="14" color="#999"></uni-icons>
 					</view>
 				</view>
-				<text class="order-status" :class="order.statusClass">{{ order.statusText }}</text>
+				<text class="order-status" :class="order.statusClass" v-if="order.status !== 'serving'">{{ order.statusText }}</text>
 			</view>
 
 				<!-- 服务订单内容 -->
-				<view class="service-order-content" v-if="order.status !== 'completed'">
+				<view class="service-order-content" v-if="order.status !== 'completed' && order.status !== 'serving'">
 					<view class="service-header">
 						<image 
 							:src="getServiceIcon(order.icon)" 
 							class="service-icon"
 							mode="aspectFill"
+							v-if="order.status !== 'serving'"
 						></image>
 						<view class="service-info">
 							<view class="service-name-row">
@@ -77,13 +78,14 @@
 									<uni-icons type="sound" size="12" color="#fff"></uni-icons>
 									<text>语音下单</text>
 								</view>
+								<text class="serving-status-tag" v-if="order.status === 'serving'">服务中</text>
 							</view>
 							<view class="service-detail">
-								<view class="detail-item">
+								<view class="detail-item" v-if="order.status !== 'serving'">
 									<uni-icons type="person" size="14" color="#999"></uni-icons>
 									<text class="detail-text">联系人：{{ order.contactName }}</text>
 								</view>
-								<view class="detail-item">
+								<view class="detail-item" v-if="order.status !== 'serving'">
 									<uni-icons type="phone" size="14" color="#999"></uni-icons>
 									<text class="detail-text">{{ order.contactPhone }}</text>
 								</view>
@@ -120,8 +122,47 @@
 					</view>
 				</view>
 
+				<!-- 服务中状态简化展示 -->
+				<view class="service-order-content completed-simple" v-else-if="order.status === 'serving'">
+					<view class="completed-order-no" @longpress.stop="copyOrderNo(order.orderNo || order.id)">
+						<text class="order-no-label">订单号：</text>
+						<text class="order-no">{{ order.orderNo || order.id }}</text>
+						<uni-icons type="copy" size="14" color="#999"></uni-icons>
+					</view>
+					<view class="completed-header">
+						<text class="completed-service-name">{{ order.serviceName || '服务项目' }}</text>
+						<view class="package-badge" v-if="order.orderSource === '2' || order.orderSource === 2">
+							<uni-icons type="wallet" size="12" color="#fff"></uni-icons>
+							<text>套餐订单</text>
+						</view>
+						<view class="voice-badge" v-if="order.orderSource === '5' || order.orderSource === 5" @click.stop="playVoice(order)">
+							<uni-icons type="sound" size="12" color="#fff"></uni-icons>
+							<text>语音下单</text>
+						</view>
+						<text class="serving-status-tag">服务中</text>
+					</view>
+					<view class="completed-info">
+						<view class="completed-detail">
+							<text class="detail-label">预约时间：</text>
+							<text class="detail-value">{{ order.appointmentDate }} {{ order.appointmentPeriod }}</text>
+						</view>
+						<view class="completed-detail" v-if="order.serviceAddress">
+							<text class="detail-label">服务地址：</text>
+							<text class="detail-value">{{ order.serviceAddress }}</text>
+						</view>
+						<view class="completed-detail" v-if="order.providerName">
+							<text class="detail-label">服务商：</text>
+							<text class="detail-value">{{ order.providerName }}</text>
+						</view>
+						<view class="completed-detail" v-if="order.staffName">
+							<text class="detail-label">服务人员：</text>
+							<text class="detail-value">{{ order.staffName }}</text>
+						</view>
+					</view>
+				</view>
+
 				<!-- 已完成状态简化展示 -->
-				<view class="service-order-content completed-simple" v-else>
+				<view class="service-order-content completed-simple" v-else-if="order.status === 'completed'">
 					<view class="completed-header">
 						<text class="completed-service-name">{{ order.serviceName || '服务项目' }}</text>
 						<view class="package-badge" v-if="order.orderSource === '2' || order.orderSource === 2">
@@ -1912,6 +1953,24 @@
 			background: #f9f9f9 !important;
 			margin-bottom: 16rpx !important;
 			
+			.completed-order-no {
+				display: flex;
+				align-items: center;
+				gap: 8rpx;
+				margin-bottom: 16rpx;
+				
+				.order-no-label {
+					font-size: 22rpx;
+					color: #999;
+				}
+				
+				.order-no {
+					font-size: 22rpx;
+					color: #666;
+					font-family: monospace;
+				}
+			}
+			
 			.completed-header {
 				display: flex;
 				align-items: center;
@@ -1928,6 +1987,16 @@
 					font-size: 22rpx;
 					color: #999;
 					background: #f5f5f5;
+					padding: 4rpx 12rpx;
+					border-radius: 6rpx;
+					flex-shrink: 0;
+					margin-left: auto;
+				}
+				
+				.serving-status-tag {
+					font-size: 22rpx;
+					color: #1890ff;
+					background: #e6f7ff;
 					padding: 4rpx 12rpx;
 					border-radius: 6rpx;
 					flex-shrink: 0;

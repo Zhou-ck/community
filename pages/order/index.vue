@@ -46,20 +46,20 @@
 			</view>
 
 			<view v-else class="order-item" v-for="(order, index) in orderList" :key="order.id" @click="viewOrderDetail(order.id)">
-				<view class="order-header">
-					<view class="order-info">
-						<text class="order-time">{{ order.createTime }}</text>
-						<view class="order-no-wrapper" @longpress.stop="copyOrderNo(order.orderNo || order.id)">
-							<text class="order-no-label">订单号：</text>
-							<text class="order-no">{{ order.orderNo || order.id }}</text>
-							<uni-icons type="copy" size="14" color="#999"></uni-icons>
-						</view>
+				<view class="order-header" v-if="order.status !== 'completed'">
+				<view class="order-info">
+					<text class="order-time">{{ order.status === 'completed' ? (order.verificationTime || order.createTime) : order.createTime }}</text>
+					<view class="order-no-wrapper" v-if="order.status !== 'completed'" @longpress.stop="copyOrderNo(order.orderNo || order.id)">
+						<text class="order-no-label">订单号：</text>
+						<text class="order-no">{{ order.orderNo || order.id }}</text>
+						<uni-icons type="copy" size="14" color="#999"></uni-icons>
 					</view>
-					<text class="order-status" :class="order.statusClass">{{ order.statusText }}</text>
 				</view>
+				<text class="order-status" :class="order.statusClass">{{ order.statusText }}</text>
+			</view>
 
 				<!-- 服务订单内容 -->
-				<view class="service-order-content">
+				<view class="service-order-content" v-if="order.status !== 'completed'">
 					<view class="service-header">
 						<image 
 							:src="getServiceIcon(order.icon)" 
@@ -120,6 +120,28 @@
 					</view>
 				</view>
 
+				<!-- 已完成状态简化展示 -->
+				<view class="service-order-content completed-simple" v-else>
+					<view class="completed-header">
+						<text class="completed-service-name">{{ order.serviceName || '服务项目' }}</text>
+						<view class="package-badge" v-if="order.orderSource === '2' || order.orderSource === 2">
+							<uni-icons type="wallet" size="12" color="#fff"></uni-icons>
+							<text>套餐订单</text>
+						</view>
+						<text class="completed-status-tag">已完成</text>
+					</view>
+					<view class="completed-info">
+						<view class="completed-detail">
+							<text class="detail-label">完成时间：</text>
+							<text class="detail-value">{{ order.verificationTime || order.confirmTime || order.createTime }}</text>
+						</view>
+						<view class="completed-detail" v-if="order.providerName">
+							<text class="detail-label">服务商：</text>
+							<text class="detail-value">{{ order.providerName }}</text>
+						</view>
+					</view>
+				</view>
+
 				<!-- 语音下单备注提示 -->
 				<view class="voice-order-remark" v-if="(order.orderSource === '5' || order.orderSource === 5) && order.remark && parseVoiceRemark(order.remark)">
 					<view class="remark-detail">
@@ -149,7 +171,7 @@
 				</view>
 
 				<view class="order-footer">
-					<view class="order-summary">
+					<view class="order-summary" v-if="order.status !== 'completed'">
 						<text class="total-text">服务价格：￥{{ order.price }}</text>
 						<text class="subsidy-text" v-if="order.useSubsidy === '1' && order.subsidyAmount > 0">补贴：-￥{{ order.subsidyAmount }}</text>
 						<view class="amount-wrapper">
@@ -855,6 +877,7 @@
 					evaluationTime: order.evaluationTime || '',  // 评价时间
 					rejectReason: order.rejectReason || '', // 拒绝原因
 					verificationMethod: order.verificationMethod || '', // 核销方式
+					verificationTime: order.verificationTime || '', // 核销时间（实际完成时间）
 
 					// 用户信息 - 从后端返回的订单数据中获取
 					userId: order.userId || '',
@@ -1878,6 +1901,71 @@
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+
+		// 已完成订单简化卡片
+		.completed-simple {
+			padding: 24rpx !important;
+			background: #f9f9f9 !important;
+			margin-bottom: 16rpx !important;
+			
+			.completed-header {
+				display: flex;
+				align-items: center;
+				gap: 12rpx;
+				margin-bottom: 16rpx;
+				
+				.completed-service-name {
+					font-size: 30rpx;
+					font-weight: 600;
+					color: #333;
+				}
+				
+				.completed-status-tag {
+					font-size: 22rpx;
+					color: #999;
+					background: #f5f5f5;
+					padding: 4rpx 12rpx;
+					border-radius: 6rpx;
+					flex-shrink: 0;
+					margin-left: auto;
+				}
+				
+				.package-badge {
+					display: inline-flex;
+					align-items: center;
+					gap: 6rpx;
+					background: linear-gradient(135deg, #fa8c16 0%, #f57c00 100%);
+					color: #fff;
+					font-size: 20rpx;
+					padding: 6rpx 14rpx;
+					border-radius: 100rpx;
+					font-weight: 500;
+					
+					text { line-height: 1; }
+				}
+			}
+			
+			.completed-info {
+				.completed-detail {
+					display: flex;
+					align-items: center;
+					margin-bottom: 8rpx;
+					
+					&:last-child { margin-bottom: 0; }
+					
+					.detail-label {
+						font-size: 24rpx;
+						color: #999;
+						flex-shrink: 0;
+					}
+					
+					.detail-value {
+						font-size: 24rpx;
+						color: #666;
 					}
 				}
 			}

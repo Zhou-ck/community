@@ -13,221 +13,107 @@
         </view>
       </view> -->
 
-      <!-- 服务信息卡片 -->
+      <!-- 服务照片卡片 -->
+      <view class="info-card" v-if="extraOrderInfo && (extraOrderInfo.photoUrlsBefore && extraOrderInfo.photoUrlsBefore.length > 0 || extraOrderInfo.photoUrls && extraOrderInfo.photoUrls.length > 0)">
+        <view class="card-header">
+          <view class="header-title">
+            <uni-icons type="image" size="18" color="#333" class="header-icon"></uni-icons>
+            <text>服务照片</text>
+          </view>
+          <text class="order-no" v-if="extraOrderInfo.remark">{{ extraOrderInfo.remark }}</text>
+        </view>
+        <!-- 服务前 -->
+        <view class="photo-group" v-if="extraOrderInfo.photoUrlsBefore && extraOrderInfo.photoUrlsBefore.length > 0">
+          <view class="photo-group-label before">服务前</view>
+          <view class="photo-grid">
+            <image
+              v-for="(url, i) in extraOrderInfo.photoUrlsBefore"
+              :key="i"
+              :src="fullUrl(url)"
+              class="photo-item"
+              mode="aspectFill"
+              @click="previewPhotos(extraOrderInfo.photoUrlsBefore, i)"
+            ></image>
+          </view>
+        </view>
+        <!-- 服务后 -->
+        <view class="photo-group" v-if="extraOrderInfo.photoUrls && extraOrderInfo.photoUrls.length > 0">
+          <view class="photo-group-label after">服务后</view>
+          <view class="photo-grid">
+            <image
+              v-for="(url, i) in extraOrderInfo.photoUrls"
+              :key="i"
+              :src="fullUrl(url)"
+              class="photo-item"
+              mode="aspectFill"
+              @click="previewPhotos(extraOrderInfo.photoUrls, i)"
+            ></image>
+          </view>
+        </view>
+      </view>
+
+      
+      <!-- 订单详情卡片 -->
       <view class="info-card" v-if="orderInfo">
         <view class="card-header">
           <view class="header-title">
             <uni-icons type="shop" size="18" color="#333" class="header-icon"></uni-icons>
-            <text>服务信息</text>
+            <text>订单详情</text>
           </view>
           <text class="order-no">NO.{{ orderInfo.id }}</text>
         </view>
-        <view class="service-content">
-          <image :src="getServiceIcon(orderInfo.icon)" class="service-image" mode="aspectFill"></image>
-          <view class="service-detail">
-            <view class="service-name-row">
-              <text class="service-name">{{ orderInfo.serviceName }}</text>
-              <!-- 套餐订单标识 -->
-              <view class="order-source-badge package" v-if="orderInfo.orderSource === '2' || orderInfo.orderSource === 2">
-                <uni-icons type="wallet" size="12" color="#fff"></uni-icons>
-                <text>套餐订单</text>
-              </view>
-              <!-- 语音下单标识 -->
-              <view class="order-source-badge voice" v-if="orderInfo.orderSource === '5' || orderInfo.orderSource === 5" @click.stop="playVoice(orderInfo)">
-                <uni-icons type="sound" size="12" color="#fff"></uni-icons>
-                <text>语音下单</text>
-              </view>
-            </view>
-            <text class="service-desc" v-if="orderInfo.serviceDesc">{{ orderInfo.serviceDesc }}</text>
-            <view class="service-tags" v-if="orderInfo.status === 'completed'">
-              <text class="tag">已完成</text>
-            </view>
-          </view>
-        </view>
-      </view>
 
-      <!-- 预约信息卡片 -->
-      <view class="info-card" v-if="orderInfo">
-        <view class="card-header">
-          <view class="header-title">
-            <uni-icons type="calendar" size="18" color="#333" class="header-icon"></uni-icons>
-            <text>预约信息</text>
+        <!-- 服务名称 -->
+        <view class="service-name-row" style="margin-bottom: 20rpx;">
+          <text class="service-name" style="font-size: 32rpx; font-weight: 600;">{{ orderInfo.serviceName }}</text>
+          <view class="order-source-badge package" v-if="orderInfo.orderSource === '2' || orderInfo.orderSource === 2">
+            <uni-icons type="wallet" size="12" color="#fff"></uni-icons>
+            <text>套餐订单</text>
           </view>
-        </view>
-        <view class="info-list">
-          <view class="info-item">
-            <text class="info-label">联系人</text>
-            <view class="info-value-wrapper">
-              <text class="info-value">{{ orderInfo.contactName }}</text>
-            </view>
+          <view class="order-source-badge voice" v-if="orderInfo.orderSource === '5' || orderInfo.orderSource === 5" @click.stop="playVoice(orderInfo)">
+            <uni-icons type="sound" size="12" color="#fff"></uni-icons>
+            <text>语音下单</text>
           </view>
-          <view class="divider"></view>
-          <view class="info-item">
-            <text class="info-label">联系电话</text>
-            <view class="info-value-wrapper" @click="makePhoneCall(orderInfo.contactPhone)">
-              <text class="info-value link">{{ orderInfo.contactPhone }}</text>
-              <uni-icons type="phone-filled" size="16" color="#E07A4F" style="margin-left: 8rpx;"></uni-icons>
-            </view>
-          </view>
-          <view class="divider"></view>
-          <view class="info-item">
-            <text class="info-label">预约时间</text>
-            <view class="info-value-wrapper">
-              <text class="info-value">{{ orderInfo.appointmentDate }} {{ orderInfo.appointmentPeriod }}</text>
-            </view>
-          </view>
-          <template v-if="orderInfo.serviceAddress">
-            <view class="divider"></view>
-            <view class="info-item vertical">
-              <text class="info-label">服务地址</text>
-              <view class="info-value-box">
-                <text class="info-value">{{ orderInfo.serviceAddress }}</text>
-              </view>
-            </view>
-          </template>
-          <template v-if="orderInfo.remark">
-            <view class="divider"></view>
-            <view class="info-item vertical">
-              <text class="info-label">备注信息</text>
-              <view class="info-value-box">
-                <text class="info-value">{{ orderInfo.remark }}</text>
-              </view>
-            </view>
-          </template>
-        </view>
-      </view>
-
-      <!-- 被服务人员信息卡片 -->
-      <view class="info-card served-member-card" v-if="servedMemberInfo">
-        <view class="card-header">
-          <view class="header-title">
-            <uni-icons type="person-filled" size="18" color="#E07A4F" class="header-icon"></uni-icons>
-            <text>被服务人员</text>
-          </view>
-        </view>
-        
-        <!-- 人员头像和基本信息 -->
-        <view class="member-profile">
-          <view class="member-avatar">
-            <view class="avatar-circle">
-              <uni-icons type="person-filled" size="36" color="#E07A4F"></uni-icons>
-            </view>
-          </view>
-          <view class="member-basic-info">
-            <view class="member-name">{{ servedMemberInfo.memberName || '未填写姓名' }}</view>
-            <view class="member-tags">
-              <view class="tag age-tag" v-if="servedMemberInfo.age">
-                <uni-icons type="calendar" size="12" color="#666"></uni-icons>
-                <text>{{ servedMemberInfo.age }}岁</text>
-              </view>
-              <view class="tag relation-tag" v-if="servedMemberInfo.relationship">
-                <uni-icons type="heart" size="12" color="#666"></uni-icons>
-                <text>{{ servedMemberInfo.relationship }}</text>
-              </view>
-              <view class="tag gender-tag" v-if="servedMemberInfo.sex">
-                <uni-icons type="person" size="12" color="#666"></uni-icons>
-                <text>{{ formatGender(servedMemberInfo.sex) }}</text>
-              </view>
-            </view>
-          </view>
+          <text class="tag" v-if="orderInfo.status === 'completed'" style="margin-left: auto;">已完成</text>
         </view>
 
-        <!-- 详细信息列表 -->
-        <view class="member-details">
-          <!-- 身高体重信息 -->
-          <view class="detail-row" v-if="servedMemberInfo.height || servedMemberInfo.weight">
-            <view class="detail-item" v-if="servedMemberInfo.height">
-              <view class="detail-icon">
-                <uni-icons type="arrowup" size="14" color="#E07A4F"></uni-icons>
-              </view>
-              <text class="detail-label">身高</text>
-              <text class="detail-value">{{ servedMemberInfo.height }}cm</text>
-            </view>
-            <view class="detail-item" v-if="servedMemberInfo.weight">
-              <view class="detail-icon">
-                <uni-icons type="loop" size="14" color="#E07A4F"></uni-icons>
-              </view>
-              <text class="detail-label">体重</text>
-              <text class="detail-value">{{ servedMemberInfo.weight }}kg</text>
-            </view>
-          </view>
+        <view class="divider"></view>
 
-
-          <!-- 联系方式 -->
-          <view class="member-contact" v-if="servedMemberInfo.phone">
-            <view class="contact-item" @click="makePhoneCall(servedMemberInfo.phone)">
-              <view class="contact-icon">
-                <uni-icons type="phone-filled" size="16" color="#E07A4F"></uni-icons>
-              </view>
-              <text class="contact-text">{{ servedMemberInfo.phone }}</text>
-              <view class="contact-action">
-                <uni-icons type="right" size="14" color="#999"></uni-icons>
-              </view>
-            </view>
-          </view>
-
-          <!-- 备注信息 -->
-          <view class="member-remark" v-if="servedMemberInfo.remark">
-            <view class="remark-header">
-              <uni-icons type="compose" size="14" color="#666"></uni-icons>
-              <text class="remark-label">备注信息</text>
-            </view>
-            <text class="remark-content">{{ servedMemberInfo.remark }}</text>
-          </view>
+        <!-- 预约信息 -->
+        <view class="info-item">
+          <text class="info-label">预约时间</text>
+          <text class="info-value">{{ orderInfo.appointmentDate }} {{ orderInfo.appointmentPeriod }}</text>
         </view>
-      </view>
-
-      <!-- 服务商信息卡片 -->
-      <view class="info-card" v-if="orderInfo && orderInfo.providerName">
-        <view class="card-header">
-          <view class="header-title">
-            <uni-icons type="shop" size="18" color="#333" class="header-icon"></uni-icons>
-            <text>服务商信息</text>
-          </view>
+        <view class="info-item" v-if="orderInfo.serviceAddress">
+          <text class="info-label">地址</text>
+          <text class="info-value">{{ orderInfo.serviceAddress }}</text>
         </view>
-        <view class="provider-content">
-          <view class="provider-avatar">
-            <image v-if="orderInfo.providerAvatar" :src="orderInfo.providerAvatar" class="avatar-image" mode="aspectFill"></image>
-            <uni-icons v-else type="shop-filled" size="32" color="#999"></uni-icons>
-          </view>
-          <view class="provider-info">
-            <text class="provider-name">{{ orderInfo.providerName }}</text>
-            <view class="provider-contact" v-if="orderInfo.providerPhone" @click="makePhoneCall(orderInfo.providerPhone)">
-              <uni-icons type="phone" size="14" color="#E07A4F"></uni-icons>
-              <text class="provider-phone">{{ orderInfo.providerPhone }}</text>
-            </view>
-          </view>
+        <view class="info-item" v-if="orderInfo.remark">
+          <text class="info-label">备注</text>
+          <text class="info-value">{{ orderInfo.remark }}</text>
         </view>
-      </view>
 
-      <!-- 服务人员信息卡片 -->
-      <view class="info-card" v-if="orderInfo && orderInfo.staffName">
-        <view class="card-header">
-          <view class="header-title">
-            <uni-icons type="person" size="18" color="#333" class="header-icon"></uni-icons>
-            <text>服务人员信息</text>
-          </view>
-          <!-- 核销方式标签（已完成订单显示） -->
-          <view class="verification-badge" v-if="orderInfo.status === 'completed' && orderInfo.verificationMethod">
+        <!-- 服务信息 -->
+        <view class="divider"></view>
+        <view class="info-item" v-if="orderInfo.providerName">
+          <text class="info-label">服务商</text>
+          <text class="info-value" style="flex: 1;">{{ orderInfo.providerName }}</text>
+          <text class="info-value link" v-if="orderInfo.providerPhone" @click="makePhoneCall(orderInfo.providerPhone)">{{ orderInfo.providerPhone }}</text>
+        </view>
+        <view class="info-item" v-if="orderInfo.staffName">
+          <text class="info-label">服务人员</text>
+          <text class="info-value" style="flex: 1;">{{ orderInfo.staffName }}</text>
+          <text class="info-value link" v-if="orderInfo.staffPhone" @click="makePhoneCall(orderInfo.staffPhone)">{{ orderInfo.staffPhone }}</text>
+        </view>
+        <view class="info-item" v-if="orderInfo.status === 'completed' && orderInfo.verificationMethod" style="justify-content: flex-end; padding-top: 0;">
+          <view class="verification-badge">
             <uni-icons :type="getVerificationMethodIcon(orderInfo.verificationMethod)" size="12" color="#fff"></uni-icons>
             <text>{{ getVerificationMethodText(orderInfo.verificationMethod) }}</text>
           </view>
         </view>
-        <view class="provider-content">
-          <view class="provider-avatar">
-            <uni-icons type="person-filled" size="32" color="#E07A4F"></uni-icons>
-          </view>
-          <view class="provider-info">
-            <text class="provider-name">{{ orderInfo.staffName }}</text>
-            <view class="provider-contact" v-if="orderInfo.staffPhone" @click="makePhoneCall(orderInfo.staffPhone)">
-              <uni-icons type="phone-filled" size="14" color="#E07A4F"></uni-icons>
-              <text class="provider-phone">{{ orderInfo.staffPhone }}</text>
-            </view>
-          </view>
-        </view>
       </view>
 
-      <!-- 费用信息卡片 -->
+<!-- 费用信息卡片 -->
       <view class="info-card" v-if="orderInfo && orderInfo.price > 0">
         <view class="card-header">
           <view class="header-title">
@@ -293,45 +179,6 @@
                 <text class="reason-text">{{ getRejectReason(item) }}</text>
               </view>
             </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 服务照片卡片 -->
-      <view class="info-card" v-if="extraOrderInfo && (extraOrderInfo.photoUrlsBefore && extraOrderInfo.photoUrlsBefore.length > 0 || extraOrderInfo.photoUrls && extraOrderInfo.photoUrls.length > 0)">
-        <view class="card-header">
-          <view class="header-title">
-            <uni-icons type="image" size="18" color="#333" class="header-icon"></uni-icons>
-            <text>服务照片</text>
-          </view>
-          <text class="order-no" v-if="extraOrderInfo.remark">{{ extraOrderInfo.remark }}</text>
-        </view>
-        <!-- 服务前 -->
-        <view class="photo-group" v-if="extraOrderInfo.photoUrlsBefore && extraOrderInfo.photoUrlsBefore.length > 0">
-          <view class="photo-group-label before">服务前</view>
-          <view class="photo-grid">
-            <image
-              v-for="(url, i) in extraOrderInfo.photoUrlsBefore"
-              :key="i"
-              :src="fullUrl(url)"
-              class="photo-item"
-              mode="aspectFill"
-              @click="previewPhotos(extraOrderInfo.photoUrlsBefore, i)"
-            ></image>
-          </view>
-        </view>
-        <!-- 服务后 -->
-        <view class="photo-group" v-if="extraOrderInfo.photoUrls && extraOrderInfo.photoUrls.length > 0">
-          <view class="photo-group-label after">服务后</view>
-          <view class="photo-grid">
-            <image
-              v-for="(url, i) in extraOrderInfo.photoUrls"
-              :key="i"
-              :src="fullUrl(url)"
-              class="photo-item"
-              mode="aspectFill"
-              @click="previewPhotos(extraOrderInfo.photoUrls, i)"
-            ></image>
           </view>
         </view>
       </view>
@@ -1618,6 +1465,12 @@ export default {
 .info-list {
   display: flex;
   flex-direction: column;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8rpx 24rpx;
 }
 
 .info-item {

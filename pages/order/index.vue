@@ -753,6 +753,24 @@
 							orders = this.filterPackageOrders(orders)
 						}
 						
+						// 已完成按降序（最新在前），其他按升序（最近在前）
+						orders.sort((a, b) => this.currentTab === 4 
+							? new Date(b.appointmentDate) - new Date(a.appointmentDate)
+							: new Date(a.appointmentDate) - new Date(b.appointmentDate))
+						
+						// 过滤已过期的订单（预约时间已过且不在进行中/已完成的）
+						const now = new Date()
+						orders = orders.filter(order => {
+							if (!order.appointmentDate) return true
+							const apptDate = new Date(order.appointmentDate)
+							// 进行中或已完成的不过滤
+							// 服务中/已完成的不过滤，全部tab里的服务中也不过滤
+							if (order.status === 'completed') return true
+							if ((order.status === 'serving' || order.status === 'verifying') && (this.currentTab === 0 || this.currentTab === 3)) return true
+							// 预约时间未过的不过滤
+							return apptDate >= now.setHours(0,0,0,0)
+						})
+						
 						// 更新列表数据
 						if (this.page === 1) {
 							this.orderList = orders
@@ -819,7 +837,7 @@
 					// 检查是否未完成（排除已完成、已取消、已拒绝、已关闭状态）
 					const isNotCompleted = !['completed', 'cancelled', 'rejected', 'closed'].includes(order.status)
 					
-					return isWithinOneWeek && isNotCompleted
+					return (isWithinOneWeek && isNotCompleted) || order.status === 'completed' || order.status === 'serving' || order.status === 'verifying'
 				})
 			},
 
@@ -843,11 +861,13 @@
 						}
 					}
 					
-					// 前端额外过滤：确保套餐订单只显示一周内未完成的
-					allOrders = this.filterPackageOrders(allOrders)
+					// 前端额外过滤：确保套餐订单只显示一周内未完成的（服务中标签不限制）
+					if (this.currentTab !== 3) {
+						allOrders = this.filterPackageOrders(allOrders)
+					}
 					
-					// 按创建时间倒序排序
-					allOrders.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+					// 按预约时间升序排序（最近的在前）
+					allOrders.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))
 					
 					// 更新列表数据
 					if (this.page === 1) {

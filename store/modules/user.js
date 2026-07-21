@@ -5,6 +5,7 @@ import { isHttp, isEmpty } from "@/utils/validate"
 import { login, logout, getInfo } from '@/api/login'
 import { listDeptCommunity } from '@/api/joinCommunity'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import { initTokenTimestamp } from '@/utils/token-refresh'
 import defAva from '@/static/images/profile.jpg'
 
 const baseUrl = config.baseUrl
@@ -70,6 +71,8 @@ const user = {
         login(username, password, code, uuid, phone).then(res => {
           setToken(res.token)
           commit('SET_TOKEN', res.token)
+          // 初始化token时间戳，用于自动刷新
+          initTokenTimestamp()
           resolve()
         }).catch(error => {
           reject(error)

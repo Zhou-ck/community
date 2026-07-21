@@ -253,9 +253,18 @@
         }
       },
       
-      // 获取规则值
+      // 初始化时从本地存储加载协议同意状态
       getRuleValue(){
-        this.ruleValue = [];
+        try {
+          const agreed = uni.getStorageSync('user_agreement_agreed');
+          if (agreed) {
+            this.ruleValue = [0];
+          } else {
+            this.ruleValue = [];
+          }
+        } catch (e) {
+          this.ruleValue = [];
+        }
       },
       
       // 打开规则弹窗
@@ -272,13 +281,26 @@
       confirmRule(){
         this.showRule = false;
         this.ruleValue = [0]; // 设置为已同意
+        // 保存同意状态到本地存储
+        try {
+          uni.setStorageSync('user_agreement_agreed', true);
+        } catch (e) {
+          console.error('保存协议同意状态失败:', e);
+        }
         this.handleLogin();
       },
       
       // 复选框变化事件
       change(e){
         console.log('checkbox change:', e);
-        // 处理复选框状态变化
+        // e.detail.value 是选中的值数组
+        if (e && e.detail && e.detail.value) {
+          this.ruleValue = e.detail.value;
+        } else if (Array.isArray(e)) {
+          this.ruleValue = e;
+        } else {
+          this.ruleValue = [];
+        }
       },
       
       //忘记密码

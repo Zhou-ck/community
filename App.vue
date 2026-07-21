@@ -2,8 +2,14 @@
   import config from './config'
   import store from '@/store'
   import { getToken } from '@/utils/auth'
+  import { startAutoRefresh, stopAutoRefresh, initTokenTimestamp } from '@/utils/token-refresh'
 
   export default {
+    data() {
+      return {
+        refreshTokenTimer: null
+      }
+    },
     onLaunch: function() {
       this.initApp()
     },
@@ -11,7 +17,16 @@
       // 检查用户登录状态并刷新社区信息（用于从后台切回前台时检查Token过期）
       if (getToken()) {
         store.dispatch('CheckTokenAndRefreshCommunity')
+        // 启动token自动刷新（如果还没有启动）
+        if (!this.refreshTokenTimer) {
+          this.refreshTokenTimer = startAutoRefresh()
+        }
       }
+    },
+    onHide: function() {
+      // 应用进入后台时停止自动刷新，节省资源
+      // 注意：不完全停止，因为token可能需要在后台继续刷新
+      // 这里只是记录状态
     },
     methods: {
       // 初始化应用
@@ -22,6 +37,11 @@
         //#ifdef H5
         this.checkLogin()
         //#endif
+        // 如果已登录，初始化token时间戳并启动自动刷新
+        if (getToken()) {
+          initTokenTimestamp()
+          this.refreshTokenTimer = startAutoRefresh()
+        }
       },
       initConfig() {
         this.globalData.config = config

@@ -61,12 +61,6 @@
 				<!-- 服务订单内容 -->
 				<view class="service-order-content" v-if="order.status !== 'completed' && order.status !== 'serving'">
 					<view class="service-header">
-						<image 
-							:src="getServiceIcon(order.icon)" 
-							class="service-icon"
-							mode="aspectFill"
-							v-if="order.status !== 'serving'"
-						></image>
 						<view class="service-info">
 							<view class="service-name-row">
 								<text class="service-name">{{ order.serviceName || '服务项目' }}</text>
@@ -78,24 +72,11 @@
 									<uni-icons type="sound" size="12" color="#fff"></uni-icons>
 									<text>语音下单</text>
 								</view>
-								<text class="serving-status-tag" v-if="order.status === 'serving'">服务中</text>
 							</view>
 							<view class="service-detail">
-								<view class="detail-item" v-if="order.status !== 'serving'">
-									<uni-icons type="person" size="14" color="#999"></uni-icons>
-									<text class="detail-text">联系人：{{ order.contactName }}</text>
-								</view>
-								<view class="detail-item" v-if="order.status !== 'serving'">
-									<uni-icons type="phone" size="14" color="#999"></uni-icons>
-									<text class="detail-text">{{ order.contactPhone }}</text>
-								</view>
 								<view class="detail-item">
 									<uni-icons type="calendar" size="14" color="#999"></uni-icons>
 									<text class="detail-text">预约时间：{{ order.appointmentDate }} {{ order.appointmentPeriod }}</text>
-								</view>
-								<view class="detail-item" v-if="order.serviceAddress">
-									<uni-icons type="location" size="14" color="#999"></uni-icons>
-									<text class="detail-text">服务地址：{{ order.serviceAddress }}</text>
 								</view>
 								<!-- 服务商信息 -->
 								<view class="detail-item" v-if="order.providerName">
@@ -130,14 +111,16 @@
 						<uni-icons type="copy" size="14" color="#999"></uni-icons>
 					</view>
 					<view class="completed-header">
-						<text class="completed-service-name">{{ order.serviceName || '服务项目' }}</text>
-						<view class="package-badge" v-if="order.orderSource === '2' || order.orderSource === 2">
-							<uni-icons type="wallet" size="12" color="#fff"></uni-icons>
-							<text>套餐订单</text>
-						</view>
-						<view class="voice-badge" v-if="order.orderSource === '5' || order.orderSource === 5" @click.stop="playVoice(order)">
-							<uni-icons type="sound" size="12" color="#fff"></uni-icons>
-							<text>语音下单</text>
+						<view class="service-name-row">
+							<text class="completed-service-name">{{ order.serviceName || '服务项目' }}</text>
+							<view class="package-badge" v-if="order.orderSource === '2' || order.orderSource === 2">
+								<uni-icons type="wallet" size="12" color="#fff"></uni-icons>
+								<text>套餐订单</text>
+							</view>
+							<view class="voice-badge" v-if="order.orderSource === '5' || order.orderSource === 5" @click.stop="playVoice(order)">
+								<uni-icons type="sound" size="12" color="#fff"></uni-icons>
+								<text>语音下单</text>
+							</view>
 						</view>
 						<text class="serving-status-tag">服务中</text>
 					</view>
@@ -1852,15 +1835,6 @@
 				display: flex;
 				gap: 24rpx;
 				
-				.service-icon {
-					width: 140rpx;
-					height: 140rpx;
-					border-radius: 12rpx;
-					flex-shrink: 0;
-					background: #fff;
-					border: 1rpx solid #f0f0f0;
-				}
-				
 				.service-info {
 					flex: 1;
 					display: flex;
@@ -1880,47 +1854,6 @@
 							font-weight: 600;
 							color: #333;
 							line-height: 1.4;
-						}
-						
-						.package-badge {
-							display: inline-flex;
-							align-items: center;
-							gap: 6rpx;
-							background: linear-gradient(135deg, #fa8c16 0%, #f57c00 100%);
-							color: #fff;
-							font-size: 20rpx;
-							padding: 6rpx 14rpx;
-							border-radius: 100rpx;
-							font-weight: 500;
-							box-shadow: 0 2rpx 8rpx rgba(250, 140, 22, 0.3);
-							
-							text {
-								line-height: 1;
-							}
-						}
-						
-						.voice-badge {
-							display: inline-flex;
-							align-items: center;
-							gap: 6rpx;
-							background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
-							color: #fff;
-							font-size: 20rpx;
-							padding: 6rpx 14rpx;
-							border-radius: 100rpx;
-							font-weight: 500;
-							box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.3);
-							cursor: pointer;
-							transition: all 0.2s;
-							
-							&:active {
-								transform: scale(0.95);
-								opacity: 0.8;
-							}
-							
-							text {
-								line-height: 1;
-							}
 						}
 					}
 					
@@ -1963,6 +1896,48 @@
 							}
 						}
 					}
+				}
+			}
+			
+			// 共享标签样式（支持待接单/服务中等多种状态）
+			.package-badge {
+				display: inline-flex;
+				align-items: center;
+				gap: 6rpx;
+				background: linear-gradient(135deg, #fa8c16 0%, #f57c00 100%);
+				color: #fff;
+				font-size: 20rpx;
+				padding: 6rpx 14rpx;
+				border-radius: 100rpx;
+				font-weight: 500;
+				box-shadow: 0 2rpx 8rpx rgba(250, 140, 22, 0.3);
+				
+				text {
+					line-height: 1;
+				}
+			}
+			
+			.voice-badge {
+				display: inline-flex;
+				align-items: center;
+				gap: 6rpx;
+				background: linear-gradient(135deg, #E07A4F 0%, #C96A42 100%);
+				color: #fff;
+				font-size: 20rpx;
+				padding: 6rpx 14rpx;
+				border-radius: 100rpx;
+				font-weight: 500;
+				box-shadow: 0 2rpx 8rpx rgba(62, 198, 198, 0.3);
+				cursor: pointer;
+				transition: all 0.2s;
+				
+				&:active {
+					transform: scale(0.95);
+					opacity: 0.8;
+				}
+				
+				text {
+					line-height: 1;
 				}
 			}
 		}

@@ -1,6 +1,7 @@
 import store from '@/store'
 import config from '@/config'
 import { getToken } from '@/utils/auth'
+import { refreshToken } from '@/utils/token-refresh'
 import errorCode from '@/utils/errorCode'
 import { toast, showConfirm, tansParams } from '@/utils/common'
 
@@ -91,56 +92,70 @@ const request = config => {
             console.group(`🔐 认证失败 [${requestId}]`)
             console.log('请求地址:', fullUrl)
             console.log('错误信息:', msg)
-            console.log('即将跳转登录页面')
+            console.log('尝试刷新Token...')
             console.groupEnd()
           }
           
-          if (!isRelogin.show) {
-            isRelogin.show = true;
-            
-            // 检查是否有缓存的账号密码（说明之前登录过）
-            // 兼容多种缓存key
-            const cachedUsername = uni.getStorageSync('user_username') || uni.getStorageSync('App-UserName')
-            const cachedPassword = uni.getStorageSync('user_password_cache') || uni.getStorageSync('App-Password')
-            const hasLoginCache = cachedUsername || cachedPassword
-            
-            // 只有存在登录缓存时才弹窗提示，否则静默处理
-            if (hasLoginCache) {
-              uni.showModal({
-                title: '登录过期提示',
-                content: '当前登录状态已过期，请重新登录',
-                showCancel: false,
-                confirmText: '确定',
-                success: function(res) {
-                  // 先执行LogOut清除Token
-                  store.dispatch('LogOut').then(() => {
-                    // 等待Token清除完成后再跳转，避免路由拦截器检测到旧Token
-                    setTimeout(() => {
-                      uni.reLaunch({ url: '/pages/login' })
-                      isRelogin.show = false
-                    }, 100)
-                  }).catch(() => {
-                    // 即使LogOut失败（如网络错误），本地Token已被清除（在store中处理），延迟后跳转
-                    setTimeout(() => {
-                      uni.reLaunch({ url: '/pages/login' })
-                      isRelogin.show = false
-                    }, 100)
-                  })
-                },
-                complete: function() {
-                  // 无论用户是否点击，都重置标记（防止页面卡死）
-                  setTimeout(() => {
-                    isRelogin.show = false;
-                  }, 1000)
-                }
-              })
+          // 尝试刷新token
+          refreshToken().then(success => {
+            if (success) {
+              // 刷新成功，重新发起原请求
+              if (DEBUG) {
+                console.log(`🔄 [${requestId}] Token刷新成功，重新发起请求`)
+              }
+              request(config).then(resolve).catch(reject)
             } else {
-              // 没有登录缓存，静默清除token并重置状态
-              store.dispatch('LogOut').catch(() => {})
-              isRelogin.show = false;
+              // 刷新失败，走原有逻辑
+              handleTokenExpired()
             }
+          }).catch(() => {
+            // 刷新失败，走原有逻辑
+            handleTokenExpired()
+          })
+          
+          function handleTokenExpired() {
+            if (!isRelogin.show) {
+              isRelogin.show = true;
+              
+              // 检查是否有缓存的账号密码（说明之前登录过）
+              const cachedUsername = uni.getStorageSync('user_username') || uni.getStorageSync('App-UserName')
+              const cachedPassword = uni.getStorageSync('user_password_cache') || uni.getStorageSync('App-Password')
+              const hasLoginCache = cachedUsername || cachedPassword
+              
+              // 只有存在登录缓存时才弹窗提示，否则静默处理
+              if (hasLoginCache) {
+                uni.showModal({
+                  title: '登录过期提示',
+                  content: '当前登录状态已过期，请重新登录',
+                  showCancel: false,
+                  confirmText: '确定',
+                  success: function(res) {
+                    // 先执行LogOut清除Token
+                    store.dispatch('LogOut').then(() => {
+                      setTimeout(() => {
+                        uni.reLaunch({ url: '/pages/login' })
+                        isRelogin.show = false
+                      }, 100)
+                    }).catch(() => {
+                      setTimeout(() => {
+                        uni.reLaunch({ url: '/pages/login' })
+                        isRelogin.show = false
+                      }, 100)
+                    })
+                  },
+                  complete: function() {
+                    setTimeout(() => {
+                      isRelogin.show = false;
+                    }, 1000)
+                  }
+                })
+              } else {
+                store.dispatch('LogOut').catch(() => {})
+                isRelogin.show = false;
+              }
+            }
+            return reject('无效的会话，或者会话已过期，请重新登录。')
           }
-          return reject('无效的会话，或者会话已过期，请重新登录。')
         } else if (code === 500) {
           // 调试信息：服务器错误
           if (DEBUG) {

@@ -43,7 +43,8 @@ export async function getTodayOrder(memberId, date) {
   }
 
   try {
-    // 拉取近期订单（不传 orderStatus，确保有数据返回），客户端再按"已完成 + 核销时间今天"过滤
+    // 拉取近期订单，客户端按"预约日期=今天"过滤，展示每条订单的真实状态
+    // （verificationTime 后端未填充，无法按核销时间过滤；改用预约日期+订单状态展示）
     const res = await listServiceorder({
       pageNum: 1,
       pageSize: 50,
@@ -57,33 +58,27 @@ export async function getTodayOrder(memberId, date) {
 
     const today = date || formatToday()
     const allRows = res.rows
-    // 诊断日志：帮助排查 verificationTime 字段
-    const completedToday = allRows.filter(o => {
-      const vt = String(o.verificationTime || '').replace(/\//g, '-').slice(0, 10)
-      return o.orderStatus === '3' && vt === today
+    // 今日订单 = 预约日期(appointmentDate) 为今天
+    const todayOrders = allRows.filter(o => {
+      const ad = String(o.appointmentDate || '').replace(/\//g, '-').slice(0, 10)
+      return ad === today
     })
-    console.log('[getTodayOrder] 近期订单数:', allRows.length,
-      '| 今日核销完成:', completedToday.length,
-      '| 样例订单:', allRows[0] ? {
-          orderStatus: allRows[0].orderStatus,
-          verificationTime: allRows[0].verificationTime,
-          appointmentDate: allRows[0].appointmentDate,
-          serviceName: allRows[0].serviceName
-        } : '无')
 
-    const list = completedToday.map(o => ({
+    const list = todayOrders.map(o => ({
       id: o.orderId,
       name: o.serviceName || '服务项目',
-      status: o.orderStatus,            // '3' 已完成
+      status: o.orderStatus,            // '0'待接单 '1'已接单 '2'服务中 '3'已完成 '8'待核销
       statusName: statusText(o.orderStatus)
     }))
 
-    const completed = completedToday.length
+    const completed = todayOrders.filter(o => o.orderStatus === '3').length
+
+    console.log('[getTodayOrder] 近期:', allRows.length, '| 今日订单:', todayOrders.length, '| 已完成:', completed)
 
     return {
       code: 200,
       msg: 'ok',
-      data: { total: completedToday.length, completed, list }
+      data: { total: todayOrders.length, completed, list }
     }
   } catch (e) {
     console.error('getTodayOrder 请求失败:', e)

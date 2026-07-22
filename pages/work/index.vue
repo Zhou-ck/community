@@ -48,17 +48,10 @@
               v-for="subItem in getCurrentCategory().children"
               :key="subItem.id"
             >
-              <!-- 子分类标题（在模块外） -->
+              <!-- 子分类标题卡片 -->
               <view class="service-header" @click="selectSubcategory(subItem)">
                 <text class="header-title">{{ subItem.name }}</text>
                 <uni-icons type="right" size="14" color="#999"></uni-icons>
-              </view>
-
-              <!-- 服务卡片（纯文字） -->
-              <view class="service-card" @click="selectSubcategory(subItem)">
-                <view class="service-description">
-                  <text class="description-text">{{ subItem.description }}</text>
-                </view>
               </view>
             </view>
           </view>
@@ -547,36 +540,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10rpx;
+  padding: 28rpx;
+  background-color: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+  @include press-card();
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 0;
 
   .header-title {
     font-size: $text-lg;
     font-weight: 600;
     color: #333;
-  }
-}
-
-.service-card {
-  background-color: #fff;
-  border-radius: 20rpx;
-  overflow: hidden;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
-  @include press-card();
-  position: relative;
-  padding: 24rpx;
-
-  .service-description {
-    .description-text {
-      font-size: $text-base;
-      color: #666;
-      line-height: $lh-normal;
-      text-align: center;
-      display: block;
-      letter-spacing: 1rpx;
-    }
   }
 }
 

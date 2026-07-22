@@ -44,10 +44,11 @@ export default {
     }
   },
   methods: {
+    // 真实订单状态码：0-待接单 1-已接单 2-服务中 3-已完成 8-待核销
     statusClass(status) {
-      if (status === '2') return 'st-done'
-      if (status === '1' || status === '3') return 'st-progress'
-      return 'st-other'
+      if (status === '3') return 'st-done'                       // 已完成
+      if (status === '2' || status === '8') return 'st-progress'  // 服务中 / 待核销
+      return 'st-other'                                           // 待接单 / 已接单
     }
   }
 }

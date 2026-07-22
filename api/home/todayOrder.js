@@ -1,23 +1,84 @@
-// api/home/todayOrder.js
-import request from '@/utils/request'
-import { mockTodayOrder } from './mock'
+import { listServiceorder } from '@/api/service'
+import { ORDER_STATUS_MAP, ORDER_STATUS_CODE_MAP } from '@/utils/service-helper'
 
-// mock 开关：后端接口 ready 后改为 false
-const USE_MOCK = true
+// 真实接口开关：true=mock，false=调用后端 listServiceorder
+const USE_MOCK = false
 
-// 查询老人今日服务订单汇总
-// memberId: 家庭成员 ID；date: yyyy-MM-dd
-export function getTodayOrder(memberId, date) {
+// ===== mock 数据（保留以备回退 / 联调）=====
+const MOCK_DATA = {
+  total: 5,
+  completed: 3,
+  list: [
+    { name: '早餐配送', status: '3', statusName: '已完成' },
+    { name: '居室清洁', status: '3', statusName: '已完成' },
+    { name: '午餐配送', status: '2', statusName: '服务中' },
+    { name: '血压测量', status: '8', statusName: '待核销' },
+    { name: '晚餐配送', status: '0', statusName: '待接单' }
+  ]
+}
+
+function statusText(orderStatus) {
+  const key = ORDER_STATUS_CODE_MAP[orderStatus]
+  const info = key && ORDER_STATUS_MAP[key]
+  return info ? info.text : '未知'
+}
+
+function formatToday() {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
+ * 获取今日订单完成情况
+ * @param {String|Number} memberId 家庭成员 ID（后端如支持则按成员过滤，否则取当前登录用户订单）
+ * @param {String} date yyyy-MM-dd，默认今天
+ * @returns {Promise<{code, msg, data:{total, completed, list}}>}
+ */
+export async function getTodayOrder(memberId, date) {
   if (USE_MOCK) {
     return new Promise(resolve => {
-      setTimeout(() => {
-        resolve({ code: 200, msg: 'ok', data: mockTodayOrder })
-      }, 300)
+      setTimeout(() => resolve({ code: 200, msg: 'ok', data: MOCK_DATA }), 300)
     })
   }
-  return request({
-    url: '/services/order/today',
-    method: 'get',
-    params: { memberId, date }
-  })
+
+  try {
+    // 拉取近期订单，客户端按 appointmentDate 过滤今日（后端不支持多状态/日期联合查询）
+    const res = await listServiceorder({
+      pageNum: 1,
+      pageSize: 50,
+      excludePackageByDefault: false, // 含套餐订单（如助餐）
+      memberId: memberId || undefined
+    })
+
+    if (res.code !== 200 || !res.rows) {
+      return { code: res.code || 500, msg: res.msg || '请求失败', data: { total: 0, completed: 0, list: [] } }
+    }
+
+    const today = date || formatToday()
+    const todayOrders = res.rows.filter(o => {
+      const d = String(o.appointmentDate || '')
+      return d.slice(0, 10) === today
+    })
+
+    const list = todayOrders.map(o => ({
+      id: o.orderId,
+      name: o.serviceName || '服务项目',
+      status: o.orderStatus,            // 真实状态码 '0'/'1'/'2'/'3'/'8'
+      statusName: statusText(o.orderStatus)
+    }))
+
+    const completed = todayOrders.filter(o => o.orderStatus === '3').length
+
+    return {
+      code: 200,
+      msg: 'ok',
+      data: { total: todayOrders.length, completed, list }
+    }
+  } catch (e) {
+    console.error('getTodayOrder 请求失败:', e)
+    return { code: 500, msg: '请求失败', data: { total: 0, completed: 0, list: [] } }
+  }
 }

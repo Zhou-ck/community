@@ -43,12 +43,13 @@ export async function getTodayOrder(memberId, date) {
   }
 
   try {
-    // 拉取近期订单（不传 memberId：订单按登录用户维度，与订单页一致）
-    // 客户端按"核销时间(verificationTime)=今天"过滤今日已完成的订单
+    // 拉取已完成订单（orderStatus:'3'，与订单页"已完成"页签一致；不传 memberId：订单按登录用户维度）
+    // 再客户端按"核销时间(verificationTime)=今天"过滤
     const res = await listServiceorder({
       pageNum: 1,
       pageSize: 50,
-      excludePackageByDefault: false // 含套餐订单（如助餐）
+      orderStatus: '3',                // 只查已完成订单
+      excludePackageByDefault: false   // 含套餐订单（如助餐）
     })
 
     if (res.code !== 200 || !res.rows) {
@@ -57,29 +58,23 @@ export async function getTodayOrder(memberId, date) {
 
     const today = date || formatToday()
     const allRows = res.rows
-    // 今日完成 = 已完成(状态3) 且 核销时间(verificationTime) 为今天
+    // 今日完成 = 核销时间(verificationTime) 为今天
     const completedToday = allRows.filter(o => {
-      const vt = String(o.verificationTime || '').replace(/\//g, '-').slice(0, 10)
-      return o.orderStatus === '3' && vt === today
-    })
-
-    // 诊断日志：分步排查
-    const status3Count = allRows.filter(o => o.orderStatus === '3').length
-    const vtTodayAny = allRows.filter(o => {
       const vt = String(o.verificationTime || '').replace(/\//g, '-').slice(0, 10)
       return vt === today
     })
-    console.log('[getTodayOrder] 近期:', allRows.length,
-      '| 状态3:', status3Count,
-      '| verificationTime今天(任意状态):', vtTodayAny.length,
-      '| 两者交集:', completedToday.length)
-    if (allRows.length && status3Count === 0) {
-      console.log('[getTodayOrder] 订单状态分布:', allRows.map(o => o.orderStatus))
-    }
-    if (vtTodayAny.length) {
-      console.log('[getTodayOrder] 核销时间今天的订单:', vtTodayAny.map(o => ({
-        orderStatus: o.orderStatus, verificationTime: o.verificationTime, serviceName: o.serviceName
-      })))
+
+    // 诊断日志
+    console.log('[getTodayOrder] 已完成订单总数:', allRows.length, '| 今日核销:', completedToday.length)
+    if (allRows.length) {
+      console.log('[getTodayOrder] 样例:', {
+        orderStatus: allRows[0].orderStatus,
+        verificationTime: allRows[0].verificationTime,
+        serviceName: allRows[0].serviceName,
+        appointmentDate: allRows[0].appointmentDate
+      })
+    } else {
+      console.log('[getTodayOrder] ⚠️ 此账号没有任何已完成(status=3)订单。可能原因: 服务人员核销后订单状态未改为3，或核销的是别的账号的订单')
     }
 
     const list = completedToday.map(o => ({

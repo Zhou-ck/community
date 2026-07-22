@@ -1470,20 +1470,21 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* 右上角圆形添加按钮 FAB */
+/* 右下角圆形添加按钮 FAB（半透明，固定屏幕） */
 .add-fab {
-  position: absolute;
-  top: 20rpx;
-  right: 24rpx;
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(env(safe-area-inset-bottom) + 120rpx); /* 抬高到 tabBar 上方，避免被底部 tab 遮挡 */
   z-index: 50;
-  width: 80rpx;
-  height: 80rpx;
+  width: 88rpx;
+  height: 88rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.35);
+  opacity: 0.5;
 }
 
 /* 弹窗样式 */

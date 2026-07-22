@@ -41,15 +41,15 @@
         
         <view class="action-item-new" @click="handleFamily">
           <text class="iconfontA icon-jigoubanji action-icon-color action-icon-small-2"></text>
-          <text class="action-text-new text-small-2">家庭成员</text>
+          <text class="action-text-new">家庭成员</text>
         </view>
         <view class="action-item-new" @click="handleHealth">
           <text class="iconfontA icon-jiankangdangan1 action-icon-color action-icon-small"></text>
-          <text class="action-text-new text-small">健康档案</text>
+          <text class="action-text-new">健康档案</text>
         </view>
         <view class="action-item-new" @click="handleUseRecords">
-          <uni-icons type="list" size="28" color="#3ec6c6"></uni-icons>
-          <text class="action-text-new text-small">使用记录</text>
+          <text class="iconfontA icon-fuwudingdan action-icon-color"></text>
+          <text class="action-text-new">使用记录</text>
         </view>
       </view>
 
@@ -364,20 +364,20 @@ page {
 
 .action-icon-color {
   font-size: 72rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
   margin-bottom: 12rpx;
   display: block;
   transition: transform 0.3s ease;
 }
 
 .action-icon-small {
-  margin-top: 9rpx;
   font-size: 59rpx !important;
-  // margin-bottom: 8rpx;
 }
 
 .action-icon-small-2 {
   font-size: 73rpx !important;
-  // margin-bottom: 8rpx;
 }
 .action-item-new:active .action-icon-color {
   transform: scale(0.9);
@@ -389,14 +389,6 @@ page {
   font-weight: 500;
   text-align: center;
   line-height: 1.2;
-}
-
-.text-small{
-  margin-top: 7rpx;
-}
-
-.text-small-2 {
-  margin-top: 3rpx;
 }
 
 /* 菜单容器 */

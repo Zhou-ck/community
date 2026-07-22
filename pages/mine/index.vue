@@ -81,6 +81,17 @@
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
         </view>
         
+        <view class="menu-item" @click="handleServiceCategory">
+          <view class="menu-icon-wrapper" style="background-color: #E8F4FF;">
+            <uni-icons type="grid" size="20" color="#3FA9E7"></uni-icons>
+          </view>
+          <view class="menu-content">
+            <text class="menu-title">服务分类</text>
+            <text class="menu-desc">浏览全部六助服务</text>
+          </view>
+          <uni-icons type="right" size="16" color="#ccc"></uni-icons>
+        </view>
+
         <view class="menu-item" @click="handleServicePackage">
           <view class="menu-icon-wrapper" style="background-color: #F3E5F5;">
             <uni-icons type="gift" size="20" color="#9C27B0"></uni-icons>
@@ -227,6 +238,10 @@
       handleServicePackage() {
         if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/server/SetMeal/index?tab=my')
+      },
+      handleServiceCategory() {
+        if (!this.checkLogin()) return
+        this.$tab.navigateTo('/pages/work/index')
       }
     }
   }

@@ -18,7 +18,7 @@
             </view>
             <view v-if="name" class="user-info">
               <text class="user-name">{{ name }}</text>
-              <text class="user-desc" @touchstart="startLongPress" @touchend="cancelLongPress" @touchcancel="cancelLongPress">智慧养老服务用户</text>
+              <text class="user-desc">智慧养老服务用户</text>
             </view>
           </view>
         </view>
@@ -59,7 +59,7 @@
 
       <!-- 功能菜单 -->
       <view class="menu-container">
-        <view v-if="showDevTools" class="menu-item" @click="handleAlarmreceiver">
+        <view class="menu-item" @click="handleAlarmreceiver">
           <view class="menu-icon-wrapper" style="background-color: #87CEFA;">
            <uni-icons type="personadd" size="20" color="#fff"></uni-icons>
           </view>
@@ -70,7 +70,7 @@
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
         </view>
         
-        <view v-if="showDevTools" class="menu-item" @click="handleBalancePackage">
+        <view class="menu-item" @click="handleBalancePackage">
           <view class="menu-icon-wrapper" style="background-color: #E3F2FD;">
             <uni-icons type="wallet" size="20" color="#E07A4F"></uni-icons>
           </view>
@@ -83,7 +83,7 @@
         
         <view class="menu-item" @click="handleServiceCategory">
           <view class="menu-icon-wrapper" style="background-color: #E8F4FF;">
-            <uni-icons type="grid" size="20" color="#3FA9E7"></uni-icons>
+            <uni-icons type="shop-filled" size="20" color="#3FA9E7"></uni-icons>
           </view>
           <view class="menu-content">
             <text class="menu-title">服务分类</text>
@@ -102,18 +102,7 @@
           </view>
           <uni-icons type="right" size="16" color="#ccc"></uni-icons>
         </view>
-        
-        <view v-if="showDevTools" class="menu-item" @click="handleDevice">
-          <view class="menu-icon-wrapper" style="background-color: #FFF3E0;">
-            <text class="iconfontA icon-shebeiguanli" style="color: #E8A84C; font-size: 20px;"></text>
-          </view>
-          <view class="menu-content">
-            <text class="menu-title">设备管理</text>
-            <text class="menu-desc">实时监控健康数据</text>
-          </view>
-          <uni-icons type="right" size="16" color="#ccc"></uni-icons>
-        </view>
-        
+
         <view class="menu-item" @click="handleAbout">
           <view class="menu-icon-wrapper" style="background-color: #FCE4EC;">
             <uni-icons type="heart" size="20" color="#E91E63"></uni-icons>
@@ -143,11 +132,6 @@
 
 <script>
   export default {
-    data() {
-      return {
-        showDevTools: false
-      }
-    },
     computed: {
       name() {
         return this.$store.state.user.name
@@ -157,14 +141,6 @@
       }
     },
     methods: {
-      startLongPress() {
-        this._longPressTimer = setTimeout(() => {
-          this.showDevTools = true;
-        }, 2000);
-      },
-      cancelLongPress() {
-        clearTimeout(this._longPressTimer);
-      },
       // 检查登录状态
       checkLogin() {
         if (!this.$store.getters.token) {
@@ -198,10 +174,6 @@
       handleToAvatar() {
         if (!this.checkLogin()) return
         this.$tab.navigateTo('/pages/my/avatar/index')
-      },
-      handleDevice() {
-        if (!this.checkLogin()) return
-        this.$tab.switchTab('/pages/device/index')
       },
       handleAlarmreceiver() {
         if (!this.checkLogin()) return

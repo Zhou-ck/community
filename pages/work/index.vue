@@ -54,20 +54,10 @@
                 <uni-icons type="right" size="14" color="#999"></uni-icons>
               </view>
 
-              <!-- 服务卡片 -->
+              <!-- 服务卡片（纯文字） -->
               <view class="service-card" @click="selectSubcategory(subItem)">
-                <!-- 服务图片 -->
-                <view class="service-image-container">
-                  <image
-                    :src="subItem.image"
-                    class="service-image"
-                    mode="aspectFill"
-                    @error="handleImageError"
-                  ></image>
-                  <!-- 底部描述 -->
-                  <view class="service-description">
-                    <text class="description-text">{{ subItem.description }}</text>
-                  </view>
+                <view class="service-description">
+                  <text class="description-text">{{ subItem.description }}</text>
                 </view>
               </view>
             </view>
@@ -179,11 +169,6 @@
         } finally {
           uni.hideLoading();
         }
-      },
-
-      handleImageError(e) {
-        // 图片加载失败时的处理
-        console.log('图片加载失败:', e);
       },
 
       // 处理搜索（防抖）
@@ -581,36 +566,15 @@
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
   @include press-card();
   position: relative;
-}
+  padding: 24rpx;
 
-.service-image-container {
-  position: relative;
-  width: 100%;
-  height: 240rpx;
-  overflow: hidden;
-
-  .service-image {
-    width: 100%;
-    height: 100%;
-    background-color: #f5f5f5;
-    display: block;
-  }
-  
   .service-description {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40rpx 24rpx 20rpx;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
-    
     .description-text {
       font-size: $text-base;
-      color: #ffffff;
+      color: #666;
       line-height: $lh-normal;
       text-align: center;
       display: block;
-      text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
       letter-spacing: 1rpx;
     }
   }

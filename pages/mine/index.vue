@@ -34,10 +34,6 @@
 
       <!-- 快捷操作 -->
       <view class="quick-actions-new">
-        <view class="action-item-new" @click="handleJoinCommunity">
-          <text class="iconfontA icon-shequ action-icon-color"></text>
-          <text class="action-text-new">加入社区</text>
-        </view>
         <view class="action-item-new" @click="handleAddress">
           <text class="iconfontA icon-dizhi action-icon-color"></text>
           <text class="action-text-new">服务地址</text>
@@ -182,10 +178,6 @@
       handleAbout() {
         // 关于我们是公开信息，不需要登录
         this.$tab.navigateTo('/pages/my/about/index')
-      },
-      handleJoinCommunity() {
-        if (!this.checkLogin()) return
-        this.$tab.navigateTo('/pages/my/joincommunity/index')
       },
       handleFamily(){
         if (!this.checkLogin()) return

@@ -8,18 +8,14 @@
     </view>
     <view v-if="packages && packages.length" class="package-list">
       <view
-        v-for="(item, idx) in packages"
+        v-for="(item, idx) in displayList"
         :key="idx"
         class="package-item"
       >
-        <view class="pkg-info">
-          <text class="pkg-name">{{ item.name }}</text>
-          <text class="pkg-remain">{{ item.remaining }}<text class="pkg-total">/{{ item.total }}{{ item.unit || '次' }}</text></text>
-        </view>
-        <view class="progress">
-          <view class="progress-bar" :style="{ width: progressWidth(item) + '%' }"></view>
-        </view>
+        <text class="pkg-name">{{ item.name }}</text>
+        <text class="pkg-status" :class="statusClass(item.status)">{{ item.statusText || '使用中' }}</text>
       </view>
+      <view v-if="extraCount > 0" class="more">+{{ extraCount }} 个套餐</view>
     </view>
     <view v-else class="empty-block">
       <uni-icons type="gift" size="40" color="#B8D8D8"></uni-icons>
@@ -35,11 +31,21 @@ export default {
   props: {
     packages: { type: Array, default: () => [] }
   },
+  computed: {
+    displayList() {
+      return this.packages.slice(0, 3)
+    },
+    extraCount() {
+      return this.packages.length - this.displayList.length
+    }
+  },
   methods: {
-    progressWidth(item) {
-      if (!item || !item.total) return 0
-      const r = Math.max(0, Math.min(item.remaining / item.total, 1))
-      return Math.round(r * 100)
+    // 套餐实例状态：ACTIVE 使用中 / REFUND_PENDING 退订审核中 / EXPIRED 已过期 / CANCELLED 已取消 等
+    statusClass(status) {
+      if (status === 'ACTIVE') return 'st-active'
+      if (status === 'REFUND_PENDING') return 'st-refund'
+      if (status === 'EXPIRED' || status === 'CANCELLED' || status === 'REFUNDED' || status === 'REJECTED') return 'st-expired'
+      return 'st-active'
     }
   }
 }
@@ -72,6 +78,7 @@ export default {
       align-items: center;
       justify-content: center;
       box-shadow: 0 4rpx 10rpx rgba(54, 179, 179, 0.35);
+      flex-shrink: 0;
     }
 
     .card-title {
@@ -85,37 +92,39 @@ export default {
     margin-top: 20rpx;
     display: flex;
     flex-direction: column;
-    gap: 18rpx;
+    gap: 20rpx;
 
     .package-item {
-      .pkg-info {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-bottom: 10rpx;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16rpx;
 
-        .pkg-name { font-size: 26rpx; color: #333; }
-        .pkg-remain {
-          font-size: 28rpx;
-          color: #36b3b3;
-          font-weight: 600;
-          .pkg-total { font-size: 22rpx; color: #bbb; font-weight: 400; }
-        }
-      }
-
-      .progress {
-        height: 12rpx;
-        background: #f0f0f0;
-        border-radius: 6rpx;
+      .pkg-name {
+        font-size: 26rpx;
+        color: #333;
+        flex: 1;
         overflow: hidden;
-
-        .progress-bar {
-          height: 100%;
-          background: linear-gradient(90deg, #36b3b3 0%, #5AC9C9 100%);
-          border-radius: 6rpx;
-          transition: width 0.3s;
-        }
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
+
+      .pkg-status {
+        font-size: 22rpx;
+        padding: 4rpx 14rpx;
+        border-radius: 16rpx;
+        flex-shrink: 0;
+        &.st-active { background: rgba(54,179,179,0.12); color: #36b3b3; }
+        &.st-refund { background: rgba(224,122,79,0.12); color: #E07A4F; }
+        &.st-expired { background: #f0f0f0; color: #999; }
+      }
+    }
+
+    .more {
+      font-size: 22rpx;
+      color: #999;
+      text-align: right;
+      padding-top: 4rpx;
     }
   }
 

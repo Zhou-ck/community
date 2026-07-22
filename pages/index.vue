@@ -139,10 +139,8 @@ export default {
     this.loadMembers()
   },
   onShow() {
-    // 选中成员后才开始轮询
-    if (this.currentMemberId) {
-      this.healthPoll.start(true)
-    }
+    // 兜底"本人"后 memberId 可能为 null，但订单/套餐/健康均按 token 查询，轮询始终启动
+    this.healthPoll.start(true)
   },
   onHide() {
     this.healthPoll.stop()
@@ -184,35 +182,46 @@ export default {
     async loadMembers() {
       try {
         const res = await listFamilymemberNoPage()
-        const list = (res && (res.rows || res.data)) || []
-        this.members = list
-        if (list.length === 0) {
-          this.currentMember = null
-          return
+        console.log('[loadMembers] listFamilymemberNoPage 原始返回:', res)
+        let list = []
+        if (Array.isArray(res)) {
+          list = res
+        } else if (res && res.code === 200) {
+          list = res.rows || res.data || []
+        } else if (res && Array.isArray(res.data)) {
+          list = res.data
         }
+        // 兜底：家庭人员为空时用当前登录用户作为"本人"，保证订单/套餐/健康可按 token 拉取
+        if (!list.length) {
+          console.log('[loadMembers] 家庭成员为空，兜底使用当前登录用户作为"本人"')
+          list = [{ memberId: null, memberName: this.userName || '本人', relationship: '本人' }]
+        }
+        this.members = list
         // 默认选中：缓存 > 第一个
         const cachedId = uni.getStorageSync(MEMBER_CACHE_KEY)
         const picked = (cachedId && list.find(m => m.memberId === cachedId)) || list[0]
         this.onMemberChange(picked)
       } catch (e) {
         console.error('获取家庭成员失败:', e)
+        // 异常兜底：仍以"本人"进入，避免首页三大模块全空
+        this.members = [{ memberId: null, memberName: this.userName || '本人', relationship: '本人' }]
+        this.onMemberChange(this.members[0])
       }
     },
     onMemberChange(member) {
       this.currentMember = member
       if (member && member.memberId) {
         uni.setStorageSync(MEMBER_CACHE_KEY, member.memberId)
-        // 订单、套餐并行拉取；健康数据交给轮询 start(true) 立即拉一次，避免重复请求
-        this.fetchOrder()
-        this.fetchPackages()
-        this.healthPoll.stop()
-        this.healthPoll.start(true)
       }
+      // 订单/套餐按 token 查（不依赖 memberId）；健康数据交给轮询 start(true) 立即拉一次
+      this.fetchOrder()
+      this.fetchPackages()
+      this.healthPoll.stop()
+      this.healthPoll.start(true)
     },
 
-    // 健康数据
+    // 健康数据（mock 阶段不依赖 memberId；真实接口阶段后端按 token 兜底当前用户，memberId 仅为预留）
     async fetchHealth() {
-      if (!this.currentMemberId) return
       try {
         const res = await getHomeHealth(this.currentMemberId)
         if (res.code === 200 && res.data) {
@@ -222,11 +231,10 @@ export default {
         console.error('获取健康数据失败:', e)
       }
     },
-    // 今日订单
+    // 今日订单（getTodayOrder 按 token 查，不传 memberId）
     async fetchOrder() {
-      if (!this.currentMemberId) return
       try {
-        const res = await getTodayOrder(this.currentMemberId, this.formatToday())
+        const res = await getTodayOrder(null, this.formatToday())
         if (res.code === 200 && res.data) {
           this.todayOrder = res.data
         }
@@ -234,11 +242,10 @@ export default {
         console.error('获取今日订单失败:', e)
       }
     },
-    // 套餐
+    // 套餐（getHomePackages 按 token 查，不传 memberId）
     async fetchPackages() {
-      if (!this.currentMemberId) return
       try {
-        const res = await getHomePackages(this.currentMemberId)
+        const res = await getHomePackages()
         const data = (res && res.data) || {}
         this.packages = data.list || []
       } catch (e) {

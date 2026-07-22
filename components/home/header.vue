@@ -12,8 +12,8 @@
     <view class="header-body">
       <text class="user-name">{{ userName || '用户' }}</text>
       <view class="info-row">
-        <text class="info-label">最后更新</text>
-        <text class="info-value">{{ updateText }}</text>
+        <text class="info-label">当前时间</text>
+        <text class="info-value">{{ currentTime }}</text>
       </view>
       <view class="info-row">
         <text class="info-label">所在社区</text>
@@ -34,7 +34,8 @@ export default {
   data() {
     return {
       statusBarHeight: 20,
-      navBarHeight: 44
+      navBarHeight: 44,
+      currentTime: ''
     }
   },
   created() {
@@ -50,16 +51,25 @@ export default {
     }
     // #endif
   },
-  computed: {
-    updateText() {
-      if (!this.lastRefreshTime) return '—'
-      const diff = Date.now() - this.lastRefreshTime
-      if (diff < 60000) return '刚刚'
-      const minutes = Math.floor(diff / 60000)
-      if (minutes < 60) return minutes + '分钟前'
-      const hours = Math.floor(minutes / 60)
-      if (hours < 24) return hours + '小时前'
-      return Math.floor(hours / 24) + '天前'
+  mounted() {
+    this.updateClock()
+    this.clockTimer = setInterval(() => {
+      this.updateClock()
+    }, 1000)
+  },
+  beforeDestroy() {
+    if (this.clockTimer) {
+      clearInterval(this.clockTimer)
+      this.clockTimer = null
+    }
+  },
+  methods: {
+    updateClock() {
+      const now = new Date()
+      const h = String(now.getHours()).padStart(2, '0')
+      const m = String(now.getMinutes()).padStart(2, '0')
+      const s = String(now.getSeconds()).padStart(2, '0')
+      this.currentTime = `${h}:${m}:${s}`
     }
   }
 }

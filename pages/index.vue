@@ -285,8 +285,8 @@ export default {
 <style lang="scss" scoped>
 .page-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
-  padding-bottom: calc(120rpx + env(safe-area-inset-bottom)); /* 留出 tabBar 空间 */
+  background-color: #f2f4f8;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom)); /* 留出 tabBar 空间 */
 }
 
 /* 模块标题区 */
@@ -294,7 +294,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 32rpx 8rpx;
+  padding: 36rpx 32rpx 16rpx;
 }
 
 .section-title-bar {
@@ -308,14 +308,14 @@ export default {
     top: 50%;
     transform: translateY(-50%);
     width: 8rpx;
-    height: 32rpx;
+    height: 34rpx;
     background: #5AAB7A;
     border-radius: 4rpx;
   }
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: #222;
 }
@@ -323,8 +323,8 @@ export default {
 /* 双卡片行 */
 .card-row {
   display: flex;
-  gap: 20rpx;
-  padding: 16rpx 32rpx 0;
+  gap: 24rpx;
+  padding: 8rpx 32rpx 0;
 
   .card-col {
     flex: 1;
@@ -332,14 +332,15 @@ export default {
   }
 }
 
-/* 公告栏（保留原样式） */
+/* 公告栏（保留原样式，略调间距） */
 .notice-container {
-  background: #FFF8F3;
-  border-radius: 12rpx;
-  padding: 20rpx 20rpx 20rpx 28rpx;
-  margin: 24rpx 32rpx 0;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx 24rpx 24rpx 28rpx;
+  margin: 28rpx 32rpx 0;
   display: flex;
   align-items: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
   border-left: 6rpx solid #E07A4F;
 }
 

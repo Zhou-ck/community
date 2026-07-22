@@ -1,7 +1,7 @@
 <template>
   <view class="page-container">
     <!-- 欢迎区 -->
-    <home-header :user-name="userName" :community-name="communityName"></home-header>
+    <home-header :user-name="userName" :community-name="communityName" :last-refresh-time="lastRefreshTime"></home-header>
 
     <!-- 健康监测模块（圆角白框） -->
     <view class="module-card">
@@ -113,7 +113,8 @@ export default {
       health: {},
       todayOrder: {},
       packages: [],
-      healthPoll: null
+      healthPoll: null,
+      lastRefreshTime: Date.now()
     }
   },
   computed: {
@@ -140,6 +141,7 @@ export default {
   },
   onShow() {
     // 兜底"本人"后 memberId 可能为 null，但订单/套餐/健康均按 token 查询，轮询始终启动
+    this.lastRefreshTime = Date.now()
     this.healthPoll.start(true)
   },
   onHide() {
@@ -226,6 +228,7 @@ export default {
         const res = await getHomeHealth(this.currentMemberId)
         if (res.code === 200 && res.data) {
           this.health = res.data
+          this.lastRefreshTime = Date.now()
         }
       } catch (e) {
         console.error('获取健康数据失败:', e)
@@ -261,6 +264,7 @@ export default {
         this.fetchOrder(),
         this.fetchPackages()
       ])
+      this.lastRefreshTime = Date.now()
     },
 
     // 跳转
@@ -289,7 +293,7 @@ export default {
 <style lang="scss" scoped>
 .page-container {
   min-height: 100vh;
-  background-color: #f2f4f8;
+  background-color: #F5F7FA;
   padding-bottom: calc(140rpx + env(safe-area-inset-bottom)); /* 留出 tabBar 空间 */
 }
 
@@ -321,7 +325,7 @@ export default {
     transform: translateY(-50%);
     width: 8rpx;
     height: 34rpx;
-    background: #5AAB7A;
+    background: #1677FF;
     border-radius: 4rpx;
   }
 }

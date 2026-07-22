@@ -1,15 +1,23 @@
 <template>
   <view class="home-header">
-    <view class="header-bg"></view>
-    <view class="header-content">
-      <view class="avatar">{{ avatarText }}</view>
-      <view class="header-text">
-        <view class="welcome">欢迎，{{ userName || '用户' }}</view>
-        <view class="community" @click="onCommunityClick">
-          <uni-icons v-if="communityName" type="location-filled" size="13" color="#fff"></uni-icons>
-          <text v-if="communityName" class="community-name">{{ communityName }}</text>
-          <text v-else class="community-empty">您尚未加入社区，点击加入 ›</text>
-        </view>
+    <!-- 状态栏占位（自定义导航需要避开系统状态栏） -->
+    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
+    <!-- 自定义标题栏：与右上角胶囊按钮同高 -->
+    <view class="custom-nav" :style="{ height: navBarHeight + 'px' }">
+      <text class="nav-bracket">‹</text>
+      <text class="nav-title">家庭守护</text>
+      <text class="nav-bracket">›</text>
+    </view>
+    <!-- 家庭信息 -->
+    <view class="header-body">
+      <text class="user-name">{{ userName || '用户' }}</text>
+      <view class="info-row">
+        <text class="info-label">最后更新</text>
+        <text class="info-value">{{ updateText }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">所在社区</text>
+        <text class="info-value">{{ communityName || '未加入' }}</text>
       </view>
     </view>
   </view>
@@ -20,19 +28,38 @@ export default {
   name: 'HomeHeader',
   props: {
     userName: { type: String, default: '' },
-    communityName: { type: String, default: '' }
+    communityName: { type: String, default: '' },
+    lastRefreshTime: { type: Number, default: 0 }
   },
-  computed: {
-    avatarText() {
-      const n = this.userName || '用'
-      return n.charAt(0)
+  data() {
+    return {
+      statusBarHeight: 20,
+      navBarHeight: 44
     }
   },
-  methods: {
-    onCommunityClick() {
-      if (!this.communityName) {
-        uni.navigateTo({ url: '/pages/my/joincommunity/index' })
-      }
+  created() {
+    const sysInfo = uni.getSystemInfoSync()
+    this.statusBarHeight = sysInfo.statusBarHeight || 20
+    // #ifdef MP-WEIXIN
+    try {
+      const menuBtn = uni.getMenuButtonBoundingClientRect()
+      // 导航栏高度 = 胶囊按钮上下边距对称 + 胶囊自身高度
+      this.navBarHeight = (menuBtn.top - this.statusBarHeight) * 2 + menuBtn.height
+    } catch (e) {
+      this.navBarHeight = 44
+    }
+    // #endif
+  },
+  computed: {
+    updateText() {
+      if (!this.lastRefreshTime) return '—'
+      const diff = Date.now() - this.lastRefreshTime
+      if (diff < 60000) return '刚刚'
+      const minutes = Math.floor(diff / 60000)
+      if (minutes < 60) return minutes + '分钟前'
+      const hours = Math.floor(minutes / 60)
+      if (hours < 24) return hours + '小时前'
+      return Math.floor(hours / 24) + '天前'
     }
   }
 }
@@ -41,75 +68,87 @@ export default {
 <style lang="scss" scoped>
 .home-header {
   position: relative;
-  padding: 40rpx 32rpx 48rpx;
+  background: linear-gradient(165deg, #1677FF 0%, #4096FF 100%);
+  border-bottom-left-radius: 32rpx;
+  border-bottom-right-radius: 32rpx;
+  padding: 0 36rpx 52rpx;
   overflow: hidden;
 
-  .header-bg {
+  &::before {
+    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #a8e6cf 0%, #5AAB7A 100%);
-    border-bottom-left-radius: 36rpx;
-    border-bottom-right-radius: 36rpx;
+    top: -30%;
+    right: -15%;
+    width: 180%;
+    height: 180%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+}
+
+.status-bar {
+  width: 100%;
+}
+
+.custom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14rpx;
+  position: relative;
+  z-index: 1;
+
+  .nav-bracket {
+    font-size: 42rpx;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 300;
+    line-height: 1;
   }
 
-  .header-content {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 20rpx;
-  }
-
-  .avatar {
-    width: 84rpx;
-    height: 84rpx;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.28);
-    border: 2rpx solid rgba(255, 255, 255, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .nav-title {
+    font-size: 36rpx;
     color: #fff;
-    font-size: 38rpx;
     font-weight: 600;
-    flex-shrink: 0;
+    letter-spacing: 4rpx;
   }
+}
 
-  .header-text {
-    flex: 1;
-    min-width: 0;
-  }
+.header-body {
+  position: relative;
+  z-index: 1;
+  padding-top: 8rpx;
 
-  .welcome {
-    font-size: 38rpx;
-    font-weight: 600;
+  .user-name {
+    display: block;
+    font-size: 48rpx;
+    font-weight: 700;
     color: #fff;
     line-height: 1.3;
+    margin-bottom: 24rpx;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  .community {
-    margin-top: 8rpx;
+  .info-row {
     display: flex;
     align-items: center;
-    gap: 6rpx;
+    margin-top: 12rpx;
 
-    .community-name {
-      font-size: 24rpx;
-      color: rgba(255, 255, 255, 0.95);
-      max-width: 380rpx;
+    .info-label {
+      font-size: 26rpx;
+      color: rgba(255, 255, 255, 0.6);
+      margin-right: 16rpx;
+      flex-shrink: 0;
+    }
+
+    .info-value {
+      font-size: 26rpx;
+      color: #fff;
+      font-weight: 500;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-    }
-
-    .community-empty {
-      font-size: 24rpx;
-      color: #fff;
     }
   }
 }

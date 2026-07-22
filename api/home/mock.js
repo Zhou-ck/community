@@ -39,3 +39,17 @@ export const mockEmptyOrder = {
   completed: 0,
   list: []
 }
+
+// 首页套餐使用情况（按家庭成员）
+// 字段为首页组件统一后的归一化结构；后端真实字段待确认后由 api/home/package.js 映射
+export const mockPackages = {
+  list: [
+    { name: '助餐套餐', remaining: 3, total: 10, unit: '次' },
+    { name: '助洁套餐', remaining: 1, total: 5, unit: '次' },
+    { name: '助医套餐', remaining: 8, total: 12, unit: '次' }
+  ]
+}
+
+export const mockEmptyPackages = {
+  list: []
+}

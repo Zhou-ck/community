@@ -35,26 +35,12 @@
         :key="item.packageId" 
         class="package-card"
       >
-        <!-- 套餐图片 -->
-        <view class="package-image-wrap" @click="viewPackageDetail(item)">
-          <image 
-            v-if="item.icon" 
-            :src="baseUrl + item.icon" 
-            class="package-image" 
-            mode="aspectFill"
-          ></image>
-          <view v-else class="package-image-placeholder">
-            <text class="iconfont icon-tupian"></text>
-          </view>
-          
-          <!-- 套餐标签 -->
+        <view class="package-content" @click="viewPackageDetail(item)">
+          <!-- 热门/推荐标签 -->
           <view class="package-tag" v-if="item.isHot === '1' || item.isRecommend === '1'">
             <text v-if="item.isHot === '1'" class="tag hot">热门</text>
             <text v-if="item.isRecommend === '1'" class="tag recommend">推荐</text>
           </view>
-        </view>
-        
-        <view class="package-content" @click="viewPackageDetail(item)">
           <view class="package-header">
             <view class="package-name">{{ item.packageName }}</view>
             <view class="package-price-wrap">
@@ -1178,61 +1164,34 @@ export default {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     
-    // 套餐图片区域
-    .package-image-wrap {
-      position: relative;
-      width: 100%;
-      height: 180px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-      overflow: hidden;
-      
-      .package-image {
-        width: 100%;
-        height: 100%;
-      }
-      
-      .package-image-placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #e8f5f5 0%, #FFF0E8 100%);
-        
-        .iconfont {
-          font-size: 60px;
-          color: #E07A4F;
-          opacity: 0.3;
-        }
-      }
-      
-      // 套餐标签
+    // 套餐内容区域
+    .package-content {
+      padding: 16px;
+
+      // 热门/推荐标签（原叠在图片上，现置于文字区顶部）
       .package-tag {
-        position: absolute;
-        top: 12px;
-        right: 12px;
         display: flex;
         gap: 6px;
-        
+        margin-bottom: 10px;
+
         .tag {
           padding: 4px 12px;
           font-size: 11px;
           color: #fff;
           font-weight: 600;
-          backdrop-filter: blur(10px);
-          
+
           &.hot {
             background: linear-gradient(135deg, rgba(255, 107, 107, 0.9) 0%, rgba(255, 142, 83, 0.9) 100%);
             border-radius: 12px 12px 12px 0;
             box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
           }
-          
+
           &.recommend {
             background: linear-gradient(135deg, rgba(224, 122, 79, 0.9) 0%, rgba(46, 181, 181, 0.9) 100%);
             border-radius: 12px 12px 12px 0;
             box-shadow: 0 2px 8px rgba(224, 122, 79, 0.4);
           }
-          
+
           &.gift {
             background: linear-gradient(135deg, rgba(255, 165, 0, 0.9) 0%, rgba(255, 140, 0, 0.9) 100%);
             border-radius: 12px 12px 12px 0;
@@ -1240,11 +1199,6 @@ export default {
           }
         }
       }
-    }
-    
-    // 套餐内容区域
-    .package-content {
-      padding: 16px;
     }
     
     .package-header {

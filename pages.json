@@ -73,6 +73,11 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},{
+			"path": "pages/device/index",
+			"style": {
+				"navigationBarTitleText": "设备管理"
+			}
 		}
 	],
 	"subPackages": [{
@@ -153,14 +158,14 @@
 			},
 			{
 				"path" : "device/index",
-				"style" : 
+				"style" :
 				{
-					"navigationBarTitleText" : "设备管理"
+					"navigationBarTitleText" : "设备管理(跳转)"
 				}
 			},
 			{
 				"path" : "device/detail",
-				"style" : 
+				"style" :
 				{
 					"navigationBarTitleText" : "设备详情"
 				}

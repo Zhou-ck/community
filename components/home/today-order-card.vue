@@ -1,10 +1,12 @@
 <template>
   <view class="order-card press-card" @click="$emit('click')">
     <view class="card-head">
-      <view class="icon-badge">
-        <uni-icons type="list" size="20" color="#fff"></uni-icons>
+      <view class="head-left">
+        <view class="icon-badge">
+          <uni-icons type="list" size="20" color="#fff"></uni-icons>
+        </view>
+        <text class="card-title">今日订单</text>
       </view>
-      <text class="card-title">今日订单</text>
       <text class="sub" v-if="summary">已完成 {{ summary.completed }} 项</text>
     </view>
     <view v-if="summary && summary.list && summary.list.length" class="order-list">
@@ -69,8 +71,16 @@ export default {
 
   .card-head {
     display: flex;
-    align-items: center;
-    gap: 12rpx;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10rpx;
+
+    .head-left {
+      display: flex;
+      align-items: center;
+      gap: 12rpx;
+      width: 100%;
+    }
 
     .icon-badge {
       width: 52rpx;
@@ -81,13 +91,13 @@ export default {
       align-items: center;
       justify-content: center;
       box-shadow: 0 4rpx 10rpx rgba(224, 122, 79, 0.35);
+      flex-shrink: 0;
     }
 
     .card-title {
       font-size: 30rpx;
       font-weight: 600;
       color: #222;
-      flex: 1;
     }
 
     .sub {
@@ -97,6 +107,7 @@ export default {
       background: rgba(224, 122, 79, 0.1);
       padding: 4rpx 14rpx;
       border-radius: 16rpx;
+      align-self: flex-start;
     }
   }
 

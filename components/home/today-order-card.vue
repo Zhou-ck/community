@@ -5,7 +5,7 @@
         <uni-icons type="list" size="20" color="#fff"></uni-icons>
       </view>
       <text class="card-title">今日订单</text>
-      <text class="sub" v-if="summary">{{ summary.completed }}/{{ summary.total }}</text>
+      <text class="sub" v-if="summary">已完成 {{ summary.completed }} 项</text>
     </view>
     <view v-if="summary && summary.list && summary.list.length" class="order-list">
       <view

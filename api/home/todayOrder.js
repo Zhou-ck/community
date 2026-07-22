@@ -6,14 +6,12 @@ const USE_MOCK = false
 
 // ===== mock 数据（保留以备回退 / 联调）=====
 const MOCK_DATA = {
-  total: 5,
+  total: 3,
   completed: 3,
   list: [
     { name: '早餐配送', status: '3', statusName: '已完成' },
     { name: '居室清洁', status: '3', statusName: '已完成' },
-    { name: '午餐配送', status: '2', statusName: '服务中' },
-    { name: '血压测量', status: '8', statusName: '待核销' },
-    { name: '晚餐配送', status: '0', statusName: '待接单' }
+    { name: '午餐配送', status: '3', statusName: '已完成' }
   ]
 }
 
@@ -32,7 +30,7 @@ function formatToday() {
 }
 
 /**
- * 获取今日订单完成情况
+ * 获取今日完成订单（按核销时间）
  * @param {String|Number} memberId 家庭成员 ID（后端如支持则按成员过滤，否则取当前登录用户订单）
  * @param {String} date yyyy-MM-dd，默认今天
  * @returns {Promise<{code, msg, data:{total, completed, list}}>}
@@ -45,10 +43,11 @@ export async function getTodayOrder(memberId, date) {
   }
 
   try {
-    // 拉取近期订单，客户端按 appointmentDate 过滤今日（后端不支持多状态/日期联合查询）
+    // 拉取近期订单，客户端按核销时间(verificationTime)过滤今日已完成的订单
     const res = await listServiceorder({
       pageNum: 1,
       pageSize: 50,
+      orderStatus: '3',               // 只查已完成（有核销时间）
       excludePackageByDefault: false, // 含套餐订单（如助餐）
       memberId: memberId || undefined
     })
@@ -58,19 +57,20 @@ export async function getTodayOrder(memberId, date) {
     }
 
     const today = date || formatToday()
+    // 今日完成 = 核销时间(verificationTime) 为今天
     const todayOrders = res.rows.filter(o => {
-      const d = String(o.appointmentDate || '')
-      return d.slice(0, 10) === today
+      const vt = String(o.verificationTime || '')
+      return vt.slice(0, 10) === today
     })
 
     const list = todayOrders.map(o => ({
       id: o.orderId,
       name: o.serviceName || '服务项目',
-      status: o.orderStatus,            // 真实状态码 '0'/'1'/'2'/'3'/'8'
+      status: o.orderStatus,            // '3' 已完成
       statusName: statusText(o.orderStatus)
     }))
 
-    const completed = todayOrders.filter(o => o.orderStatus === '3').length
+    const completed = todayOrders.length
 
     return {
       code: 200,

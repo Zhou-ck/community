@@ -9,7 +9,9 @@
 			"style": {
 				"navigationBarTitleText": "智慧养老",
 				"navigationBarBackgroundColor": "#a8e6cf",
-				"navigationBarTextStyle": "white"
+				"navigationBarTextStyle": "white",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
 			}
 		},
 		{

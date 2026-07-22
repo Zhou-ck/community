@@ -43,8 +43,8 @@ export async function getTodayOrder(memberId, date) {
   }
 
   try {
-    // 拉取近期订单，客户端按"预约日期=今天"过滤，展示每条订单的真实状态
-    // （verificationTime 后端未填充，无法按核销时间过滤；改用预约日期+订单状态展示）
+    // 拉取近期订单，客户端按"核销时间(verificationTime)=今天"过滤今日已完成的订单
+    // 后端三处核销入口均已写入 verificationTime（扫码核销/居民确认/商家完成）
     const res = await listServiceorder({
       pageNum: 1,
       pageSize: 50,
@@ -58,27 +58,26 @@ export async function getTodayOrder(memberId, date) {
 
     const today = date || formatToday()
     const allRows = res.rows
-    // 今日订单 = 预约日期(appointmentDate) 为今天
-    const todayOrders = allRows.filter(o => {
-      const ad = String(o.appointmentDate || '').replace(/\//g, '-').slice(0, 10)
-      return ad === today
+    // 今日完成 = 核销时间(verificationTime) 为今天
+    const completedToday = allRows.filter(o => {
+      const vt = String(o.verificationTime || '').replace(/\//g, '-').slice(0, 10)
+      return o.orderStatus === '3' && vt === today
     })
 
-    const list = todayOrders.map(o => ({
+    const list = completedToday.map(o => ({
       id: o.orderId,
       name: o.serviceName || '服务项目',
-      status: o.orderStatus,            // '0'待接单 '1'已接单 '2'服务中 '3'已完成 '8'待核销
+      status: o.orderStatus,            // '3' 已完成
       statusName: statusText(o.orderStatus)
     }))
 
-    const completed = todayOrders.filter(o => o.orderStatus === '3').length
-
-    console.log('[getTodayOrder] 近期:', allRows.length, '| 今日订单:', todayOrders.length, '| 已完成:', completed)
+    console.log('[getTodayOrder] 近期:', allRows.length, '| 今日核销完成:', completedToday.length,
+      '| 样例 verificationTime:', allRows[0] ? allRows[0].verificationTime : '无')
 
     return {
       code: 200,
       msg: 'ok',
-      data: { total: todayOrders.length, completed, list }
+      data: { total: completedToday.length, completed: completedToday.length, list }
     }
   } catch (e) {
     console.error('getTodayOrder 请求失败:', e)

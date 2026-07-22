@@ -20,7 +20,7 @@
     </view>
     <view v-else class="empty-block">
       <uni-icons type="list" size="36" color="#F0D8C8"></uni-icons>
-      <text class="empty-text">今日暂无订单</text>
+      <text class="empty-text">今日暂无已完成订单</text>
     </view>
   </view>
 </template>

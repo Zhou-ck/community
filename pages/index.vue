@@ -3,25 +3,25 @@
     <!-- 欢迎区 -->
     <home-header :user-name="userName" :community-name="communityName"></home-header>
 
-    <!-- 健康监测模块 -->
-    <view class="section">
-      <view class="section-title-bar">
-        <text class="section-title">健康监测</text>
+    <!-- 健康监测模块（圆角白框） -->
+    <view class="module-card">
+      <view class="module-head">
+        <view class="section-title-bar">
+          <text class="section-title">健康监测</text>
+        </view>
+        <member-selector
+          :current-name="currentMemberName"
+          :members="members"
+          @change="onMemberChange"
+        ></member-selector>
       </view>
-      <member-selector
-        :current-name="currentMemberName"
-        :members="members"
-        @change="onMemberChange"
-      ></member-selector>
-    </view>
-
-    <!-- 健康双卡片 -->
-    <view class="card-row">
-      <view class="card-col">
-        <health-card :health="health" @click="openHealthModal"></health-card>
-      </view>
-      <view class="card-col">
-        <sleep-card :sleep="health && health.sleep" @click="openHealthModal"></sleep-card>
+      <view class="card-row">
+        <view class="card-col">
+          <health-card :health="health" @click="openHealthModal"></health-card>
+        </view>
+        <view class="card-col">
+          <sleep-card :sleep="health && health.sleep" @click="openHealthModal"></sleep-card>
+        </view>
       </view>
     </view>
 
@@ -50,20 +50,20 @@
       </view>
     </view>
 
-    <!-- 今日动态 -->
-    <view class="section">
-      <view class="section-title-bar">
-        <text class="section-title">今日动态</text>
+    <!-- 今日动态模块（圆角白框） -->
+    <view class="module-card">
+      <view class="module-head">
+        <view class="section-title-bar">
+          <text class="section-title">今日动态</text>
+        </view>
       </view>
-    </view>
-
-    <!-- 订单 / 套餐 双卡片 -->
-    <view class="card-row">
-      <view class="card-col">
-        <today-order-card :summary="todayOrder" @click="goOrderList"></today-order-card>
-      </view>
-      <view class="card-col">
-        <package-usage-card :packages="packages" @click="goPackage"></package-usage-card>
+      <view class="card-row">
+        <view class="card-col">
+          <today-order-card :summary="todayOrder" @click="goOrderList"></today-order-card>
+        </view>
+        <view class="card-col">
+          <package-usage-card :packages="packages" @click="goPackage"></package-usage-card>
+        </view>
       </view>
     </view>
 
@@ -264,11 +264,8 @@ export default {
       uni.switchTab({ url: '/pages/order/index' })
     },
     goPackage() {
-      if (this.packages && this.packages.length) {
-        uni.navigateTo({ url: '/pages/my/balancePackage/index' })
-      } else {
-        uni.navigateTo({ url: '/pages/server/SetMeal/index' })
-      }
+      // 服务套餐页（非设备套餐 balancePackage）
+      uni.navigateTo({ url: '/pages/server/SetMeal/index' })
     },
 
     formatToday() {
@@ -289,12 +286,20 @@ export default {
   padding-bottom: calc(140rpx + env(safe-area-inset-bottom)); /* 留出 tabBar 空间 */
 }
 
-/* 模块标题区 */
-.section {
+/* 模块白框（圆角+阴影，包裹标题+卡片） */
+.module-card {
+  background: #fff;
+  border-radius: 28rpx;
+  padding: 28rpx 24rpx 24rpx;
+  margin: 28rpx 24rpx 0;
+  box-shadow: 0 8rpx 28rpx rgba(0, 0, 0, 0.06);
+}
+
+.module-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 36rpx 32rpx 16rpx;
+  margin-bottom: 20rpx;
 }
 
 .section-title-bar {
@@ -320,11 +325,10 @@ export default {
   color: #222;
 }
 
-/* 双卡片行 */
+/* 双卡片行（在 module-card 内，不再需要横向 padding） */
 .card-row {
   display: flex;
-  gap: 24rpx;
-  padding: 8rpx 32rpx 0;
+  gap: 20rpx;
 
   .card-col {
     flex: 1;
@@ -332,15 +336,15 @@ export default {
   }
 }
 
-/* 公告栏（保留原样式，略调间距） */
+/* 公告栏（加宽 + 两行文字） */
 .notice-container {
   background: #fff;
   border-radius: 20rpx;
   padding: 24rpx 24rpx 24rpx 28rpx;
-  margin: 28rpx 32rpx 0;
+  margin: 28rpx 24rpx 0; /* 加宽：边距 32→24rpx */
   display: flex;
   align-items: center;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8rpx 28rpx rgba(0, 0, 0, 0.06);
   border-left: 6rpx solid #E07A4F;
 }
 
@@ -360,22 +364,23 @@ export default {
 
 .notice-content {
   flex: 1;
-  height: 40rpx;
+  height: 80rpx; /* 两行 */
   overflow: hidden;
 }
 
 .notice-swiper {
-  height: 40rpx;
+  height: 80rpx;
 }
 
 .notice-text {
   font-size: 26rpx;
   color: #666;
   line-height: 40rpx;
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 最多两行 */
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .notice-more {

@@ -190,7 +190,7 @@
       },
       handleDevice() {
         if (!this.checkLogin()) return
-        this.$tab.navigateTo('/pages/my/device/index')
+        this.$tab.switchTab('/pages/device/index')
       },
       handleAlarmreceiver() {
         if (!this.checkLogin()) return

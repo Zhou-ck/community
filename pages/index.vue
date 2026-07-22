@@ -369,7 +369,7 @@ export default {
         const categoryName = serviceTypeMap[service.name]
         if (categoryName) {
           uni.setStorageSync('targetCategory', categoryName)
-          uni.switchTab({ url: '/pages/work/index' })
+          uni.navigateTo({ url: '/pages/work/index' })
         } else {
           uni.showToast({ title: `${service.name}功能开发中`, icon: 'none' })
         }
@@ -449,12 +449,11 @@ export default {
       const categoryName = serviceTypeMap[service.name]
       
       if (categoryName) {
-        // 由于工作页面是tabbar页面，需要使用switchTab跳转
-        // 先存储目标分类到本地存储
+        // work 页面已非 tabBar，改用 navigateTo
         uni.setStorageSync('targetCategory', categoryName)
-        
+
         // 跳转到工作页面
-        uni.switchTab({
+        uni.navigateTo({
           url: '/pages/work/index'
         })
       } else {

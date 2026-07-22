@@ -139,12 +139,9 @@
 
     </scroll-view>
 
-    <!-- 添加设备按钮 -->
-    <view class="add-btn-box">
-      <button class="add-btn" @click="addDevice">
-        <uni-icons type="plusempty" size="20" color="#fff"></uni-icons>
-        <text class="add-btn-text">添加设备</text>
-      </button>
+    <!-- 添加设备按钮（右上角圆形 FAB） -->
+    <view class="add-fab press-card" @click="addDevice">
+      <uni-icons type="plusempty" size="24" color="#fff"></uni-icons>
     </view>
 
 
@@ -490,19 +487,19 @@ export default {
       const type = String(deviceType)
       try {
         const iconMap = {
-          '1': '../static/breath.png',      // 呼吸睡眠 Ld
-          '2': '../static/tumble.png',      // 跌倒监测 Ed
-          '4': '../static/sleep-l2.jpg',      // 二代睡眠
-          '13': '../static/shuijin.png',    // 水浸 Sd
-          '14': '../static/menci.png',      // 门磁 Md
-          '15': '../static/yangan.png',     // 烟感 Yd
-          '16': '../static/keranqiti.png',  // 可燃气体 Rd
-          '17': '../static/hongwai.png',    // 红外 Hd
-          '18': '../static/wenshidu.png',   // 温湿度 Wd
-          '19': '../static/yiyanghuatan.png', // 一氧化碳 Td
-          '21': '../static/watch.png',   // 手表(AA型) Za - 待添加图标
-          '22': '../static/watch.png',   // 手表(AB型) Zb - 待添加图标
-          '23': '../static/sos.png'    // 拉绳 - Ls
+          '1': '/static/device/breath.png',      // 呼吸睡眠 Ld
+          '2': '/static/device/tumble.png',      // 跌倒监测 Ed
+          '4': '/static/device/sleep-l2.jpg',      // 二代睡眠
+          '13': '/static/device/shuijin.png',    // 水浸 Sd
+          '14': '/static/device/menci.png',      // 门磁 Md
+          '15': '/static/device/yangan.png',     // 烟感 Yd
+          '16': '/static/device/keranqiti.png',  // 可燃气体 Rd
+          '17': '/static/device/hongwai.png',    // 红外 Hd
+          '18': '/static/device/wenshidu.png',   // 温湿度 Wd
+          '19': '/static/device/yiyanghuatan.png', // 一氧化碳 Td
+          '21': '/static/device/watch.png',   // 手表(AA型) Za - 待添加图标
+          '22': '/static/device/watch.png',   // 手表(AB型) Zb - 待添加图标
+          '23': '/static/device/sos.png'    // 拉绳 - Ls
         }
         return iconMap[type] || ''
       } catch (e) {
@@ -1061,7 +1058,7 @@ export default {
 /* 设备网格布局 */
 .device-grid {
   padding: 24rpx;
-  padding-bottom: 140rpx; /* 为底部按钮留出空间 */
+  padding-bottom: 140rpx; /* 留出 tabBar 空间，避免最后一张设备卡被底部 tab 遮挡 */
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -1473,35 +1470,20 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* 底部添加按钮 */
-.add-btn-box {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24rpx;
-  background: #fff;
-  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05);
-
-  .add-btn {
-    width: 100%;
-    height: 88rpx;
-    background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
-    color: #fff;
-    border: none;
-    border-radius: 44rpx;
-    font-size: 32rpx;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12rpx;
-    box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.3);
-
-    .add-btn-text {
-      color: #fff;
-    }
-  }
+/* 右上角圆形添加按钮 FAB */
+.add-fab {
+  position: absolute;
+  top: 20rpx;
+  right: 24rpx;
+  z-index: 50;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E07A4F 0%, #36b3b3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(224, 122, 79, 0.35);
 }
 
 /* 弹窗样式 */

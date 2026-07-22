@@ -1108,20 +1108,20 @@ export default {
       const type = String(deviceType)
       try {
         const iconMap = {
-          '1': '../../my/static/breath.png',        // 呼吸睡眠(Ld)
-          '2': '../../my/static/tumble.png',        // 跌倒监测(Ed)
-          '4': '../../my/static/sleep-l2.jpg',     // 二代睡眠(La)
-          '13': '../../my/static/shuijin.png',      // 水浸(Sd)
-          '14': '../../my/static/menci.png',        // 门磁(Md)
-          '15': '../../my/static/yangan.png',       // 烟感(Yd)
-          '16': '../../my/static/keranqiti.png',    // 可燃气体(Rd)
-          '17': '../../my/static/hongwai.png',      // 红外(Hd)
-          '18': '../../my/static/wenshidu.png',     // 温湿度(Wd)
-          '19': '../../my/static/yiyanghuatan.png', // 一氧化碳(Td)
-          '20': '../../my/static/breath.png',       // 其它设备(Od)，暂用呼吸图标
-          '21': '../../my/static/watch.png',        // 手表(Za)
-          '22': '../../my/static/watch.png',        // 手表(Zb)
-          '23': '../../my/static/sos.png'         // 拉绳(Ls)
+          '1': '/static/device/breath.png',        // 呼吸睡眠(Ld)
+          '2': '/static/device/tumble.png',        // 跌倒监测(Ed)
+          '4': '/static/device/sleep-l2.jpg',     // 二代睡眠(La)
+          '13': '/static/device/shuijin.png',      // 水浸(Sd)
+          '14': '/static/device/menci.png',        // 门磁(Md)
+          '15': '/static/device/yangan.png',       // 烟感(Yd)
+          '16': '/static/device/keranqiti.png',    // 可燃气体(Rd)
+          '17': '/static/device/hongwai.png',      // 红外(Hd)
+          '18': '/static/device/wenshidu.png',     // 温湿度(Wd)
+          '19': '/static/device/yiyanghuatan.png', // 一氧化碳(Td)
+          '20': '/static/device/breath.png',       // 其它设备(Od)，暂用呼吸图标
+          '21': '/static/device/watch.png',        // 手表(Za)
+          '22': '/static/device/watch.png',        // 手表(Zb)
+          '23': '/static/device/sos.png'         // 拉绳(Ls)
         }
         return iconMap[type] || ''
       } catch (e) {

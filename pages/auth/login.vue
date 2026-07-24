@@ -305,11 +305,11 @@
       
       //忘记密码
 	  handleUserForget() {
-		this.$tab.redirectTo(`/pages/forget`)
+		this.$tab.redirectTo(`/pages/auth/forget`)
 		  },
       // 用户注册
       handleUserRegister() {
-        this.$tab.redirectTo(`/pages/register`)
+        this.$tab.redirectTo(`/pages/auth/register`)
       },
       // 隐私协议
       handlePrivacy() {

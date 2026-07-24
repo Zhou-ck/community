@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page-container">
     <!-- 自定义确认弹窗 -->
     <view class="modal-mask" v-if="showConfirmModal" @click="closeConfirmModal">
@@ -180,7 +180,7 @@
       handleLogout() {
         this.$modal.confirm('确定注销并退出系统吗？').then(() => {
           this.$store.dispatch('LogOut').then(() => {}).finally(()=>{
-            this.$tab.reLaunch('/pages/login')
+            this.$tab.reLaunch('/pages/auth/login')
           })
         })
       },
@@ -232,7 +232,7 @@
           this.$modal.msgSuccess('账号已注销')
           // 清除所有缓存并跳转到登录页
           uni.clearStorageSync()
-          this.$tab.reLaunch('/pages/login')
+          this.$tab.reLaunch('/pages/auth/login')
         }).catch((err) => {
           this.$modal.closeLoading()
           this.$modal.msgError(err.msg || '注销失败，请检查密码是否正确')

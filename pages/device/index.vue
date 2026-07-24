@@ -1058,15 +1058,15 @@ export default {
 /* 设备网格布局 */
 .device-grid {
   padding: 24rpx;
-  padding-bottom: 140rpx; /* 留出 tabBar 空间，避免最后一张设备卡被底部 tab 遮挡 */
+  padding-bottom: 140rpx;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 20rpx;
 }
 
 .device-card {
-  width: calc(50% - 12rpx); /* 稍微调整宽度计算 */
+  width: calc(50% - 12rpx);
+  margin-bottom: 20rpx;
   background: #ffffff;
   border-radius: 24rpx;
   padding: 24rpx;

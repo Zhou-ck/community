@@ -13,44 +13,9 @@
 			}
 		},
 		{
-			"path": "pages/login",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		}, {
-			"path": "pages/register",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/forget",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		 {
-			"path": "pages/work/index",
-			"style": {
-				"navigationBarTitleText": "服务分类"
-			}
-		}, 
-		{
 			"path": "pages/order/index",
 			"style": {
 				"navigationBarTitleText": "我的订单"
-			}
-		},
-		{
-			"path": "pages/order/detail",
-			"style": {
-				"navigationBarTitleText": "订单详情"
-			}
-		},
-		{
-			"path": "pages/evaluation/list",
-			"style": {
-				"navigationBarTitleText": "评价记录"
 			}
 		},
 		{
@@ -58,396 +23,434 @@
 			"style": {
 				"navigationBarTitleText": "我的"
 			}
-		}, {
-			"path": "pages/common/privacy/index",
-			"style": {
-				"navigationBarTitleText": "隐私协议"
-			}
-		}, {
-			"path": "pages/common/protocol/index",
-			"style": {
-				"navigationBarTitleText": "用户协议"
-			}
-		}, {
-			"path": "pages/common/imageCropper",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},{
+		},
+		{
 			"path": "pages/device/index",
 			"style": {
 				"navigationBarTitleText": "设备管理"
 			}
 		}
 	],
-	"subPackages": [{
-		"root": "pages/my",
-		"pages": [{
-				"path": "avatar/index",
-				"style": {
-					"navigationBarTitleText": "修改头像"
-				}
-			}, {
-				"path": "info/index",
-				"style": {
-					"navigationBarTitleText": "个人信息"
-				}
-			}, {
-				"path": "pwd/index",
-				"style": {
-					"navigationBarTitleText": "修改密码"
-				}
-			}, {
-				"path": "setting/index",
-				"style": {
-					"navigationBarTitleText": "应用设置"
-				}
-			}, {
-				"path": "help/index",
-				"style": {
-					"navigationBarTitleText": "常见问题"
-				}
-			}, {
-				"path": "about/index",
-				"style": {
-					"navigationBarTitleText": "关于我们"
-				}
-			},
-			{
-				"path": "joincommunity/index",
-				"style": {
-					"navigationBarTitleText": "加入社区",
-					"enablePullDownRefresh": true,
-					"backgroundTextStyle": "dark"
-				}
-			},
-			{
-				"path": "joincommunity/detail",
-				"style": {
-					"navigationBarTitleText": "加入社区详情",
-					"enablePullDownRefresh": true,
-					"backgroundTextStyle": "dark"
-				}
-			},
-			{
-				"path": "address/index",
-				"style": {
-					"navigationBarTitleText": "服务地址"
-				}
-			},
-			{
-				"path" : "family/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "家庭成员"
-				}
-			},
-			{
-				"path" : "health/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "健康档案"
-				}
-			},
-			{
-				"path" : "use-records/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "使用记录"
-				}
-			},
-			{
-				"path" : "device/index",
-				"style" :
-				{
-					"navigationBarTitleText" : "设备管理(跳转)"
-				}
-			},
-			{
-				"path" : "device/detail",
-				"style" :
-				{
-					"navigationBarTitleText" : "设备详情"
-				}
-			},
-			{
-				"path" : "device/fall",
-				"style" : 
-				{
-					"navigationBarTitleText" : "跌倒数据监测"
-				}
-			},
-			{
-				"path" : "device/sleep",
-				"style" : 
-				{
-					"navigationBarTitleText" : "睡眠数据监测"
-				}
-			},
-			{
-				"path" : "device/msg",
-				"style" : 
-				{
-					"navigationBarTitleText" : "需求消息"
-				}
-			},
-				{
-				"path" : "plan/detail",
-				"style" : 
-				{
-					"navigationBarTitleText" : "查看计划",
-					"enablePullDownRefresh": true,
-					"backgroundTextStyle": "dark"
-				}
-			},
-			{
-				"path" : "alarmreceiver/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "接警人"
-				}
-			},
-			{
-				"path" : "network/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "网络配置"
-				}
-			},
-			{
-				"path" : "network/bluetooth",
-				"style" : 
-				{
-					"navigationBarTitleText" : "网络配置"
-				}
-			},
-			{
-				"path" : "balancePackage/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "套餐充值"
-				}
-			},
-			{
-				"path" : "balancePackage/order",
-				"style" : 
-				{
-					"navigationBarTitleText" : "历史订单"
-				}
-			},
-			{
-				"path" : "balanceRecord/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "余量消费"
-				}
-			},
-			{
-				"path" : "sleep-report/sleep-report",
-				"style" : 
-				{
-					"navigationBarTitleText" : "睡眠报告"
-				}
-			},
-			{
-				"path" : "sleep-report-info/sleep-report-info",
-				"style" : 
-				{
-					"navigationBarTitleText" : "报告详情"
-				}
-			},
-			{
-				"path" : "day-report/day-report",
-				"style" : 
-				{
-					"navigationBarTitleText" : "日报告"
-				}
-			},
-			{
-				"path" : "month-report/month-report",
-				"style" : 
-				{
-					"navigationBarTitleText" : "月报告"
-				}
-			},
-			{
-				"path" : "week-report/week-report",
-				"style" : 
-				{
-					"navigationBarTitleText" : "周报告"
-				}
-			},
-			{
-				"path": "content/index",
-				"style": 
-				{
-					"navigationBarTitleText" : "内容设置",
-					"enablePullDownRefresh": true
-				}
-			}
-		]
-
-	}, 
-	{
-		"root": "subpackages/watch",
-		"pages": [
-			{
-				"path": "realtime",
-				"style": 
-				{
-					"navigationBarTitleText" : "实时数据",
-					"enablePullDownRefresh": true,
-					"backgroundTextStyle": "dark"
-				}
-			},
-			{
-				"path": "health",
-				"style": 
-				{
-					"navigationBarTitleText" : "健康数据总览",
-					"enablePullDownRefresh": true,
-					"backgroundTextStyle": "dark"
-				}
-			},
-			{
-				"path": "callhistory",
-				"style": 
-				{
-					"navigationBarTitleText" : "通话记录"
-				}
-			},
-			{
-				"path": "config",
-				"style": 
-				{
-					"navigationBarTitleText" : "配置手表"
-				}
-			},
-			{
-				"path": "Sleep-index",
-				"style": 
-				{
-					"navigationBarTitleText" : "睡眠报告"
-				}
-			},
-			{
-				"path": "SleepStageChart",
-				"style": 
-				{
-					"navigationBarTitleText" : "报告详情"
-				}
-			}
-		]
-	}, 
-	{
-		"root": "pages/server",
-		"pages": [
-			{
-				"path": "index",
-				"style": {
-					"navigationStyle": "custom"
-				}
-			},
-			{
-				"path": "booking/index",
-				"style": {
-					"navigationBarTitleText": "预约服务"
-				}
-			},
-			{
-				"path": "serviceDetail/index",
-				"style": {
-					"navigationBarTitleText": "服务详情"
-				}
-			},
-			{
-				"path" : "notice/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "公告列表"
-				}
-			},
-			{
-				"path" : "notice/detail",
-				"style" : 
-				{
-					"navigationBarTitleText" : "公告详情"
-				}
-			},
-			{
-				"path" : "volunteer/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "志愿服务"
-				}
-			},
-			{
-				"path" : "volunteer/detail",
-				"style" : 
-				{
-					"navigationBarTitleText" : "服务详情"
-				}
-			},
-			{
-				"path" : "institution/index",
-				"style" : 
-				{
-					"navigationBarTitleText" : "养老机构"
-				}
-			},
+	"subPackages": [
 		{
-			"path" : "SetMeal/index",
-			"style" : 
-			{
-				"navigationBarTitleText" : "服务套餐"
-			}
+			"root": "extra",
+			"pages": [
+				{
+					"path": "order-detail",
+					"style": {
+						"navigationBarTitleText": "订单详情"
+					}
+				}
+			]
 		},
 		{
-			"path" : "SetMeal/detail",
-			"style" : 
-			{
-				"navigationBarTitleText" : "套餐使用详情"
-			}
+			"root": "pages/work",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "服务分类"
+					}
+				}
+			]
 		},
 		{
-			"path" : "SetMeal/purchase",
-			"style" : 
-			{
-				"navigationBarTitleText" : "购买套餐"
-			}
+			"root": "pages/evaluation",
+			"pages": [
+				{
+					"path": "list",
+					"style": {
+						"navigationBarTitleText": "评价记录"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/common",
+			"pages": [
+				{
+					"path": "privacy/index",
+					"style": {
+						"navigationBarTitleText": "隐私协议"
+					}
+				},
+				{
+					"path": "protocol/index",
+					"style": {
+						"navigationBarTitleText": "用户协议"
+					}
+				},
+				{
+					"path": "imageCropper",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/auth",
+			"pages": [
+				{
+					"path": "login",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "forget",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "register",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/my",
+			"pages": [
+				{
+					"path": "avatar/index",
+					"style": {
+						"navigationBarTitleText": "修改头像"
+					}
+				},
+				{
+					"path": "info/index",
+					"style": {
+						"navigationBarTitleText": "个人信息"
+					}
+				},
+				{
+					"path": "pwd/index",
+					"style": {
+						"navigationBarTitleText": "修改密码"
+					}
+				},
+				{
+					"path": "setting/index",
+					"style": {
+						"navigationBarTitleText": "应用设置"
+					}
+				},
+				{
+					"path": "help/index",
+					"style": {
+						"navigationBarTitleText": "常见问题"
+					}
+				},
+				{
+					"path": "about/index",
+					"style": {
+						"navigationBarTitleText": "关于我们"
+					}
+				},
+				{
+					"path": "joincommunity/index",
+					"style": {
+						"navigationBarTitleText": "加入社区",
+						"enablePullDownRefresh": true,
+						"backgroundTextStyle": "dark"
+					}
+				},
+				{
+					"path": "joincommunity/detail",
+					"style": {
+						"navigationBarTitleText": "加入社区详情",
+						"enablePullDownRefresh": true,
+						"backgroundTextStyle": "dark"
+					}
+				},
+				{
+					"path": "address/index",
+					"style": {
+						"navigationBarTitleText": "服务地址"
+					}
+				},
+				{
+					"path": "family/index",
+					"style": {
+						"navigationBarTitleText": "家庭成员"
+					}
+				},
+				{
+					"path": "health/index",
+					"style": {
+						"navigationBarTitleText": "健康档案"
+					}
+				},
+				{
+					"path": "use-records/index",
+					"style": {
+						"navigationBarTitleText": "使用记录"
+					}
+				},
+				{
+					"path": "device/index",
+					"style": {
+						"navigationBarTitleText": "设备管理(跳转)"
+					}
+				},
+				{
+					"path": "device/detail",
+					"style": {
+						"navigationBarTitleText": "设备详情"
+					}
+				},
+				{
+					"path": "device/fall",
+					"style": {
+						"navigationBarTitleText": "跌倒数据监测"
+					}
+				},
+				{
+					"path": "device/sleep",
+					"style": {
+						"navigationBarTitleText": "睡眠数据监测"
+					}
+				},
+				{
+					"path": "device/msg",
+					"style": {
+						"navigationBarTitleText": "需求消息"
+					}
+				},
+				{
+					"path": "plan/detail",
+					"style": {
+						"navigationBarTitleText": "查看计划",
+						"enablePullDownRefresh": true,
+						"backgroundTextStyle": "dark"
+					}
+				},
+				{
+					"path": "alarmreceiver/index",
+					"style": {
+						"navigationBarTitleText": "接警人"
+					}
+				},
+				{
+					"path": "network/index",
+					"style": {
+						"navigationBarTitleText": "网络配置"
+					}
+				},
+				{
+					"path": "network/bluetooth",
+					"style": {
+						"navigationBarTitleText": "网络配置"
+					}
+				},
+				{
+					"path": "balancePackage/index",
+					"style": {
+						"navigationBarTitleText": "套餐充值"
+					}
+				},
+				{
+					"path": "balancePackage/order",
+					"style": {
+						"navigationBarTitleText": "历史订单"
+					}
+				},
+				{
+					"path": "balanceRecord/index",
+					"style": {
+						"navigationBarTitleText": "余量消费"
+					}
+				},
+				{
+					"path": "sleep-report/sleep-report",
+					"style": {
+						"navigationBarTitleText": "睡眠报告"
+					}
+				},
+				{
+					"path": "sleep-report-info/sleep-report-info",
+					"style": {
+						"navigationBarTitleText": "报告详情"
+					}
+				},
+				{
+					"path": "day-report/day-report",
+					"style": {
+						"navigationBarTitleText": "日报告"
+					}
+				},
+				{
+					"path": "month-report/month-report",
+					"style": {
+						"navigationBarTitleText": "月报告"
+					}
+				},
+				{
+					"path": "week-report/week-report",
+					"style": {
+						"navigationBarTitleText": "周报告"
+					}
+				},
+				{
+					"path": "content/index",
+					"style": {
+						"navigationBarTitleText": "内容设置",
+						"enablePullDownRefresh": true
+					}
+				}
+			]
+		},
+		{
+			"root": "subpackages/watch",
+			"pages": [
+				{
+					"path": "realtime",
+					"style": {
+						"navigationBarTitleText": "实时数据",
+						"enablePullDownRefresh": true,
+						"backgroundTextStyle": "dark"
+					}
+				},
+				{
+					"path": "health",
+					"style": {
+						"navigationBarTitleText": "健康数据总览",
+						"enablePullDownRefresh": true,
+						"backgroundTextStyle": "dark"
+					}
+				},
+				{
+					"path": "callhistory",
+					"style": {
+						"navigationBarTitleText": "通话记录"
+					}
+				},
+				{
+					"path": "config",
+					"style": {
+						"navigationBarTitleText": "配置手表"
+					}
+				},
+				{
+					"path": "Sleep-index",
+					"style": {
+						"navigationBarTitleText": "睡眠报告"
+					}
+				},
+				{
+					"path": "SleepStageChart",
+					"style": {
+						"navigationBarTitleText": "报告详情"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/server",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "booking/index",
+					"style": {
+						"navigationBarTitleText": "预约服务"
+					}
+				},
+				{
+					"path": "serviceDetail/index",
+					"style": {
+						"navigationBarTitleText": "服务详情"
+					}
+				},
+				{
+					"path": "notice/index",
+					"style": {
+						"navigationBarTitleText": "公告列表"
+					}
+				},
+				{
+					"path": "notice/detail",
+					"style": {
+						"navigationBarTitleText": "公告详情"
+					}
+				},
+				{
+					"path": "volunteer/index",
+					"style": {
+						"navigationBarTitleText": "志愿服务"
+					}
+				},
+				{
+					"path": "volunteer/detail",
+					"style": {
+						"navigationBarTitleText": "服务详情"
+					}
+				},
+				{
+					"path": "institution/index",
+					"style": {
+						"navigationBarTitleText": "养老机构"
+					}
+				},
+				{
+					"path": "SetMeal/index",
+					"style": {
+						"navigationBarTitleText": "服务套餐"
+					}
+				},
+				{
+					"path": "SetMeal/detail",
+					"style": {
+						"navigationBarTitleText": "套餐使用详情"
+					}
+				},
+				{
+					"path": "SetMeal/purchase",
+					"style": {
+						"navigationBarTitleText": "购买套餐"
+					}
+				}
+			]
 		}
-
-		]
-	}
 	],
 	"tabBar": {
 		"color": "#000000",
 		"selectedColor": "#3FA9E7",
 		"borderStyle": "white",
 		"backgroundColor": "#ffffff",
-		"list": [{
-			"pagePath": "pages/index",
-			"iconPath": "static/images/tabbar/home.png",
-			"selectedIconPath": "static/images/tabbar/home_.png",
-			"text": "首页"
-		}, {
-			"pagePath": "pages/device/index",
-			"iconPath": "static/images/tabbar/device.png",
-			"selectedIconPath": "static/images/tabbar/device_.png",
-			"text": "设备"
-		},
-		{
-			"pagePath": "pages/order/index",
-			"iconPath": "static/images/tabbar/order.png",
-			"selectedIconPath": "static/images/tabbar/order_.png",
-			"text": "我的订单"
-		},
-		{
-			"pagePath": "pages/mine/index",
-			"iconPath": "static/images/tabbar/mine.png",
-			"selectedIconPath": "static/images/tabbar/mine_.png",
-			"text": "我的"
-		}]
+		"list": [
+			{
+				"pagePath": "pages/index",
+				"iconPath": "static/images/tabbar/home.png",
+				"selectedIconPath": "static/images/tabbar/home_.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/device/index",
+				"iconPath": "static/images/tabbar/device.png",
+				"selectedIconPath": "static/images/tabbar/device_.png",
+				"text": "设备"
+			},
+			{
+				"pagePath": "pages/order/index",
+				"iconPath": "static/images/tabbar/order.png",
+				"selectedIconPath": "static/images/tabbar/order_.png",
+				"text": "我的订单"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"iconPath": "static/images/tabbar/mine.png",
+				"selectedIconPath": "static/images/tabbar/mine_.png",
+				"text": "我的"
+			}
+		]
 	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

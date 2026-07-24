@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<view class="order-container">
 		<!-- 订单状态切换栏 -->
 		<view class="order-tabs">
@@ -378,7 +378,7 @@
 					success: (res) => {
 						if (res.confirm) {
 							uni.navigateTo({
-								url: '/pages/login'
+								url: '/pages/auth/login'
 							})
 						} else {
 							// 返回首页
@@ -1283,7 +1283,7 @@
 			// 查看订单详情
 			viewOrderDetail(orderId) {
 				uni.navigateTo({
-					url: `/pages/order/detail?orderId=${orderId}`
+					url: `/extra/order-detail?orderId=${orderId}`
 				})
 			},
 			

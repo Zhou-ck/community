@@ -1,13 +1,13 @@
 import { getToken } from '@/utils/auth'
 
 // 登录页面
-const loginPage = "/pages/login"
+const loginPage = "/pages/auth/login"
   
 // 页面白名单（无需登录即可访问的页面）
 const whiteList = [
-  '/pages/login', 
-  '/pages/register', 
-  '/pages/forget',
+  '/pages/auth/login', 
+  '/pages/auth/register', 
+  '/pages/auth/forget',
   '/pages/common/privacy/index', 
   '/pages/common/protocol/index',
   '/pages/index',  // 首页
@@ -26,7 +26,7 @@ const whiteList = [
 
 // 必须登录才能访问的页面（黑名单）
 const loginRequiredList = [
-  '/pages/order/detail',  // 订单详情
+  '/extra/order-detail',  // 订单详情
   '/pages/server/booking/index',  // 预约服务
 ]
 

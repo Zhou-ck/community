@@ -934,7 +934,7 @@ export default {
       }
       
       uni.navigateTo({
-        url: `/pages/order/detail?orderId=${record.orderId}`
+        url: `/extra/order-detail?orderId=${record.orderId}`
       })
     },
     

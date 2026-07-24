@@ -1,4 +1,4 @@
-<script>
+﻿<script>
   import config from './config'
   import store from '@/store'
   import { getToken } from '@/utils/auth'
@@ -48,7 +48,7 @@
       },
       checkLogin() {
         if (!getToken()) {
-          this.$tab.reLaunch('/pages/login') 
+          this.$tab.reLaunch('/pages/auth/login') 
         }
       }
     }

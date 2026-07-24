@@ -143,7 +143,7 @@ export function formatDate(dateStr) {
 
 export function getServiceIcon(iconPath) {
   if (!iconPath) {
-    return '/static/images/default-service.png'
+    return '/static/images/default-service.jpg'
   }
   if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
     return iconPath
@@ -151,7 +151,7 @@ export function getServiceIcon(iconPath) {
   if (iconPath.startsWith('/')) {
     return config.baseUrl + iconPath
   }
-  return '/static/images/default-service.png'
+  return '/static/images/default-service.jpg'
 }
 
 export function formatServiceCount(service) {

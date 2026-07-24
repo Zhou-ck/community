@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<view class="forget-password-container">
 		<!-- 头部logo区域 -->
 		<view class="logo-content">
@@ -342,12 +342,16 @@
 			// 返回登录页面
 			goToLogin() {
 				uni.navigateTo({
-                     url: '/pages/login'
+                     url: '/pages/auth/login'
                 })
 			}
 		}
 	}
 </script>
+
+<style lang="scss">
+@import "@/static/scss/colorui.css";
+</style>
 
 <style lang="scss" scoped>
 	.forget-password-container {

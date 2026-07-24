@@ -215,7 +215,7 @@ export default {
     // 处理图片URL
     getImageUrl(iconPath) {
       if (!iconPath) {
-        return '/static/images/default-service.png'
+        return '/static/images/default-service.jpg'
       }
       
       // 如果是完整URL，直接返回
@@ -228,7 +228,7 @@ export default {
         return config.baseUrl + iconPath
       }
       
-      return '/static/images/default-service.png'
+      return '/static/images/default-service.jpg'
     },
 
     // 立即预约

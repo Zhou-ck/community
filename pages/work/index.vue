@@ -333,7 +333,7 @@
       getImageUrl(iconPath) {
         // 如果iconPath为空，返回默认图片
         if (!iconPath) {
-          return '/static/images/default-service.png';
+          return '/static/images/default-service.jpg';
         }
 
         // 如果是完整URL，直接返回
@@ -347,7 +347,7 @@
         }
 
         // 其他情况返回默认图片
-        return '/static/images/default-service.png';
+        return '/static/images/default-service.jpg';
       },
 
       // 设置目标分类

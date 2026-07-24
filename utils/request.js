@@ -1,4 +1,4 @@
-import store from '@/store'
+﻿import store from '@/store'
 import config from '@/config'
 import { getToken } from '@/utils/auth'
 import { refreshToken } from '@/utils/token-refresh'
@@ -133,12 +133,12 @@ const request = config => {
                     // 先执行LogOut清除Token
                     store.dispatch('LogOut').then(() => {
                       setTimeout(() => {
-                        uni.reLaunch({ url: '/pages/login' })
+                        uni.reLaunch({ url: '/pages/auth/login' })
                         isRelogin.show = false
                       }, 100)
                     }).catch(() => {
                       setTimeout(() => {
-                        uni.reLaunch({ url: '/pages/login' })
+                        uni.reLaunch({ url: '/pages/auth/login' })
                         isRelogin.show = false
                       }, 100)
                     })

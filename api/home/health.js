@@ -3,7 +3,7 @@ import request from '@/utils/request'
 import { mockHealthData } from './mock'
 
 // mock 开关：后端接口 ready 后改为 false
-const USE_MOCK = true
+const USE_MOCK = false
 
 // 查询老人首页健康数据
 // memberId: 家庭成员 ID

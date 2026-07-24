@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="register-container">
     <!-- 头部logo区域 -->
     <view class="logo-content">
@@ -219,7 +219,7 @@
 
       // 用户登录
       handleUserLogin() {
-        this.$tab.navigateTo(`/pages/login`)
+        this.$tab.navigateTo(`/pages/auth/login`)
       },
       // 获取图形验证码
       getCode() {
@@ -268,7 +268,7 @@
           	content: "恭喜你，您的账号 " + username + " 注册成功！",
           	success: function (res) {
           		if (res.confirm) {
-                uni.redirectTo({ url: `/pages/login?username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}` });
+                uni.redirectTo({ url: `/pages/auth/login?username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}` });
           		}
           	}
           })

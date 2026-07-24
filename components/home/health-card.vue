@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     goBindDevice() {
-      uni.navigateTo({ url: '/pages/device/index' })
+      uni.switchTab({ url: '/pages/device/index' })
     }
   }
 }

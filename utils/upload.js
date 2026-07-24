@@ -1,4 +1,4 @@
-import store from '@/store'
+﻿import store from '@/store'
 import config from '@/config'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
@@ -51,10 +51,10 @@ const upload = config => {
                 success: (res) => {
                   if (res.confirm) {
                     store.dispatch('LogOut').then(() => {
-                      uni.reLaunch({ url: '/pages/login' })
+                      uni.reLaunch({ url: '/pages/auth/login' })
                     }).catch(() => {
                       // 即使LogOut失败，也要跳转到登录页
-                      uni.reLaunch({ url: '/pages/login' })
+                      uni.reLaunch({ url: '/pages/auth/login' })
                     })
                   }
                 }

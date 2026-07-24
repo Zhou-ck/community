@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="mine-container">
     <!--顶部个人信息栏-->
     <view class="header-section">
@@ -147,7 +147,7 @@
             cancelText: '取消',
             success: (res) => {
               if (res.confirm) {
-                this.$tab.reLaunch('/pages/login')
+                this.$tab.reLaunch('/pages/auth/login')
               }
             }
           })
@@ -165,7 +165,7 @@
         this.$tab.navigateTo('/pages/my/setting/index')
       },
       handleToLogin() {
-        this.$tab.reLaunch('/pages/login')
+        this.$tab.reLaunch('/pages/auth/login')
       },
       handleToAvatar() {
         if (!this.checkLogin()) return

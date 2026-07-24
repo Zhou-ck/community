@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="service-list-page">
     <!-- 状态栏 + 自定义导航栏 -->
     <view class="navbar-wrapper">
@@ -252,7 +252,7 @@ export default {
 
     // 处理图片URL
     getImageUrl(iconPath) {
-      if (!iconPath) return '/static/images/default-service.png';
+      if (!iconPath) return '/static/images/default-service.jpg';
 
       if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
         return iconPath;
@@ -262,7 +262,7 @@ export default {
         return config.baseUrl + iconPath;
       }
 
-      return '/static/images/default-service.png';
+      return '/static/images/default-service.jpg';
     },
 
     // 返回上一页
@@ -272,7 +272,7 @@ export default {
 
     // 去登录
     goLogin() {
-      uni.navigateTo({ url: '/pages/login' })
+      uni.navigateTo({ url: '/pages/auth/login' })
     },
 
     // 去加入社区
@@ -307,7 +307,7 @@ export default {
           success: (res) => {
             if (res.confirm) {
               uni.navigateTo({
-                url: '/pages/login'
+                url: '/pages/auth/login'
               })
             } else {
               // 用户点击取消,返回上一页

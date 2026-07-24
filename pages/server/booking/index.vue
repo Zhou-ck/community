@@ -559,7 +559,7 @@ export default {
 
     // 处理图片URL
     getImageUrl(iconPath) {
-      if (!iconPath) return '/static/images/default-service.png';
+      if (!iconPath) return '/static/images/default-service.jpg';
 
       if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
         return iconPath;
@@ -569,7 +569,7 @@ export default {
         return config.baseUrl + iconPath;
       }
 
-      return '/static/images/default-service.png';
+      return '/static/images/default-service.jpg';
     },
 
     // 表单验证

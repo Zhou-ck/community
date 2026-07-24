@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page-container">
     <!-- 表单内容区域 -->
     <view class="content-section">
@@ -360,13 +360,13 @@
                 if (savedUsername) {
                   uni.setStorageSync('user_username', savedUsername)
                 }
-                this.$tab.reLaunch('/pages/login')
+                this.$tab.reLaunch('/pages/auth/login')
               }).catch(() => {
                 // 如果退出登录失败，恢复用户名并跳转
                 if (savedUsername) {
                   uni.setStorageSync('user_username', savedUsername)
                 }
-                this.$tab.reLaunch('/pages/login')
+                this.$tab.reLaunch('/pages/auth/login')
               })
             }, 1500)
           })
